@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/16 17:36:11
+Created on:       26/10/16 18:32:41
 Executable Image: sample\combo\combosmp.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -202,4 +202,4 @@ C:\WATCOM/lib386/os2\os2386.lib
 Stack size:  2000 (8192.)
 Memory size:  29f7 (10743.)
 Entry point address: 0001:000002a8
-Link time: 00:00.50
+Link time: 00:00.78

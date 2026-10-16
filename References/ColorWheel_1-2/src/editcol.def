@@ -1,8 +1,0 @@
-LIBRARY   editcol    INITINSTANCE
-
-PROTMODE
-
-DATA NONSHARED
-
-EXPORTS
-   WinEditColorDlg @1

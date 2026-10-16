@@ -1,8 +1,0 @@
-;--------------------------------------
-; ButtonTest.DEF module definition file
-;--------------------------------------
-
-NAME          BTNTEST  WINDOWAPI
-
-DESCRIPTION   'Shaded Button Class Demo'
-PROTMODE

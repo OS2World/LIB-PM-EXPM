@@ -1,6 +1,0 @@
-;
-; ShadeBtn.imp (created by emximp)
-;
-; -------- ShadeBtn.def --------
-shBtnInit               SHADEBTN   1 ?
-shBtnQueryVersion       SHADEBTN   2 ?

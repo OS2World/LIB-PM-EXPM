@@ -206,7 +206,7 @@ sample\anibtn\anismp.exe: $(OBJ)\anismp.obj $(OBJ)\anismp.res $(DLL)\expm.dll
 # -----------------------------------------------------------------------
 
 $(OBJ)\shbsmp.obj: sample\shadebtn\shbsmp.c sample\shadebtn\shbsmp.h h\expm.h
-    $(CC) $(CFLAGS_EXE) -DSHB_TRACE -i=sample\shadebtn -fo=$@ sample\shadebtn\shbsmp.c
+    $(CC) $(CFLAGS_EXE) -i=sample\shadebtn -fo=$@ sample\shadebtn\shbsmp.c
 
 $(OBJ)\shbsmp.res: sample\shadebtn\shbsmp.rc sample\shadebtn\shbsmp.h h\shadebtn.h
     wrc -q -r -bt=os2 -i=sample\shadebtn -i=h sample\shadebtn\shbsmp.rc -fo=$@

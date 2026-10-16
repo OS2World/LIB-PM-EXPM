@@ -1,9 +1,0 @@
-LIBRARY     SHADEBTN  INITINSTANCE TERMINSTANCE
-
-DESCRIPTION 'Shade Buttons, Hubert Chan, 1997'
-PROTMODE
-DATA        MULTIPLE NONSHARED
-
-EXPORTS     shBtnInit         @1
-            shBtnQueryVersion @2
-

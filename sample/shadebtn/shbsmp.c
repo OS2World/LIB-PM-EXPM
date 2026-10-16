@@ -17,7 +17,6 @@
  */
 
 #define INCL_WIN
-#define INCL_DOS
 #include <os2.h>
 #include <stdio.h>
 #include "shbsmp.h"
@@ -28,39 +27,6 @@ MRESULT EXPENTRY MainDlg(HWND, ULONG, MPARAM, MPARAM);
 static VOID SetStatus(HWND hwndDlg, PSZ pszText);
 static VOID CenterDialog(HWND hwndDlg);
 static VOID SelectRadio(HWND hwndDlg, USHORT idChecked);
-
-#ifdef SHB_TRACE
-#include <stdarg.h>
-static FILE *g_log;
-static PFNWP g_oldFrame, g_oldTB;
-static VOID TLog(const char *fmt, ...) {
-   va_list ap;
-   if (!g_log) return;
-   va_start(ap, fmt);
-   vfprintf(g_log, fmt, ap);
-   fprintf(g_log, "\n");
-   va_end(ap);
-   fflush(g_log);
-}
-static MRESULT EXPENTRY TraceFrame(HWND h, ULONG m, MPARAM p1, MPARAM p2) {
-   if (m == WM_SYSCOMMAND) TLog("FRAME WM_SYSCOMMAND cmd=%04lx", (unsigned long)SHORT1FROMMP(p1));
-   else if (m == WM_CLOSE) TLog("FRAME WM_CLOSE");
-   else if (m == WM_ACTIVATE) TLog("FRAME WM_ACTIVATE f=%04lx", (unsigned long)SHORT1FROMMP(p1));
-   else if (m == WM_MOVE) TLog("FRAME WM_MOVE");
-   return g_oldFrame(h, m, p1, p2);
-}
-static MRESULT EXPENTRY TraceTB(HWND h, ULONG m, MPARAM p1, MPARAM p2) {
-   if (m == WM_BUTTON1DOWN) TLog("TB WM_BUTTON1DOWN");
-   else if (m == WM_BUTTON1UP) TLog("TB WM_BUTTON1UP");
-   else if (m == WM_BUTTON1DBLCLK) TLog("TB WM_BUTTON1DBLCLK");
-   else if (m == WM_BUTTON2DOWN) TLog("TB WM_BUTTON2DOWN");
-   return g_oldTB(h, m, p1, p2);
-}
-static VOID APIENTRY ExitTrace(ULONG ulTerm) {
-   TLog("EXITLIST term=%lu", (unsigned long)ulTerm);
-   DosExitList(EXLST_EXIT, (PFNEXITLIST)NULL);
-}
-#endif
 
 /*-------------------------------------------------------------------------
  * main() - register the class and run the sample window non-modally.
@@ -76,10 +42,6 @@ int main(void) {
    HWND hwndFrame = NULLHANDLE;
    QMSG qmsg;
 
-#ifdef SHB_TRACE
-   DosExitList(EXLST_ADD, ExitTrace);
-#endif
-
    if (!WinShadeBtnInit()) {
       WinMessageBox(HWND_DESKTOP, HWND_DESKTOP,
                     "Could not register the shaded-button window class.",
@@ -93,30 +55,20 @@ int main(void) {
                break;
             WinDispatchMsg(hab, &qmsg);
          }
-#ifdef SHB_TRACE
-         TLog("message loop ended");
-#endif
          WinDestroyWindow(hwndFrame);
       }
    }
 
-#ifdef SHB_TRACE
-   TLog("main END");
-#endif
    WinDestroyMsgQueue(hmq);
    WinTerminate(hab);
    return 0;
 }
 
 /*-------------------------------------------------------------------------
- * MainDlg() - dialog procedure for the sample.
+ * MainDlg() - window procedure for the sample dialog.
  *-------------------------------------------------------------------------*/
 MRESULT EXPENTRY MainDlg(HWND hwndDlg, ULONG msg,
                          MPARAM mp1, MPARAM mp2) {
-#ifdef SHB_TRACE
-   TLog("DLG msg=%08lx mp1=%08lx mp2=%08lx", (unsigned long)msg,
-        (unsigned long)LONGFROMMP(mp1), (unsigned long)LONGFROMMP(mp2));
-#endif
    switch (msg) {
 
       case WM_INITDLG: {
@@ -136,26 +88,6 @@ MRESULT EXPENTRY MainDlg(HWND hwndDlg, ULONG msg,
          SelectRadio(hwndDlg, RAD_1);
 
          CenterDialog(hwndDlg);
-#ifdef SHB_TRACE
-         g_log = fopen("C:\\Home\\martin\\shbmsg.txt", "w");
-         TLog("== session start ==");
-         {
-            CHAR cn[64];
-            HWND fr = WinQueryWindow(hwndDlg, QW_PARENT);
-            HWND gp = WinQueryWindow(fr, QW_PARENT);
-            WinQueryClassName(hwndDlg, sizeof(cn), cn);
-            TLog("hwndDlg=%08lx cls=%s", (unsigned long)hwndDlg, cn);
-            WinQueryClassName(fr, sizeof(cn), cn);
-            TLog("parent=%08lx cls=%s", (unsigned long)fr, cn);
-            WinQueryClassName(gp, sizeof(cn), cn);
-            TLog("grand =%08lx cls=%s", (unsigned long)gp, cn);
-            TLog("tb(dlg)=%08lx tb(parent)=%08lx",
-                 (unsigned long)WinWindowFromID(hwndDlg, FID_TITLEBAR),
-                 (unsigned long)WinWindowFromID(fr, FID_TITLEBAR));
-            g_oldFrame = WinSubclassWindow(fr, TraceFrame);
-            g_oldTB = WinSubclassWindow(WinWindowFromID(fr, FID_TITLEBAR), TraceTB);
-         }
-#endif
          return (MRESULT)FALSE;
       }
 
@@ -216,18 +148,7 @@ MRESULT EXPENTRY MainDlg(HWND hwndDlg, ULONG msg,
          WinPostMsg(hwndDlg, WM_QUIT, MPVOID, MPVOID);
          return (MRESULT)FALSE;
    }
-#ifdef SHB_TRACE
-   {
-      MRESULT mr;
-      TLog("BEFORE defdlg msg=%08lx", (unsigned long)msg);
-      mr = WinDefDlgProc(hwndDlg, msg, mp1, mp2);
-      TLog("AFTER  defdlg msg=%08lx mr=%08lx", (unsigned long)msg,
-           (unsigned long)mr);
-      return mr;
-   }
-#else
    return WinDefDlgProc(hwndDlg, msg, mp1, mp2);
-#endif
 }
 
 /*-------------------------------------------------------------------------
