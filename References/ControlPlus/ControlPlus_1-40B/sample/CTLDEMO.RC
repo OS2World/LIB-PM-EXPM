@@ -1,0 +1,35 @@
+#include <os2.h>
+#include "ctldemo.h"
+
+ICON WND_MAIN DEMO.ICO
+ICON IC_CHILD DEMOCHLD.ICO
+
+ACCELTABLE WND_MAIN
+BEGIN
+   VK_F3, MI_EXIT, VIRTUALKEY
+END
+
+MENU WND_MAIN
+BEGIN
+   SUBMENU "Controls", M_CONTROLS
+   BEGIN
+      SUBMENU "Switches", M_SWITCHES
+      BEGIN
+         MENUITEM "Button Switch", MI_SWBUTTON, MIS_TEXT
+         MENUITEM "Throw Switch", MI_SWTHROW, MIS_TEXT
+      END
+      SUBMENU "Meters", M_METERS
+      BEGIN
+         MENUITEM "Therm Meter", MI_MTTHERM, MIS_TEXT
+         MENUITEM "Analog Meter", MI_MTANALOG, MIS_TEXT, MIA_DISABLED
+      END
+      MENUITEM "Rect", MI_RECT, MIS_TEXT
+      MENUITEM "Counter", MI_COUNTERS, MIS_TEXT
+   END
+   SUBMENU "Exit", M_EXIT
+   BEGIN
+      MENUITEM "Exit Control+ Demo\tF3", MI_EXIT, MIS_TEXT
+      MENUITEM "Resume", MI_RESUME, MIS_TEXT
+   END
+END
+

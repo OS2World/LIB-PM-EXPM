@@ -1,0 +1,7 @@
+    ToolBar.obj /align:16
+    ToolBar.EXE
+    ToolBar.MAP /NOD
+    os2.lib +
+    llibcmt.lib +
+    AniButtn.lib
+    ToolBar.DEF

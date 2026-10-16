@@ -1,0 +1,124 @@
+CELL -- split views and toolbars                     EXPM module reference
+===========================================================================
+
+The CELL module brings the "Cell Toolkit" 0.7b (by Sergey I. Yevtushenko,
+1998-2000, BSD-2 licence) into EXPM.  It adds two building blocks to a PM
+application:
+
+  * split views: a frame window that is recursively divided into two
+    panels by a draggable split bar, and
+
+  * toolbars: a bar of bitmap buttons attached to one edge of a cell
+    frame, with optional bubble help.
+
+The upstream toolkit is written in plain C (despite its .CPP name) and
+is compiled here unchanged apart from the renames listed below.  The
+original copyright notice is preserved in src/cell/cell.c.
+
+
+1. Initialisation
+----------------------------------------------------------------------------
+
+Before using any CELL routine, register the toolkit window classes once
+per process:
+
+    HAB hab = WinInitialize(0);
+    ...
+    WinCellInit(hab);
+
+The classes registered are "Uni.Cell.Client", "Uni.Tb.Client" and
+"Uni.Tb.Separator".
+
+
+2. Building a split view
+----------------------------------------------------------------------------
+
+Describe the tree with CellDef structures (see h/expm.h for the fields):
+
+    CellDef cdLeft  = { CELL_WINDOW, WC_LISTBOX, "List",
+                        LS_NOADJUSTPOS | WS_VISIBLE, ID_LIST };
+    CellDef cdRight = { CELL_WINDOW, WC_MLE, "Text",
+                        MLS_BORDER | WS_VISIBLE, ID_MLE };
+    CellDef cdMain  = { CELL_VSPLIT | CELL_SPLITBAR | CELL_SPLIT30x70,
+                        0, "Main", FCF_TITLEBAR | ..., MAIN_FRAME,
+                        &cdLeft, &cdRight, 0, MainClientProc };
+
+    HWND hwndFrame = WinCreateCell(&cdMain, HWND_DESKTOP, 0);
+
+lType combinations:
+
+  CELL_VSPLIT / CELL_HSPLIT   split direction (vertical = left/right)
+  CELL_SPLITBAR               draw a draggable split bar
+  CELL_FIXED                  panels cannot be resized
+  CELL_SIZE1 / CELL_SIZE2     panel 1 / panel 2 is fixed size (lSize)
+  CELL_SWAP                   panels swapped
+  CELL_SPLIT10x90..90x10      initial ratio in percent
+  CELL_SPLIT_REL              ratios are relative pixels, not percent
+
+The client window proc is subclassed; the previous proc is available via
+the first word of the WindowCellCtlData stored at the window's QWL_USER:
+
+    WindowCellCtlData *p = (WindowCellCtlData *)
+                            WinQueryWindowULong(hwnd, QWL_USER);
+    p->pOldProc(hwnd, msg, mp1, mp2);
+
+
+3. Finding and driving panels
+----------------------------------------------------------------------------
+
+    hwndPanel = WinCellWindowFromID(hwndFrame, ID_LIST);        /* find   */
+    hwndCell  = WinCellParentWindowFromID(hwndFrame, ID_LIST);  /* parent */
+
+    LONG pct = WinQueryCellSplit(hwndCell, ID_CELL);            /* ratio  */
+    WinSetCellSplit(hwndCell, ID_CELL, 40);                     /* set %  */
+
+    LONG type = WinQueryCellSplitType(hwndCell, ID_CELL);       /* dir    */
+    WinSetCellSplitType(hwndCell, ID_CELL, CELL_HSPLIT);        /* change */
+
+    WinShowCell(hwndFrame, ID_LIST, FALSE);                     /* hide   */
+    WinShowCell(hwndFrame, ID_LIST, TRUE);                      /* show   */
+
+
+4. Toolbars
+----------------------------------------------------------------------------
+
+Build a TbDef and attach it to a cell frame window:
+
+    ULONG  aItems[] = { IDB_OPEN, TB_SEPARATOR, IDB_EXIT, 0 };
+    TbDef  tb       = { TB_ATTACHED_TP | TB_BUBBLE, ID_TOOLBAR, aItems };
+
+    WinCreateToolbar(hwndFrame, &tb);
+
+  * aItems is NULL-terminated; TB_SEPARATOR inserts a gap.
+  * Buttons are WC_BUTTON controls with BS_BITMAP; each button resolves
+    its bitmap from the '#nnn' text built by WinGenResIDStr.
+  * With TB_BUBBLE, hover help is read from a STRINGTABLE in the
+    application resources numbered from the item IDs, and is shown in a
+    small window whose ID is TB_BUBBLEID.
+  * TB_ATTACHED_LT/TP/RT/BT pins the bar; TB_FLOATING leaves it
+    undocked and TB_VERTICAL makes the default orientation vertical.
+  * The toolbar reports WM_COMMAND (with the button ID) to the client
+    window.  Buttons can be disabled/enabled via WinEnableWindow on the
+    button window found with WinCellWindowFromID.
+
+WinGenResIDStr(buf, id) formats '#nnn' for a resource ID; it is used by
+bitmap buttons and list items alike.
+
+
+5. Naming mapping (upstream Cell Toolkit 0.7b -> EXPM)
+----------------------------------------------------------------------------
+
+    ToolkitInit            -> WinCellInit
+    CreateCell             -> WinCreateCell
+    CellWindowFromID       -> WinCellWindowFromID
+    CellParentWindowFromID -> WinCellParentWindowFromID
+    CreateToolbar          -> WinCreateToolbar
+    GenResIDStr            -> WinGenResIDStr
+    GetSplit               -> WinQueryCellSplit
+    SetSplit               -> WinSetCellSplit
+    GetSplitType           -> WinQueryCellSplitType
+    SetSplitType           -> WinSetCellSplitType
+    ShowCell               -> WinShowCell
+
+Constants (CELL_*, TB_*, CellDef, TbDef, WindowCellCtlData) keep their
+upstream names and meanings; see h/expm.h.

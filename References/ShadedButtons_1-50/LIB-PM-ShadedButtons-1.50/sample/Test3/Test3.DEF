@@ -1,0 +1,8 @@
+;--------------------------------------
+; Test3.DEF module definition file
+;--------------------------------------
+
+NAME          TEST3  WINDOWAPI
+
+DESCRIPTION   'Shaded Button Class Sample 3'
+PROTMODE

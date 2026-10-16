@@ -1,0 +1,6 @@
+/* EXPM - Extended Presentation Manager library
+ *
+ * sample/colorwheel/cwsmp.rc -- ColorWheel sample resources.
+ */
+
+ICON 1 CWSMP.ICO

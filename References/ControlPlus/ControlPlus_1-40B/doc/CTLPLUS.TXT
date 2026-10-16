@@ -1,0 +1,1827 @@
+
+
+
+
+
+
+
+
+
+
+
+
+                           CONTROLS+ - NEW PM CONTROLS
+
+
+
+
+
+                                 Document Number
+
+
+                                  Mar 19, 1990
+
+
+                               Larry Salomon, Jr.
+
+
+                               (LARRYS at YKTVMT)
+
+
+                             IBM DAP Member Use Only
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  ii  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+  WHAT IS CONTROLS+ ?
+  ___________________
+
+  "I just WISH that Presentation Manager had a thingumybob as one of its
+                                               ___________
+  standard controls!"  Have you ever said this?  If so, then maybe this package
+  is just what the doctor ordered.
+
+  Controls+ is a collection of controls which supplement the ones already pro-
+  vided by OS/2 Presentation Manager.  These controls can be manipulated just
+  like any other control with regards to sizing, positioning, and other such
+  operations, but each also has a unique set of functions specific to that
+  control.
+
+
+
+  ENABLING YOUR APP TO USE CONTROLS+
+  __________________________________
+
+  Four things must be done to your OS/2 Presentation Manager application to be
+  able to use Controls+:
+
+  1.  CTLPLUS.H must be included in your source file.
+
+  2.  CTLINITIALIZE() must be called sometime before creating the first Con-
+      trols+ child window, preferably immediately after the WINCREATEMSGQUEUE()
+      call is made.
+
+  3.  CTLTERMINATE() must be called sometime after your application windows are
+      destroyed, preferably immediately before the WINDESTROYMSGQUEUE() call is
+      made.
+
+  4.  You must link your application with CTLPLUS.LIB
+
+  Once these things are done, you can start creating Controls+ child windows.
+  The Ctl* functions and their descriptions can be found in "Controls+ Func-
+  tions" on page 2.  The Controls+ window classes and their descriptions can be
+  found in "Controls+ Window Classes" on page 3.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                              1
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+  CONTROLS+ FUNCTIONS
+  ___________________
+
+  The following is a list of the Ctl* functions with the arguments each func-
+  tion takes.
+
+  ______________________________________________________________________________
+  (USHORT)CTLINITIALIZE(HAB hab)
+
+  This function registers all of the Controls+ window classes and does any
+  other initialization needed.  It returns TRUE upon successful initialization
+  or FALSE otherwise.
+
+  ______________________________________________________________________________
+  (USHORT)CTLTERMINATE(VOID)
+
+  This function does any cleanup needed.  It returns TRUE upon successful
+  initialization or FALSE otherwise.
+
+  ______________________________________________________________________________
+  (MRESULT)CTLVERSION(VOID)
+
+  This function returns the version of Controls+ that you are using.
+
+  Version -
+
+      Major (USHORT)
+
+      The major version number
+
+      Minor (USHORT)
+
+      The minor version number
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  2  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+  CONTROLS+ WINDOW CLASSES
+  ________________________
+
+  As of the writing of this document, the following window classes are defined:
+
+  CLASS                         CONTROL TYPE
+  WC_METER                      Various types of meters.
+  WC_SWITCH                     Various types of binary switches.
+  WC_RECT                       A sizeable rectangle.
+  WC_COUNTER                    A single digit counter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                              3
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+  GENERAL CONTROLS+ MESSAGES
+  __________________________
+
+  In addition to the control-specific messages that exist, there are certain
+  messages that every Controls+ control recognizes.
+
+
+
+  CTLM_QUERYSTYLE
+  _______________
+
+      MP1 - Param1 (MPARAM)
+
+      Reserved
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS -
+
+          Style (ULONG)
+
+          Control style
+
+
+  Remarks
+
+  This returns the current style of the control.
+
+
+
+  CTLM_SETSTYLE
+  _____________
+
+      MP1 -
+
+          NewStyle (ULONG)
+
+          New style of the control
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+  This sets the style of the control to the style specified.  Note that the
+  control appearance CANNOT be modified using the message.
+
+
+
+
+
+  4  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+  METER CREATION
+  ______________
+
+  When creating a meter, you MUST provide a creation-data structure, filled in
+  as appropriate.
+
+
+    typedef struct {
+       ULONG mtStyle;
+       ULONG mtFgColor;
+    } MTCREATE, *PMTCREATE;
+
+  The MTSTYLE field is a combination of meter styles, and must contain one
+  meter type style.  See "Meter Styles" for more information.
+
+  The MTFGCOLOR field is the foreground color used to paint the meter with.  It
+  may be any of the CLR_* constants defined in PMGPI.H.  If 0, CLR_BLUE is the
+  default.
+
+
+
+  METER STYLES
+  ____________
+
+  These are specified in the MTCREATE structure described in "Meter Creation."
+
+  METER STYLE                   MEANING
+  MTS_THERM(1)                  The meter assumes the appearance of a
+                                thermometer. The foreground color is used to
+                                paint the interior of the therm.
+  MTS_NOTIFYOWNER               The meter notifies the owner of significant
+                                events via WM_CONTROL message.  See "Meter
+                                Notification Codes" on page 6 for the various
+                                notification codes and their meanings.
+  MTS_NOINPUT                   The meter value cannot be changed using the
+                                mouse.
+  MTS_HALFTICK                  Tick marks are drawn at the 0, 1/2, and 1 marks
+                                along the left side of the meter.  This is only
+                                valid for "therm"-meters.
+  MTS_QUARTERTICK               Tick marks are drawn at the 0, 1/4, 1/2, 3/4
+                                and 1 marks along the left side of the meter.
+                                This is only valid for "therm"-meters.
+
+
+
+
+
+
+
+
+
+
+  ---------------
+
+  (1) This is one of the meter type styles.  One of these styles MUST be speci-
+      fied.
+
+
+                                                                              5
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+  METER NOTIFICATION CODES
+  ________________________
+
+  These are the various notify codes sent as part of the WM_CONTROL message to
+  the owner of the meter when it has the MTS_NOTIFYOWNER style.
+
+  NOTIFY CODE                   MEANING
+  MTN_CHGRANGE                  This notification is sent whenever the range of
+                                the meter changes.  The new range is encoded in
+                                MP2.
+
+                                    Lower (USHORT) -
+
+                                    The lower bound of the new range
+
+                                    Upper (USHORT) -
+
+                                    The upper bound of the new range (exclu-
+                                    sive)
+
+  MTN_CHGVALUE                  This notification is sent whenever the value of
+                                the meter changes.  The new value is encoded in
+                                MP2.
+
+                                    Value (USHORT) -
+
+                                    The new value of the meter
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  6  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+  METER MESSAGES
+  ______________
+
+
+  MTM_QUERYRANGE
+  ______________
+
+      MP1 - Param1 (MPARAM)
+
+      Reserved
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Range (BOOL)
+
+          Lower (USHORT) -
+
+          The current lower bound
+
+          Upper (USHORT) -
+
+          The current upper bound (exclusive)
+
+
+  Remarks
+
+  This returns the current range of the meter.
+
+
+
+  MTM_QUERYVALUE
+  ______________
+
+      MP1 - Param1 (MPARAM)
+
+      Reserved
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS -
+
+          Value (USHORT) -
+
+          The current value of the meter
+
+
+  Remarks
+
+  This returns the current value of the meter.
+
+
+
+
+
+
+                                                                              7
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+  MTM_SETRANGE
+  ____________
+
+      MP1 -
+
+          Lower (USHORT) -
+
+          Lower bound of the new range
+
+          Upper (USHORT) -
+
+          Upper bound of the new range (exclusive)
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (BOOL)
+
+      Reserved
+
+
+  Remarks
+
+  This sets the range of the meter control to the new range specified in MP1.
+  If UPPER<LOWER then UPPER is set equal to LOWER+1.  If the current value is
+  out of the new range, it is adjusted to be inside the boundary that it
+  exceeds.
+
+  If the meter has a style of MTS_NOTIFYOWNER, this also causes a WM_CONTROL to
+  be sent to the owner with a notify code of MTN_CHGRANGE.
+
+
+
+  MTM_SETVALUE
+  ____________
+
+      MP1 -
+
+          Value (USHORT) -
+
+          The new value of the meter
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (BOOL)
+
+      Reserved
+
+
+
+
+
+
+
+
+  8  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+  Remarks
+
+  This sets the value of the meter to the new value specified in MP1.  If the
+  new value is out of the current range of the meter, it is adjusted to be
+  inside the boundary that it exceeds.
+
+  If the meter has a style of MTS_NOTIFYOWNER, this also causes a WM_CONTROL to
+  be sent to the owner with a notify code of MTN_CHGVALUE.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                              9
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+  SWITCH CREATION
+  _______________
+
+  When creating a switch, you MUST provide a creation-data structure, filled in
+  as appropriate.
+
+
+    typedef struct {
+       ULONG swStyle;
+       ULONG swFgColor;
+       CHAR swUpText[SW_MAXTEXT];
+       CHAR swDownText[SW_MAXTEXT];
+    } SWCREATE, *PSWCREATE;
+
+  The SWSTYLE field is a combination of switch styles, and must contain one
+  switch type style.  See "Switch Styles" for more information.
+
+  The SWFGCOLOR field is the foreground color used to paint the switch with.
+  It may be any of the CLR_* constants defined in PMGPI.H.  If 0, CLR_BLUE is
+  the default.
+
+  The SWUPTEXT field is the text used for the upper half of the switch (the
+  "on" part).  It can be NULL for no text.
+
+  The SWDOWNTEXT field is the text used for the lower half of the switch (the
+  "off" part).  It can be NULL for no text.
+
+
+
+  SWITCH STYLES
+  _____________
+
+  These are specified in the SWCREATE structure described in "Switch Creation."
+
+  SWITCH STYLE                  MEANING
+  SWS_BUTTON(2)                 The switch assumes the appearance of a button
+                                switch.  The foreground color is used when
+                                painting the button that is currently pressed.
+  SWS_THROW(2)                  The switch assumes the appearance of a throw
+                                switch.  The foreground color is taken as the
+                                color of the throw switch background.
+  SWS_NOTIFYOWNER               The switch notifies the owner of significant
+                                events via WM_CONTROL message.  See "Switch
+                                Notification Codes" on page 11  for the various
+                                notification codes and their meanings.
+
+
+
+
+
+
+
+  ---------------
+
+  (2) This is one of the switch type styles.  One of these styles MUST be spec-
+      ified.
+
+
+  10  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+  SWITCH NOTIFICATION CODES
+  _________________________
+
+  These are the various notify codes sent as part of the WM_CONTROL message to
+  the owner of the switch when it has the SWS_NOTIFYOWNER style.
+
+  NOTIFY CODE                   MEANING
+  SWN_CHGDOWNTEXT               This notification is sent whenever the text for
+                                the lower half of the switch changes.
+
+                                    NewDownText (PCHAR)
+
+                                    The new text for the lower half
+
+  SWN_CHGUPTEXT                 This notification is sent whenever the text for
+                                the upper half of the switch changes.
+
+                                    NewUpText (PCHAR)
+
+                                    The new text for the upper half
+
+  SWN_CHGVALUE                  This notification is sent whenever the value of
+                                the switch changes.  The new value is encoded
+                                in MP2.
+
+                                    Value (BOOL) -
+
+                                    The new value of the switch
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                             11
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+  SWITCH MESSAGES
+  _______________
+
+
+  SWM_QUERYDOWNTEXT
+  _________________
+
+      MP1 -
+
+          BufferLen (USHORT)
+
+          Length of the text buffer
+
+      MP2 -
+
+          Buffer (PCHAR)
+
+          Pointer to the text buffer
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+  This copies the current text of the lower half into the buffer specified.
+
+
+
+  SWM_QUERYUPTEXT
+  _______________
+
+      MP1 -
+
+          BufferLen (USHORT)
+
+          Length of the text buffer
+
+      MP2 -
+
+          Buffer (PCHAR)
+
+          Pointer to the text buffer
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+  This copies the current text of the upper half into the buffer specified.
+
+
+
+
+
+
+  12  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+  SWM_QUERYVALUE
+  ______________
+
+      MP1 - Param1 (MPARAM)
+
+      Reserved
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS -
+
+          Value (BOOL) -
+
+          The current value of the switch
+
+
+  Remarks
+
+  This returns the current value of the switch.
+
+
+
+  SWM_SETDOWNTEXT
+  _______________
+
+      MP1 -
+
+          NewDownText (PCHAR)
+
+          The new text for the lower half
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+  This sets the current text displayed in the lower half of the switch.
+
+  If the switch has a style of SWS_NOTIFYOWNER, this also causes a WM_CONTROL
+  to be sent to the owner with a notify code of SWN_CHGDOWNTEXT.
+
+
+
+
+
+
+
+
+
+
+                                                                             13
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+  SWM_SETUPTEXT
+  _____________
+
+      MP1 -
+
+          NewUpText (PCHAR)
+
+          The new text for the upper half
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+  This sets the current text displayed in the upper half of the switch.
+
+  If the switch has a style of SWS_NOTIFYOWNER, this also causes a WM_CONTROL
+  to be sent to the owner with a notify code of SWN_CHGUPTEXT.
+
+
+
+  SWM_SETVALUE
+  ____________
+
+      MP1 -
+
+          NewValue (BOOL)
+
+          The new value of the switch
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+  This sets the current value of the switch.
+
+  If the switch has a style of SWS_NOTIFYOWNER, this also causes a WM_CONTROL
+  to be sent to the owner with a notify code of SWN_CHGVALUE.
+
+
+
+
+
+
+
+  14  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+  RECT CREATION
+  _____________
+
+  When creating a rect, you MUST provide a creation-data structure, filled in
+  as appropriate.
+
+
+    typedef struct {
+       ULONG rcStyle;
+       ULONG rcFgColor;
+       SIZEL rcMaxSize;
+       SIZEL rcMinSize;
+    } RCCREATE, *PRCCREATE;
+
+  The RCSTYLE field is a combination of switch styles.  See "Rect Styles" for
+  more information.
+
+  The RCFGCOLOR field is the foreground color used to paint the rect with.  It
+  may be any of the CLR_* constants defined in PMGPI.H.  If 0, CLR_BLUE is the
+  default.
+
+  The RCMAXSIZE field is the maximum size that the rect should be allowed to
+  attain.  This is only valid if RCS_MAXSIZE is specified in the rcStyle field.
+
+  The RCMINSIZE field is the minimum size that the rect should be allowed to
+  attain.  This is only valid if RCS_MINSIZE is specified in the rcStyle field.
+
+
+
+  RECT STYLES
+  ___________
+
+  These are specified in the RCCREATE structure described in "Rect Creation."
+
+  RECT STYLE                    MEANING
+  RCS_VERTSIZE                  The rect is sizeable vertically.
+  RCS_HORZSIZE                  The rect is sizeable horizontally.
+  RCS_VERTHORZSIZE              The rect is sizeable both vertically and hor-
+                                izontally.
+  RCS_NOMOVE                    The rect is not dragable.
+  RCS_MINSIZE                   The minimum size is specified in the RCCREATE
+                                structure.  See "Rect Creation" for more infor-
+                                mation.
+  RCS_MAXSIZE                   The maximum size is specified in the RCCREATE
+                                structure.  See "Rect Creation" for more infor-
+                                mation.
+  RCS_KSQUARE                   The knobs on the rect are square.  This is the
+                                default if a knob style is not specified.
+  RCS_KCIRCLE                   The knobs on the rect are circular.
+  RCS_NOTIFYOWNER               The rect notifies the owner of significant
+                                events via WM_CONTROL message.  See "Rect
+                                Notification Codes" on page 16 for the various
+                                notification codes and their meanings.
+
+
+
+
+
+                                                                             15
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+  RECT NOTIFICATION CODES
+  _______________________
+
+  These are the various notify codes sent as part of the WM_CONTROL message to
+  the owner of the rect when it has the RCS_NOTIFYOWNER style.
+
+  NOTIFY CODE                   MEANING
+  RCN_SIZE                      This notification is sent when sizing of the
+                                rect begins and ends.
+
+                                    Sizing (BOOL) -
+
+                                    TRUE      Sizing is beginning
+                                    FALSE     Sizing is ending
+
+  RCN_DRAG                      This notification is sent when dragging of the
+                                rect begins and ends.
+
+                                    Dragging (BOOL) -
+
+                                    TRUE      Dragging is beginning
+                                    FALSE     Dragging is ending
+
+  RCN_PAINT                     This notification is sent when the rect is fin-
+                                ished painting itself, so that the owner may do
+                                any painting of its own.
+
+                                    Rect (PRECTL)
+
+                                    Points to a RECTL structure which is the
+                                    size of the rect interior.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  16  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+  RECT MESSAGES
+  _____________
+
+
+  RCM_QUERYHANDLE
+  _______________
+
+      MP1 - Param1 (MPARAM)
+
+      Reserved
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS -
+
+          Handle (LONG)
+
+          Handle of the rect
+
+
+  Remarks
+
+  Note that the rect does not use the handle value for any of its processing.
+  It is the owner window's responsibility to translate this value into some-
+  thing meaningful.
+
+
+
+  RCM_QUERYMAXSIZE
+  ________________
+
+      MP1 -
+
+          MaxRect (RECTL)
+
+          This points to a RECTL structure which is filled in by the rect with
+          the current maximum size rectangle.
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+
+
+
+
+
+
+
+
+                                                                             17
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+  RCM_QUERYMINSIZE
+  ________________
+
+      MP1 -
+
+          MinRect (RECTL)
+
+          This points to a RECTL structure which is filled in by the rect with
+          the current minimum size rectangle.
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+
+  RCM_SETHANDLE
+  _____________
+
+      MP1 -
+
+          Handle (LONG)
+
+          The new handle of the rect.
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+  Note that the rect does not use the handle value for any of its processing.
+  It is the owner window's responsibility to translate this value into some-
+  thing meaningful.
+
+
+
+
+
+
+
+
+
+
+
+
+
+  18  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+  RCM_SETMAXSIZE
+  ______________
+
+      MP1 -
+
+          MaxRect (PRECTL)
+
+          Points to a RECTL structure which is used to bound the maximum size
+          of the rect.
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+  This message is ignored if the RCS_MAXSIZE style is not set.
+
+
+
+  RCM_SETMINSIZE
+  ______________
+
+      MP1 -
+
+          MinRect (PRECTL)
+
+          Points to a RECTL structure which is used to bound the minimum size
+          of the rect.
+
+      MP2 - Param2 (MPARAM)
+
+      Reserved
+
+      RETURNS - Result (MRESULT)
+
+      Reserved
+
+
+  Remarks
+
+  This message is ignored if the RCS_MINSIZE style is not set.
+
+
+
+
+
+
+
+
+
+
+
+                                                                             19
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+| COUNTER CREATION
+  ________________
+
+| When creating a counter, you MUST provide a creation-data structure, filled
+| in as appropriate.
+
+
+|   typedef struct {
+|      ULONG cntStyle;
+|      ULONG cntFgColor;
+|      ULONG cntBgColor;
+|      HWND cntNext;
+|   } CNTCREATE, *PCNTCREATE;
+
+| The CNTSTYLE field is a combination of counter styles.  See "Counter Styles"
+| for more information.
+
+| The CNTFGCOLOR is the color used to paint the segments with. It may be any of
+| the CLR_* constants defined in PMGPI.H. If 0, CLR_RED is the default.
+
+| The CNTBGCOLOR is the color used to paint the background with. It may be any
+| of the CLR_* constants defined in PMGPI.H. If 0, CLR_BLACK is the default.
+
+| The CNTNEXT field is the window handle of the next most significant digit,
+| i.e. in 012345, 4 is the next most significant digit relative to 5.  If not
+| NULL, the digit specified by this field is incremented/decremented whenever
+| the digit overflows/underflows.
+
+
+
+| COUNTER STYLES
+  ______________
+
+| These are specified in the CNTCREATE structure described in "Counter Cre-
+| ation."
+
+| COUNTER STYLE                 MEANING
+| CTS_BIN                       The counter is a binary counter
+| CTS_DEC                       The counter is a decimal counter
+| CTS_HEX                       The counter is a hexadecimal counter
+| CTS_NOROLL                    The counter does NOT notify the next most sig-
+|                               nificant digit when it overflows/underflows.
+| CTS_NOSCROLL                  The counter value is not changable by the user.
+| CTS_NOTIFYOWNER               The counter notifies the owner of significant
+|                               events via WM_CONTROL message. See "Counter
+|                               Notification Codes" on page 21 for the various
+|                               notification codes and their meanings.
+
+
+
+
+
+
+
+
+
+
+
+  20  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+| COUNTER NOTIFICATION CODES
+  __________________________
+
+| These are the various notify codes sent as part of the WM_CONTROL message to
+| the owner of the counter when it has the CTS_NOTIFYOWNER style.
+
+| NOTIFY CODE                   MEANING
+| CTN_CHGVALUE                  This notification is sent when the value of the
+|                               counter changes.
+
+|                                   NewValue (USHORT) -
+
+|                                   The new value of the counter
+
+|                                   MaxValue (USHORT) -
+
+|                                   The maximum valid value for the counter
+
+| CNT_OVERFLOW                  This notification is sent when the counter
+|                               overflows AND either the next most significant
+|                               digit field (set in the CNTCREATE structure or
+|                               by the CTM_SETNEXT message) is NULL or the
+|                               counter has the style CTS_NOROLL.
+
+|                                   MaxValue (USHORT) -
+
+|                                   The maximum valid value for the counter
+
+| CNT_UNDERFLOW                 This notification is sent when the counter
+|                               underflows AND either the next most significant
+|                               digit field (set in the CNTCREATE structure or
+|                               by the CTM_SETNEXT message) is NULL or the
+|                               counter has the style CTS_NOROLL.
+
+|                                   MaxValue (USHORT) -
+
+|                                   The maximum valid value for the counter
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                             21
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+| COUNTER MESSAGES
+  ________________
+
+
+| CTM_SETVALUE
+  ____________
+
+|     MP1 -
+
+|         NewValue (USHORT)
+
+|         The new value of the counter
+
+|     MP2 - Param2 (MPARAM)
+
+|     Reserved
+
+|     RETURNS - Result (MRESULT)
+
+|     Reserved
+
+
+| Remarks
+
+| If the new value is not within the valid range of values, this message is
+| ignored.
+
+
+
+| CTM_QUERYVALUE
+  ______________
+
+|     MP1 - Param1 (MPARAM)
+
+|     Reserved
+
+|     MP2 - Param2 (MPARAM)
+
+|     Reserved
+
+|     RETURNS -
+
+|         Value (USHORT)
+
+|         The current value of the counter
+
+
+| Remarks
+
+
+
+
+
+
+
+
+
+
+
+  22  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+| CTM_SETNEXT
+  ___________
+
+|     MP1 -
+
+|         NextDigit (HWND)
+
+|         The next most significant digit
+
+|     MP2 - Param2 (MPARAM)
+
+|     Reserved
+
+|     RETURNS - Result (MRESULT)
+
+|     Reserved
+
+
+| Remarks
+
+
+| CTM_QUERYNEXT
+  _____________
+
+|     MP1 - Param1 (MPARAM)
+
+|     Reserved
+
+|     MP2 - Param2 (MPARAM)
+
+|     Reserved
+
+|     RETURNS -
+
+|         NextDigit
+
+|         The next most significant digit
+
+
+| Remarks
+
+
+| CTM_INC
+  _______
+
+|     MP1 - Param1 (MPARAM)
+
+|     Reserved
+
+|     MP2 - Param2 (MPARAM)
+
+|     Reserved
+
+|     RETURNS - Result (MRESULT)
+
+|     Reserved
+
+
+
+                                                                             23
+
+
+
+
+
+
+                                                        IBM DAP MEMBER USE ONLY
+
+
+| Remarks
+
+| This increments the counter.  On overflow, the counter takes the following
+| action according to the value of the next most significant digit window
+| handle:
+
+| NEXT!=NULL
+|                               Increments the next digit if the counter does
+|                               not have the style CTS_NOROLL.  If CTS_NOROLL
+|                               and CTS_NOTIFYOWNER is set, it sends a
+|                               WM_CONTROL with a notification code of
+|                               CTN_OVERFLOW to its owner.
+| NEXT=NULL
+|                               If CTS_NOTIFYOWNER is set, it sends a
+|                               WM_CONTROL with a notification code of
+|                               CTN_OVERFLOW to its owner.
+
+
+| CTM_INCNOROLL
+  _____________
+
+|     MP1 - Param1 (MPARAM)
+
+|     Reserved
+
+|     MP2 - Param2 (MPARAM)
+
+|     Reserved
+
+|     RETURNS - Result (MRESULT)
+
+|     Reserved
+
+
+| Remarks
+
+| This increments the counter.  On overflow, if it has the style
+| CTS_NOTIFYOWNER, it sends a WM_CONTROL with a notification code of
+| CTN_OVERFLOW to its owner.
+
+
+
+| CTM_DEC
+  _______
+
+|     MP1 - Param1 (MPARAM)
+
+|     Reserved
+
+|     MP2 - Param2 (MPARAM)
+
+|     Reserved
+
+|     RETURNS - Result (MRESULT)
+
+|     Reserved
+
+
+  24  Controls+
+
+
+
+
+
+
+  IBM DAP MEMBER USE ONLY
+
+
+| Remarks
+
+| This decrements the counter.  On underflow, the counter takes the following
+| action according to the value of the next most significant digit window
+| handle:
+
+| NEXT!=NULL
+|                               Increments the next digit if the counter does
+|                               not have the style CTS_NOROLL.  If CTS_NOROLL
+|                               and CTS_NOTIFYOWNER is set, it sends a
+|                               WM_CONTROL with a notification code of
+|                               CTN_UNDERFLOW to its owner.
+| NEXT=NULL
+|                               If CTS_NOTIFYOWNER is set, it sends a
+|                               WM_CONTROL with a notification code of
+|                               CTN_UNDERFLOW to its owner.
+
+
+| CTM_DECNOROLL
+  _____________
+
+|     MP1 - Param1 (MPARAM)
+
+|     Reserved
+
+|     MP2 - Param2 (MPARAM)
+
+|     Reserved
+
+|     RETURNS - Result (MRESULT)
+
+|     Reserved
+
+
+| Remarks
+
+| This decrements the counter.  On underflow, if it has the style
+| CTS_NOTIFYOWNER, it sends a WM_CONTROL with a notification code of
+| CTN_UNDERFLOW to its owner.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                             25

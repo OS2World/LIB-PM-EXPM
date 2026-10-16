@@ -1,0 +1,8 @@
+ AniButtn contains the LIB, DLL, and H needed to add Animated two-state
+ graphical push-buttons in a program, pluse a complete example of how to
+ use it. AniButtn provides programmers with an easy, straightforward way to
+ create and use two-state graphical push-buttons.
+
+ This example uses AniButtn to create a ToolBar.
+
+ (This is the OS/2 2.0 Version)

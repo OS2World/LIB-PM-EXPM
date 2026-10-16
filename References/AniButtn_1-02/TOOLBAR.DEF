@@ -1,0 +1,8 @@
+NAME            TOOLBAR WINDOWAPI
+STUB            'OS2STUB.EXE' 
+CODE            PRELOAD MOVEABLE 
+DATA            LOADONCALL MOVEABLE MULTIPLE READWRITE
+HEAPSIZE        16192
+STACKSIZE       16192
+EXPORTS         WNDPROC                @1
+                TOOLBAR                @2

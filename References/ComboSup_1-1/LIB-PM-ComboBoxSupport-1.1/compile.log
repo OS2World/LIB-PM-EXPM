@@ -1,0 +1,48 @@
+Open Watcom Make Version 2.0.1
+Portions Copyright (c) 1988-2002 Sybase, Inc. All Rights Reserved.
+Source code is available under the Sybase Open Watcom Public License.
+See http://www.openwatcom.org/ for details.
+	mkdir obj 2>NUL
+	mkdir dll 2>NUL
+	wcc386 -bt=os2 -zp1 -w3 -bd -d__OS2__ -i=h -fo=obj\combosup.obj src\combosup.c
+Open Watcom C32 Optimizing Compiler Version 2.0.1
+Portions Copyright (c) 1984-2002 Sybase, Inc. All Rights Reserved.
+Source code is available under the Sybase Open Watcom Public License.
+See http://www.openwatcom.org/ for details.
+src\combosup.c: 94 lines, included 11172, 0 warnings, 0 errors
+Code size: 330
+	wlink         system os2v2 dll initinstance terminstance         name dll\combosup.dll         file obj\combosup.obj         export InitComboBox         export InitComboBoxFromRcStrings         option implib=lib\combosup.lib         option map=dll\combosup.map
+** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
+Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
+Source code is available under the Sybase Open Watcom Public License.
+See http://www.openwatcom.org/ for details.
+loading object files
+searching libraries
+creating map file
+creating an OS/2 32-bit dynamic link library
+	wcc386 -bt=os2 -zp1 -w3 -d__OS2__ -i=h -i=sample -fo=obj\combosmp.obj sample\combosmp.c
+Open Watcom C32 Optimizing Compiler Version 2.0.1
+Portions Copyright (c) 1984-2002 Sybase, Inc. All Rights Reserved.
+Source code is available under the Sybase Open Watcom Public License.
+See http://www.openwatcom.org/ for details.
+sample\combosmp.c: 147 lines, included 10342, 0 warnings, 0 errors
+Code size: 567
+	wrc -r -bt=os2 -i=sample sample\combosmp.rc -fo=obj\combosmp.res
+Open Watcom Windows and OS/2 Resource Compiler Version 2.0.1
+Portions Copyright (c) 1993-2002 Sybase, Inc. All Rights Reserved.
+Source code is available under the Sybase Open Watcom Public License.
+See http://www.openwatcom.org/ for details.
+	wlink         system os2v2_pm         name sample\combosmp.exe         file obj\combosmp.obj         option stack=8192         option heap=8192         library lib\combosup.lib         option map=sample\combosmp.map
+** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
+Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
+Source code is available under the Sybase Open Watcom Public License.
+See http://www.openwatcom.org/ for details.
+loading object files
+searching libraries
+creating map file
+creating an OS/2 32-bit Presentation Manager executable
+	wrc obj\combosmp.res sample\combosmp.exe
+Open Watcom Windows and OS/2 Resource Compiler Version 2.0.1
+Portions Copyright (c) 1993-2002 Sybase, Inc. All Rights Reserved.
+Source code is available under the Sybase Open Watcom Public License.
+See http://www.openwatcom.org/ for details.

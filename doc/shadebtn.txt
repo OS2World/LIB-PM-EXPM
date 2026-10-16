@@ -1,0 +1,148 @@
+EXPM - Shaded Buttons module
+============================
+
+Shaded Buttons provides a drop-in replacement for the standard OS/2 push
+button.  The window class WC_shBUTTON paints its face as a two-tone
+gradient (lighter at the top, darker at the bottom, or left-to-right for
+vertical buttons) instead of the usual flat grey, and draws rounded or
+open sides.  The same class also draws check boxes, radio buttons and
+three-state buttons, and can display an icon, mini-icon or bitmap instead
+of text.
+
+Merged from the LIB-PM-ShadedButtons 1.50 library (Shaded Buttons 1.50);
+original code by Hubert Chan (1997-1998), released as freeware.  The
+window class name, style bits, message and parameter codes keep their
+upstream names, so existing Shaded Button code compiles unchanged.  Only
+the two entry points were renamed to the PM style:
+
+    shBtnInit           ->  WinShadeBtnInit
+    shBtnQueryVersion   ->  WinShadeBtnQueryVersion
+
+The upstream PMCX wrapper (ShBtn.dll) is not part of EXPM.
+
+Public API
+----------
+
+    BOOL EXPENTRY WinShadeBtnInit( VOID );
+
+        Registers the window class WC_shBUTTON.  Call it once, after
+        WinCreateMsgQueue and before creating any shaded button.
+        Returns TRUE on success.  The ten check / radio / three-state
+        indicator graphics are loaded from EXPM.DLL on the first call.
+
+    ULONG EXPENTRY WinShadeBtnQueryVersion( VOID );
+
+        Returns the library version times 100 (1.50 reports 150).
+
+    WINDOW CLASS:  WC_shBUTTON   ("shButton")
+
+        Used exactly like WC_BUTTON.  The low three bits of the style
+        select the button type (shBS_PUSHBUTTON, shBS_CHECKBOX, ...),
+        and the remaining bits select the options below.
+
+Message
+-------
+
+    shBM_SETCOLOR   (WM_USER + 0)
+
+        mp1 = RGB colour value (0x00BBGGRR)
+        mp2 = shBSC_BUTTONFACE (0) to set the face colour, or
+              shBSC_BACKGROUND (1) to set the window background colour.
+        Returns 1.  The button is redrawn.
+
+Presentation parameters
+-----------------------
+
+    shBPP_BUTTONCOLOR       (= PP_BACKGROUNDCOLOR)      face colour
+    shBPP_BUTTONCOLORINDEX  (= PP_BACKGROUNDCOLORINDEX)
+    shBPP_BUTTONBGCOLOR     (= PP_USER + 0)             background colour
+    shBPP_BUTTONBGCOLORINDEX(= PP_USER + 1)
+
+        The face colour defaults to the system button colour
+        (SYSCLR_BUTTONMIDDLE) and the background to 0x00CCCCCC.  A change
+        to PP_FONTNAMESIZE re-measures the label and redraws.
+
+Styles
+------
+
+    Type (low 3 bits):
+      shBS_PUSHBUTTON, shBS_CHECKBOX, shBS_AUTOCHECKBOX,
+      shBS_RADIOBUTTON, shBS_AUTORADIOBUTTON, shBS_3STATE,
+      shBS_AUTO3STATE, shBS_USERBUTTON
+
+    Content:
+      shBS_TEXT (0x0010), shBS_MINIICON (0x0020), shBS_BITMAP (0x0040),
+      shBS_ICON (0x0080)
+
+    Notification:
+      shBS_HELP (0x0100) sends WM_HELP, shBS_SYSCOMMAND (0x0200) sends
+      WM_SYSCOMMAND.  Otherwise a pushed button sends WM_COMMAND /
+      BN_CLICKED to its owner, and the check / radio / three-state types
+      send WM_CONTROL / BN_CLICKED.
+
+    Appearance (horizontal buttons):
+      shBS_NOLEFTLINE (0x0008), shBS_LEFTROUND (0x0800),
+      shBS_NORIGHTLINE (0x1000), shBS_RIGHTROUND (0x2000)
+
+    Appearance (vertical buttons - shBS_VERTICAL):
+      shBS_NOTOPLINE, shBS_TOPROUND, shBS_NOBOTTOMLINE, shBS_BOTTOMROUND
+      (same bit values as the horizontal names)
+
+    Other:
+      shBS_VERTICAL (0x4000)  left-to-right gradient
+      shBS_NOPUSH   (0x8000)  non-pushable (for status bars)
+      shBS_NOBORDER (0x1008)  no edge lines
+
+    Icon buttons take their pointer resource number from the control
+    text in the form "#up[,disabled[,active]]"; the pointer is loaded
+    from the application executable (WinLoadPointer with a NULL module).
+
+How it works
+------------
+
+The class is a straight port of the original C++ source to conservative
+C.  It keeps a private GBTN structure per window (held in a class data
+word) with the label, colours, loaded pointers and drawing state, and it
+implements the standard button messages itself: WM_PAINT draws the
+gradient, border, indicator, text/icon and focus box; BM_SETCHECK /
+BM_QUERYCHECK, WM_BUTTON1DOWN / UP, WM_CHAR (space / enter), WM_ENABLE
+and WM_SETFOCUS drive the button state.
+
+The ten check / radio / three-state indicator graphics are OS/2 pointer
+resources that were extracted from the original ShadeBtn.dll and merged
+into EXPM.DLL (src/shadebtn/*.ptr, listed in src/shadebtn/shadebtn.rc via
+the combined script src/expm.rc).  WinShadeBtnInit finds EXPM.DLL with
+DosQueryModuleHandle and loads them with WinLoadPointer.
+
+The module keeps its own private CLR colour union rather than using the
+ColorWheel CLR, so the two modules do not interfere.
+
+Sample
+------
+
+    sample\shadebtn\shbsmp.exe (source in sample\shadebtn\shbsmp.c).
+
+A dialog showing coloured and rounded push buttons (one recoloured at
+run time with shBM_SETCOLOR), icon / mini-icon / disabled-icon buttons,
+vertical Top / Mid / Low buttons, an auto check box, a three-state box,
+a disabled check box and three radio buttons.  A non-pushable shaded
+button (shBS_NOPUSH) is used as a status bar that reports the last
+action; OK and Cancel close the dialog.
+
+Runtime requirements
+--------------------
+
+    - expm.dll must be reachable on LIBPATH (or next to the executable).
+    - shBS_TEXT and the BS_* style macros require INCL_WINBUTTONS
+      (implied by INCL_WIN).
+
+Notes
+-----
+
+    - Ported from C++ to C: the public names, structure layout and
+      behaviour are unchanged; internal helpers are file-static.
+    - The window-class registration reserves USER_CWINDOWWORDS as in the
+      original; the QWW_CDATA class-data word is defined locally
+      (upstream it came from the PMCX header pmcx.h).
+    - The original WM_QUERYDLGCODE handler is reproduced as-is, including
+      its use of the logical "||" between the DLGC_* masks.

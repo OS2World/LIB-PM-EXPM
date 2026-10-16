@@ -1,0 +1,9 @@
+#include "combosmp.h"
+
+STRINGTABLE
+{
+    IDS_ITEM1,  "String 1"
+    IDS_ITEM2,  "String 2"
+    IDS_ITEM3,  "String 3"
+    IDS_ITEM4,  "String 4"
+}

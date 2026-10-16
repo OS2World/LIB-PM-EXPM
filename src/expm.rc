@@ -1,0 +1,24 @@
+/* EXPM - Extended Presentation Manager library
+ *
+ * src/expm.rc -- combined resource script for EXPM.DLL.
+ *
+ * wrc binds a single resource file to the DLL, so the resources of the
+ * individual modules are assembled here.  Adding a module that carries
+ * resources means adding one #include below (with the matching include
+ * path in Makefile.wat).
+ *
+ * Copyright (C) 2026 The EXPM Project Authors
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ */
+
+#include <os2.h>
+
+/* ColorWheel: the "Edit Color" dialog template. */
+#include "colorwheel\colorwheel.rc"
+
+/* Shaded Buttons: check / radio / three-state pointer graphics. */
+#include "shadebtn\shadebtn.rc"

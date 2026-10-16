@@ -1,0 +1,113 @@
+EXPM - ColorWheel module
+========================
+
+ColorWheel provides a ready-to-use modal "Edit Color" dialog built around
+the undocumented OS/2 Workplace Shell color wheel control (the
+"ColorSelectClass" window class that lives inside WPCONFIG.DLL).  The
+dialog shows the color wheel, a brightness slider and Red / Green / Blue
+spin buttons kept in sync with the wheel, plus OK / Undo / Cancel.
+
+Merged from the LIB-PM-ColorWheel 1.2 dialog library:
+    original code by Alessandro Cantatore,
+    from the original color wheel concept by Paul Ratcliffe.
+The source is used under its original terms (free to use, modify and
+distribute; not for sale); the copyright notice is retained in
+src/colorwheel/colorwheel.c.  The modifications for EXPM are released
+under the project licence (LGPLv3, see LICENSE).
+
+What changed for EXPM
+---------------------
+
+    - The module handle lookup was repointed from EDITCOL.DLL to
+      EXPM.DLL, so the dialog template is loaded from EXPM.DLL's own
+      resource section (src/colorwheel/colorwheel.rc).
+    - The two internal helpers EditColorDlgProc() and SetSpins() are now
+      file-static; the only exported entry point is WinEditColorDlg().
+    - Public declarations moved into h/expm.h; the message numbers, the
+      window class name and the resource IDs live in h/colorwheel.h
+      (shared with the dialog template).
+
+Public API
+----------
+
+    LONG EXPENTRY WinEditColorDlg( HWND  hwndParent,
+                                   HWND  hwndOwner,
+                                   COLOR color,
+                                   PSZ   pszTitle );
+
+        Displays the modal "Edit Color" dialog.
+
+          hwndParent  parent window; the dialog centers itself over it.
+          hwndOwner   owner window; receives WM_COLORWHEELCHANGED while
+                      the dialog is open (mp1 = current LONG RGB color).
+          color       initial RGB color shown when the dialog opens
+                      (OS/2 LONG format 0x00RRGGBB).
+          pszTitle    dialog title, or NULL for the default "Edit Color".
+                      Truncated to MAXTITLESIZE-1 (127) characters.
+
+        Returns the selected LONG RGB color when OK is chosen, the
+        original color when Cancel or Close (system menu / title bar) is
+        used, or CLR_ERROR (-255L) if the dialog could not be set up.
+
+CLR - RGB color union
+---------------------
+
+    typedef union {
+       LONG  lClr;           /* full color 0x00RRGGBB */
+       struct {
+          UCHAR blu;         /* blue  (bits  0-7)  */
+          UCHAR grn;         /* green (bits  8-15) */
+          UCHAR red;         /* red   (bits 16-23) */
+          UCHAR x;           /* high byte, unused  */
+       } rgb;
+    } CLR, *PCLR;
+
+    Lets a LONG RGB value be read either whole (lClr) or per component
+    (rgb.red / rgb.grn / rgb.blu).
+
+Notifications
+-------------
+
+    WM_COLORWHEELCHANGED   (0x0601 on Warp 4, 0x130C on Warp 3)
+
+        Sent to hwndOwner while the dialog is open, each time the user
+        changes the color (by dragging the wheel or by spinning the
+        R/G/B buttons).  mp1 = new LONG RGB color, mp2 = MPVOID.
+
+    CWM_COLORWHEELSETVAL   (0x0602 on Warp 4, 0x1384 on Warp 3)
+
+        Sent by the dialog TO the color wheel control to set its color
+        programmatically; not normally used by applications.
+
+    The dialog picks the correct Warp 3 / Warp 4 message numbers at
+    runtime by querying QSV_VERSION_MINOR (minor > 30 = Warp 4).
+
+Constants (h/colorwheel.h)
+--------------------------
+
+    WC_COLORWHEEL        "ColorSelectClass"
+    WM_COLORWHEELCHANGED 0x0601     WM_COLORWHEELCHANGED3  0x130C
+    CWM_COLORWHEELSETVAL 0x0602     CWM_COLORWHEELSETVAL3  0x1384
+    MAXTITLESIZE         128
+
+The dialog and control resource IDs (DLG_CWHEEL, CWHEEL, TXT_*, SPN_*,
+BTN_*) and the localizable UI strings (SZ_*) are also declared there;
+edit the SZ_* strings to translate the dialog.
+
+Runtime requirements
+--------------------
+
+    - expm.dll must be reachable on LIBPATH (or next to the executable).
+    - WPCONFIG.DLL (part of the OS/2 Workplace Shell) must be present.
+      WinEditColorDlg loads it (with WinLoadLibrary) to register the
+      ColorSelectClass window class, and unloads it (WinDeleteLibrary)
+      when the dialog is destroyed.
+
+Sample
+------
+
+    sample\colorwheel\cwsmp.exe creates a standard window whose client
+    area is filled with a grey color.  Clicking any mouse button on the
+    client opens the "Edit Color" dialog; the client repaints live as the
+    color wheel is dragged (WM_COLORWHEELCHANGED) and the title bar shows
+    the current / returned RGB values.

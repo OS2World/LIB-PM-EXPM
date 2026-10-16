@@ -1,0 +1,510 @@
+/*
+ * EXPM - Extended Presentation Manager library
+ *
+ * h/expm.h -- public declarations for applications using EXPM.
+ *
+ * Function names follow the Presentation Manager style (Win* for
+ * window-manager helpers).  See doc/expm.txt for the API reference
+ * and the mapping of merged third-party routines.
+ *
+ * Copyright (C) 2026 The EXPM Project Authors
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.  If not, see
+ * <https://www.gnu.org/licenses/lgpl-3.0.html>.
+ */
+
+#ifndef EXPM_H
+#define EXPM_H
+
+#define INCL_WINDIALOGS
+#define INCL_WINLISTBOXES
+#define INCL_WINENTRYFIELDS
+#define INCL_WINWINDOWMGR
+#define INCL_WINBUTTONS
+#include <os2.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/* ------------------------------------------------------------------ */
+/* Combo box support (merged from LIB-PM-ComboBoxSupport 1.1)         */
+/* ------------------------------------------------------------------ */
+
+/* WinInitComboBox -- populate a combo box list from a NULL-terminated
+ * array of strings, then select one item.
+ *
+ *   hwndOwner          owner window (dialog or client window)
+ *   idCombo            combo box control identifier
+ *   apszInit           NULL-terminated array of string pointers
+ *   iInitialSelection  index of the item to preselect, or LIT_NONE
+ *
+ * Returns 0 on success. */
+USHORT EXPENTRY WinInitComboBox( HWND  hwndOwner,
+                                 ULONG idCombo,
+                                 PCSZ *apszInit,
+                                 LONG  iInitialSelection );
+
+/* WinInitComboBoxFromRes -- like WinInitComboBox, but the strings are
+ * loaded from a resource STRINGTABLE.
+ *
+ *   hab                anchor block handle
+ *   hmodRes            resource module handle (0 = current EXE)
+ *   hwndOwner          owner window (dialog or client window)
+ *   idCombo            combo box control identifier
+ *   alId               array of string-table IDs to load
+ *   cIds               number of IDs in alId
+ *   cbStringMax        maximum length of a loaded string (incl. NUL)
+ *   iInitialSelection  index of the item to preselect, or LIT_NONE
+ *
+ * Returns 0 on success, or 1 if memory could not be allocated. */
+USHORT EXPENTRY WinInitComboBoxFromRes( HAB    hab,
+                                        HMODULE hmodRes,
+                                        HWND   hwndOwner,
+                                        ULONG  idCombo,
+                                        PLONG  alId,
+                                        LONG   cIds,
+                                        ULONG  cbStringMax,
+                                        LONG   iInitialSelection );
+
+
+/* ------------------------------------------------------------------ */
+/* Split views and toolbars (Cell Toolkit)                             */
+/* Merged from the Cell Toolkit 0.7b by Sergey I. Yevtushenko,         */
+/* redistributed under the BSD-2 licence (see src/cell/cell.c for      */
+/* the copyright notice).                                              */
+/* ------------------------------------------------------------------ */
+
+/* Cell type flags */
+#define CELL_WINDOW     0x0000  /* cell is an ordinary window        */
+#define CELL_VSPLIT     0x0001  /* cell is a vertically split view   */
+#define CELL_HSPLIT     0x0002  /* cell is a horizontally split view */
+#define CELL_SPLITBAR   0x0004  /* cell has a split bar              */
+#define CELL_FIXED      0x0008  /* views cannot be sized             */
+#define CELL_SIZE1      0x0010  /* panel 1 has a fixed size          */
+#define CELL_SIZE2      0x0020  /* panel 2 has a fixed size          */
+#define CELL_HIDE_1     0x0040  /* panel 1 is hidden                 */
+#define CELL_HIDE_2     0x0080  /* panel 2 is hidden                 */
+#define CELL_HIDE       0x00C0  /* either panel is hidden            */
+#define CELL_SPLIT_MASK 0x003F  /* split-related flag mask           */
+#define CELL_SWAP       0x1000  /* panels are swapped                */
+
+/* Initial panel size ratios */
+#define CELL_SPLIT10x90 0x0100  /* panels related as 10% / 90%       */
+#define CELL_SPLIT20x80 0x0200  /* panels related as 20% / 80%       */
+#define CELL_SPLIT30x70 0x0300  /* panels related as 30% / 70%       */
+#define CELL_SPLIT40x60 0x0400  /* panels related as 40% / 60%       */
+#define CELL_SPLIT50x50 0x0500  /* panels related as 50% / 50%       */
+#define CELL_SPLIT60x40 0x0600  /* panels related as 60% / 40%       */
+#define CELL_SPLIT70x30 0x0700  /* panels related as 70% / 30%       */
+#define CELL_SPLIT80x20 0x0800  /* panels related as 80% / 20%       */
+#define CELL_SPLIT90x10 0x0900  /* panels related as 90% / 10%       */
+#define CELL_SPLIT_REL  0x0F00  /* ratios are relative, not pixels   */
+
+/* Toolbar flags */
+#define TB_BUBBLE       0x0001  /* toolbar shows bubble help         */
+#define TB_VERTICAL     0x0002  /* default toolbar view is vertical  */
+#define TB_FLOATING     0x0004  /* toolbar is not attached           */
+#define TB_ATTACHED_LT  0x0010  /* toolbar attached to the left      */
+#define TB_ATTACHED_TP  0x0020  /* toolbar attached to the top       */
+#define TB_ATTACHED_RT  0x0040  /* toolbar attached to the right     */
+#define TB_ATTACHED_BT  0x0080  /* toolbar attached to the bottom    */
+#define TB_ALLOWED      0x00FF  /* attachment flag mask              */
+#define TB_SEPARATOR    0x7001  /* toolbar separator item ID         */
+#define TB_BUBBLEID     0x7002  /* bubble help window ID             */
+
+/* Limits */
+#define SPLITBAR_WIDTH      2   /* split bar width                   */
+#define HAND_SIZE           8   /* toolbar drag 'hand' size          */
+#define TB_SEP_SIZE         7   /* toolbar separator width           */
+#define TB_BUBBLE_SIZE     32   /* bubble help item size             */
+#define CELL_TOP_LIMIT     98   /* maximal space occupied by one cell (%%) */
+#define CELL_BOTTOM_LIMIT   2   /* minimal space occupied by one cell (%%) */
+
+/* CellDef: one node of the split-view tree.
+ *
+ *   lType     type flags (CELL_*)
+ *   pszClass  window class name when lType == CELL_WINDOW
+ *   pszName   caption
+ *   ulStyle   window (CELL_WINDOW) or frame creation (FCF_*) style
+ *   ulID      window ID used with WinCellWindowFromID etc.
+ *   pPanel1   left/top panel child
+ *   pPanel2   right/bottom panel child
+ *   pClassProc      optional replacement class window proc for panels
+ *   pClientClassProc reserved
+ *   lSize     fixed panel size, meaningful when CELL_FIXED plus
+ *             CELL_SIZE1/CELL_SIZE2 is set */
+typedef struct stCellDef
+{
+    LONG  lType;
+    PSZ   pszClass;
+    PSZ   pszName;
+    ULONG ulStyle;
+    ULONG ulID;
+    struct stCellDef* pPanel1;
+    struct stCellDef* pPanel2;
+    PFNWP pClassProc;
+    PFNWP pClientClassProc;
+    LONG  lSize;
+} CellDef;
+
+/* TbDef: toolbar description.
+ *
+ *   lType    toolbar flags (TB_*)
+ *   ulID     toolbar window ID
+ *   tbItems  NULL-terminated array of toolbar item IDs; TB_SEPARATOR
+ *            entries insert a separator between groups */
+typedef struct
+{
+    LONG   lType;
+    ULONG  ulID;
+    ULONG  *tbItems;
+} TbDef;
+
+/* WindowCellCtlData: per-window cell state, useful for windows that
+ * are managed by a cell.  The first word (qWord == 0) is the old
+ * window proc; it must be freed by a user subclass proc. */
+typedef struct
+{
+    PFNWP pOldProc;
+} WindowCellCtlData;
+
+/* WinCellInit -- register the window classes used by the Cell Toolkit.
+ * Must be called once with the process anchor block before any other
+ * Cell Toolkit routine. */
+void  EXPENTRY WinCellInit( HAB hab );
+
+/* WinCreateCell -- create a cell window from a CellDef tree. */
+HWND  EXPENTRY WinCreateCell( CellDef* pCell, HWND hWndParent, HWND hWndOwner );
+
+/* WinCellWindowFromID -- find the direct or indirect child window of a
+ * cell with the given window ID. */
+HWND  EXPENTRY WinCellWindowFromID( HWND hwndCell, ULONG ulID );
+
+/* WinCellParentWindowFromID -- find the cell that directly manages a
+ * window with the given window ID. */
+HWND  EXPENTRY WinCellParentWindowFromID( HWND hwndCell, ULONG ulID );
+
+/* WinCreateToolbar -- attach a toolbar described by pTb to a cell
+ * window.  Bubble help is installed when TB_BUBBLE is set; place the
+ * help strings in a resource STRINGTABLE numbered from the toolbar's
+ * ulID. */
+void  EXPENTRY WinCreateToolbar( HWND hwndCell, TbDef* pTb );
+
+/* WinGenResIDStr -- format ulID as the '#nnnn' string that bitmap
+ * buttons use to reference a resource. */
+void  EXPENTRY WinGenResIDStr( CHAR *buff, ULONG ulID );
+
+/* WinQueryCellSplit -- return the split ratio (in %) of a split cell. */
+LONG  EXPENTRY WinQueryCellSplit( HWND hwnd, LONG lID );
+
+/* WinSetCellSplit -- set the split ratio (in %) of a split cell,
+ * subject to the CELL_TOP/CELL_BOTTOM limits.  Returns the effective
+ * ratio. */
+LONG  EXPENTRY WinSetCellSplit( HWND hwnd, LONG lID, LONG lNewSplit );
+
+/* WinQueryCellSplitType -- return the CELL_VSPLIT/CELL_HSPLIT/CELL_SWAP
+ * flags of a split cell. */
+LONG  EXPENTRY WinQueryCellSplitType( HWND hwnd, LONG lID );
+
+/* WinSetCellSplitType -- change the split direction of a cell,
+ * optionally swapping its panels when CELL_SWAP is set. */
+void  EXPENTRY WinSetCellSplitType( HWND hwnd, LONG lID, LONG lNewType );
+
+/* WinShowCell -- show (bAction = TRUE) or hide (bAction = FALSE) the
+ * panel with the given window ID. */
+void  EXPENTRY WinShowCell( HWND hwnd, LONG lID, BOOL bAction );
+
+
+/* ------------------------------------------------------------------ */
+/* Control Plus (clone of the closed-source Controls+ 1.40 controls)   */
+/*                                                                     */
+/* Reimplemented in C from the published Controls+ API and manual.     */
+/* Window class names, style, message and notification constants keep  */
+/* their upstream names so that applications written against Controls+ */
+/* can link against EXPM unchanged.  The Ctl* entry points are         */
+/* renamed to the PM Win* style (see doc/ctlplus.txt).                 */
+/* ------------------------------------------------------------------ */
+
+/* Window classes */
+#define WC_METER                "meterCtl"    /* meter / thermometer  */
+#define WC_SWITCH               "switchCtl"   /* switch               */
+#define WC_RECT                 "rectCtl"     /* draggable rectangle  */
+#define WC_COUNTER              "counterCtl"  /* chained digit        */
+
+/* Base of the Control Plus private message range.  Upstream calls this
+ * plain MSG_BASE; a CTL_ prefix is used here to avoid collisions. */
+#define CTL_MSG_BASE            (WM_USER+0x800)
+
+/* General Control Plus messages (recognised by every control) */
+#define CTLM_SETSTYLE           (CTL_MSG_BASE+0x01)
+#define CTLM_QUERYSTYLE         (CTL_MSG_BASE+0x02)
+
+/* Creation data structures */
+typedef struct
+{
+    ULONG mtStyle;
+    ULONG mtFgColor;
+} MTCREATE, *PMTCREATE;
+
+#define SW_MAXTEXT              32
+
+typedef struct
+{
+    ULONG swStyle;
+    ULONG swFgColor;
+    CHAR  swUpText[SW_MAXTEXT];
+    CHAR  swDownText[SW_MAXTEXT];
+} SWCREATE, *PSWCREATE;
+
+typedef struct
+{
+    ULONG rcStyle;
+    ULONG rcFgColor;
+    SIZEL rcMaxSize;
+    SIZEL rcMinSize;
+} RCCREATE, *PRCCREATE;
+
+typedef struct
+{
+    ULONG cntStyle;
+    ULONG cntFgColor;
+    ULONG cntBgColor;
+    HWND  cntNext;
+} CNTCREATE, *PCNTCREATE;
+
+/* ---- Meter ------------------------------------------------------- */
+
+/* Thermometer / analog meter styles */
+#define MTS_THERM               0x00010000L
+#define MTS_ANALOG              0x00020000L
+
+#define MTS_NOTIFYOWNER         0x00000001L
+#define MTS_NOINPUT             0x00000002L
+#define MTS_HALFTICK            0x00000100L
+#define MTS_QUARTERTICK         0x00000200L
+
+/* Meter notification codes (via WM_CONTROL) */
+#define MTN_CHGRANGE            1
+#define MTN_CHGVALUE            2
+
+/* Meter messages */
+#define MTM_SETRANGE            (CTL_MSG_BASE+0x11)
+#define MTM_QUERYRANGE          (CTL_MSG_BASE+0x12)
+#define MTM_SETVALUE            (CTL_MSG_BASE+0x13)
+#define MTM_QUERYVALUE          (CTL_MSG_BASE+0x14)
+
+/* ---- Switch ------------------------------------------------------ */
+
+/* Switch type styles */
+#define SWS_BUTTON              0x00010000L
+#define SWS_THROW               0x00020000L
+
+#define SWS_NOTIFYOWNER         0x00000001L
+
+/* Switch notification codes */
+#define SWN_CHGVALUE            1
+#define SWN_CHGUPTEXT           2
+#define SWN_CHGDOWNTEXT         3
+
+/* Switch messages */
+#define SWM_SETVALUE            (CTL_MSG_BASE+0x15)
+#define SWM_QUERYVALUE          (CTL_MSG_BASE+0x16)
+#define SWM_SETUPTEXT           (CTL_MSG_BASE+0x17)
+#define SWM_QUERYUPTEXT         (CTL_MSG_BASE+0x18)
+#define SWM_SETDOWNTEXT         (CTL_MSG_BASE+0x19)
+#define SWM_QUERYDOWNTEXT       (CTL_MSG_BASE+0x1A)
+
+/* ---- Rect -------------------------------------------------------- */
+
+#define RCS_NOTIFYOWNER         0x00000001L
+#define RCS_VERTSIZE            0x00000002L
+#define RCS_HORZSIZE            0x00000004L
+#define RCS_VERTHORZSIZE        0x00000006L
+#define RCS_NOMOVE              0x00000008L
+#define RCS_MINSIZE             0x00000010L
+#define RCS_MAXSIZE             0x00000020L
+#define RCS_KSQUARE             0x00000040L
+#define RCS_KCIRCLE             0x00000080L
+
+/* Rect notification codes */
+#define RCN_SIZE                1
+#define RCN_DRAG                2
+#define RCN_PAINT               3
+
+/* Rect messages */
+#define RCM_SETHANDLE           (CTL_MSG_BASE+0x1B)
+#define RCM_QUERYHANDLE         (CTL_MSG_BASE+0x1C)
+#define RCM_SETMINSIZE          (CTL_MSG_BASE+0x1D)
+#define RCM_QUERYMINSIZE        (CTL_MSG_BASE+0x1E)
+#define RCM_SETMAXSIZE          (CTL_MSG_BASE+0x1F)
+#define RCM_QUERYMAXSIZE        (CTL_MSG_BASE+0x20)
+
+/* ---- Counter ----------------------------------------------------- */
+
+#define CTS_NOTIFYOWNER         0x00000001L
+#define CTS_BIN                 0x00000002L
+#define CTS_DEC                 0x00000004L
+#define CTS_HEX                 0x00000008L
+#define CTS_NOROLL              0x00000010L
+#define CTS_NOSCROLL            0x00000020L
+
+/* Counter notification codes */
+#define CTN_CHGVALUE            1
+#define CTN_UNDERFLOW           2
+#define CTN_OVERFLOW            3
+
+/* Counter messages */
+#define CTM_SETVALUE            (CTL_MSG_BASE+0x21)
+#define CTM_QUERYVALUE          (CTL_MSG_BASE+0x22)
+#define CTM_SETNEXT             (CTL_MSG_BASE+0x23)
+#define CTM_QUERYNEXT           (CTL_MSG_BASE+0x24)
+#define CTM_INC                 (CTL_MSG_BASE+0x25)
+#define CTM_DEC                 (CTL_MSG_BASE+0x26)
+#define CTM_INCNOROLL           (CTL_MSG_BASE+0x27)
+#define CTM_DECNOROLL           (CTL_MSG_BASE+0x28)
+
+/* WinCtlInit -- register the Control Plus window classes.  Call once,
+ * after WinCreateMsgQueue and before creating any Control Plus window.
+ * Returns TRUE on success.
+ * (Controls+ name: CtlInitialize) */
+USHORT  EXPENTRY WinCtlInit( HAB hab );
+
+/* WinCtlTerminate -- release Control Plus resources.  Call after the
+ * application windows are destroyed and before WinDestroyMsgQueue.
+ * Returns TRUE on success.
+ * (Controls+ name: CtlTerminate) */
+USHORT  EXPENTRY WinCtlTerminate( VOID );
+
+/* WinCtlVersion -- return the Control Plus version as MPFROM2SHORT
+ * (major, minor).  (Controls+ name: CtlVersion) */
+MRESULT EXPENTRY WinCtlVersion( VOID );
+
+
+/* ------------------------------------------------------------------ */
+/* ColorWheel (modal color-picker dialog)                              */
+/*                                                                     */
+/* Merged from LIB-PM-ColorWheel 1.2 by Alessandro Cantatore, based on */
+/* the original color wheel concept by Paul Ratcliffe (see             */
+/* src/colorwheel/colorwheel.c for the copyright notice and licence).  */
+/* The dialog wraps the undocumented "ColorSelectClass" control that   */
+/* WPCONFIG.DLL registers.  h/colorwheel.h holds the message numbers,  */
+/* the window class name and the resource IDs (it is shared with the   */
+/* dialog template, hence kept as macros).                             */
+/* ------------------------------------------------------------------ */
+
+#include "colorwheel.h"
+
+/* CLR - RGB color union: access a 32-bit OS/2 RGB color (LONG, format
+ * 0x00RRGGBB) either as a whole or byte by byte.
+ *
+ * The rgb struct is ordered blue / green / red / pad, matching the
+ * little-endian byte layout of a LONG 0x00RRGGBB in memory:
+ *   byte 0 = blue (least significant), byte 1 = green,
+ *   byte 2 = red,  byte 3 = 0x00 (unused high byte). */
+#pragma pack(1)
+
+typedef union {
+   LONG  lClr;          /* full 32-bit OS/2 RGB color (0x00RRGGBB) */
+   struct {
+      UCHAR blu;        /* blue  component (bits  0-7)  */
+      UCHAR grn;        /* green component (bits  8-15) */
+      UCHAR red;        /* red   component (bits 16-23) */
+      UCHAR x;          /* unused high byte (always 0)  */
+   } rgb;
+} CLR, *PCLR;
+
+#pragma pack()
+
+/* WinEditColorDlg -- display a modal "Edit Color" dialog.
+ *
+ *   hwndParent  parent window; the dialog centers itself over it
+ *   hwndOwner   owner window; receives WM_COLORWHEELCHANGED while the
+ *               dialog is open (mp1 = current LONG RGB color)
+ *   color       initial RGB color shown when the dialog opens
+ *   pszTitle    dialog title, or NULL for the default "Edit Color"
+ *
+ * Returns the selected LONG RGB color on OK, the original color on
+ * Cancel / Close, or CLR_ERROR if initialization failed. */
+LONG EXPENTRY WinEditColorDlg( HWND  hwndParent,
+                               HWND  hwndOwner,
+                               COLOR color,
+                               PSZ   pszTitle );
+
+
+/* ------------------------------------------------------------------ */
+/* AniButtn (animated two-state graphical push buttons)                */
+/*                                                                     */
+/* Clean-room reimplementation of the AniButtn 1.02 library by Greg    */
+/* Ratajik (1993), written from its published header and manual (see   */
+/* src/anibtn/anibtn.c for the copyright notice and licence).          */
+/* The upstream entry points AniCreateButton / AniDeleteButton are     */
+/* renamed to the PM Win* style (see doc/anibtn.txt).                  */
+/* ------------------------------------------------------------------ */
+
+/* WinCreateAniButton -- turn an existing WC_BUTTON control of style
+ * BS_USERBUTTON into an animated two-state graphical push button.
+ *
+ *   hwndDlg    dialog (or other window) that owns the button
+ *   id         control identifier of the button
+ *   idUp       bitmap resource id drawn while the button is up
+ *   idDown     bitmap resource id drawn while the button is pressed
+ *   cx, cy     bitmap dimensions in pels
+ *   pszStatus  status text shown while the pointer is over the button,
+ *              or NULL for none
+ *   idStatus   identifier of the static-text field that displays
+ *              pszStatus, or 0 for none
+ *
+ * The two bitmaps are loaded from the application's executable, sized
+ * cx by cy pels.  The control keeps the behaviour of a normal push
+ * button: it sends WM_COMMAND / BN_CLICKED to its owner.  A second call
+ * for the same button has no effect. */
+VOID EXPENTRY WinCreateAniButton( HWND   hwndDlg,
+                                  SHORT  id,
+                                  USHORT idUp,
+                                  USHORT idDown,
+                                  USHORT cx,
+                                  USHORT cy,
+                                  PSZ    pszStatus,
+                                  USHORT idStatus );
+
+/* WinDeleteAniButton -- release an animated button created with
+ * WinCreateAniButton.  Call it when the owning dialog is closed, before
+ * the dialog window is destroyed.  Deleting the last animated button of
+ * a dialog also restores the dialog's original window procedure and the
+ * status fields' original text. */
+VOID EXPENTRY WinDeleteAniButton( HWND hwndDlg, USHORT id );
+
+
+/* ------------------------------------------------------------------ */
+/* Shaded Buttons (gradient-shaded button window class)                */
+/*                                                                     */
+/* Merged from LIB-PM-ShadedButtons 1.50 (Shaded Buttons 1.50) by      */
+/* Hubert Chan; see src/shadebtn/shadebtn.c for the copyright notice   */
+/* and licence.  Registers WC_shBUTTON, a WC_BUTTON replacement that   */
+/* paints a gradient face and adds check box, radio, three-state,      */
+/* rounded, vertical and icon variants.  The upstream entry points     */
+/* shBtnInit / shBtnQueryVersion are renamed to WinShadeBtnInit /      */
+/* WinShadeBtnQueryVersion (see doc/shadebtn.txt).                     */
+/* ------------------------------------------------------------------ */
+
+#include "shadebtn.h"
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* EXPM_H */

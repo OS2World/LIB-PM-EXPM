@@ -1,0 +1,119 @@
+<HTML>
+<HEAD>
+  <TITLE>History</TITLE>
+</HEAD>
+<BODY BACKGROUND="Border.gif">
+<TABLE>
+<TR><TD><IMG SRC="Spacer.gif"></TD><TD>
+<H3>6. HISTORY</H3>
+In v. 1.15:
+<UL>
+<LI>Added radio buttons and check boxes.  I added these styles to the PMCX 
+    styles dialog.  3-state buttons aren't implemented because I haven't decided
+    how they should display.  The "AUTORADIO" style isn't quite working yet.
+<LI>Can display icons and text at the same time.
+<LI>Draws a dotted box around the button text when the button has focus.
+<LI>Moved the documentation into HTML code.
+<LI>Fixed a few more logic errors.
+<LI>Made the PMCX styles dialog use Shaded Buttons instead of normal buttons.
+<LI>The button now gains focus when the mouse button is released instead of
+    pressed (like real buttons).
+<LI>Now handles a few more window messages.
+</UL>
+In v. 1.10:
+<UL>
+<LI>Fixed the code so that the gradient pattern displays properly, while
+    keeping it in integer math.  Now it looks a bit like the Bresenham line
+    drawing algorithm ;-)
+<LI>Fixed test1.exe so that it (more or less) behaves the way it should.
+<LI>It's now a PMCX control, so it can be used in URE and Prominare Designer,
+    and any other PMCX tool.  (There are still a few glitches I have to work
+    out, though.)
+<LI>It now automatically redraws when the font presentation parameter is
+    changed.
+<LI>Started adding some code to draw radio buttons and check boxes.  It's very
+    incomplete though.
+<LI>Fixed another logic error - darned order of operations.
+<LI>Moved the history list here.  (It was getting a bit big for ShadeBtn.txt.)
+</UL>
+In v. 1.06: (not publicly released)
+<UL>
+<LI>Added another demo program, and changed the directory structure around to
+    make it less cluttered.  Unfortunately, the demo program doesn't quite work
+    properly.  On the main screen, the vertical buttons should be coloured to
+    indicate which components they control, and the status bar should indicate
+    the colour of the box.  The problem has something to do with my call to
+    WinWindowFromID.  Any ideas anyone?
+    Don't ask me why I named the new program Test1.exe, and the old one
+    Test2.exe.  I don't know.
+<LI>The MINIICON style works now.
+<LI>I fixed a small logic error - I used logical not (!) instead of bitwise not
+    (~) in one place.  Oops.
+</UL>
+In v. 1.05:
+<UL>
+<LI>I went on another renaming spree.  Now everything is prefixed by shB
+    instead of SB to avoid confusion with the scroll bar class.  Creating a
+    header file with the appropriate #define's shouldn't be too hard if you're
+    too lazy to change your code.  I promise not to rename anything anymore.
+<LI>I made the button styles to have the same values as corresponding styles
+    in normal buttons (so any programs will need to be recompiled in order to
+    use the new DLL file).
+<LI>added ability to display a different bitmap when button is disabled.
+<LI>cleaned up the code a bit.
+<LI>presentation parameters seem to be working now -- actually, I think they
+    were working all along, but I just forgot to repaint the window.
+<LI>fixed the header file to be more C friendly (used C comments instead of
+    C++)
+<LI>vertical buttons now work.
+</UL>
+In v. 1.01:
+<UL>
+<LI>minor bugfix in the example program.  The background was black instead of
+    light grey when it was run in Warp 4.  Apparently, Warp 4 defaults to using
+    the RGB colours, while Warp 3 defaults to using indexed colours.
+<LI>disabled buttons are displayed with a more chiseled look
+<LI>minor change in the example program.  The "About" button is disable/enabled
+    when the shrink button is disabled/enabled, to demonstrate the new look for
+    disabled buttons.
+</UL>
+In v. 1.00:
+<UL>
+<LI>it now works as a DLL!
+<LI>previous versions wouldn't have worked if you tried to link to a normal C
+    file.  This is now fixed.
+<LI>renamed pretty much everything.  Now you call SBtnInit() to register the
+    window class.  Button styles are now prefixed with SBS, button messages
+    are prefixed with SBM, and presentation parameters are prefixed with
+    SBPP.  The class name is changed, with WC_SHADEBTN defined as the new name
+    (don't use SHADEDBTNCLASS any more).  All the previous Button.* files are
+    renamed to ShadeBtn.*.  (It shouldn't be hard to create a header file to
+    make appropriate #define's so that old code can be reused)
+<LI>added a function to return the version number (SBtnQueryVersion).
+<LI>added ability to change background colour.
+<LI>fixed the colouring outside of the lines when drawing rounded buttons, and
+    got rid of some floating point calculations.
+</UL>
+In v. 0.20:
+<UL>
+<LI>added a window message (GBM_SETCOLOR) to change the colour of the button
+<LI>added a few buttons to the demo program, and made the status bar do
+    something more interresting
+<LI>buttons can now have rounded sides
+<LI>I've decided to make it completely free
+<LI>fixed some spelling mistakes in this file ;-)
+</UL>
+In v. 0.10:
+<UL>
+<LI>initial release
+</UL>
+<BR>
+<HR NOSHADE>
+<BR>
+<A HREF="ShadeBtn.html">Back</A><BR>
+<FONT SIZE="-1">Last updated March 9, 1998. &lt;&gt;&lt;<BR>
+Created by <A HREF="mailto:hubert@cs.ualberta.ca">Hubert Chan</A>.
+</TD></TR></TABLE>
+</BODY>
+</HTML>
+

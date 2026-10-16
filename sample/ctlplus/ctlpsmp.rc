@@ -1,0 +1,30 @@
+/*
+ * sample/ctlplus/ctlpsmp.rc -- resources for the EXPM Control Plus
+ * sample application.
+ *
+ * Copyright (C) 2026 The EXPM Project Authors
+ */
+
+#include <os2.h>
+#include "ctlpsmp.h"
+
+MENU IDM_MENU
+{
+    SUBMENU "~File", IDM_FILE
+    {
+        MENUITEM "E~xit", IDM_EXIT
+    }
+
+    SUBMENU "~Help", IDM_HELP
+    {
+        MENUITEM "~About...", IDM_ABOUT
+    }
+}
+
+STRINGTABLE
+{
+    ID_INC   , " Increment least significant digit "
+    ID_DEC   , " Decrement least significant digit "
+    ID_RESET , " Reset all digits to zero "
+    IDM_ABOUT, " About this application "
+}

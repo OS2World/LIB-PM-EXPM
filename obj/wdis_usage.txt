@@ -1,0 +1,18 @@
+Open Watcom Multi-processor Disassembler Version 2.0.1
+Portions Copyright (c) 1995-2002 Sybase, Inc. All Rights Reserved.
+Source code is available under the Sybase Open Watcom Public License.
+See http://www.openwatcom.org/ for details.
+Usage:  wdis [options] obj_file [options]
+Options:                ( /option is also supported )
+        -l[=list_file]  generate listing file
+        -i=char         initial character of internal labels
+        -a              generate assembleable output
+        -e              generate lists of externs
+        -m              leave C++ names mangled
+        -p              generate list of publics
+        -s[=src_file]   include source lines
+        -ff             FPU emulator fixups as comment [80(x)86 only]
+        -fi             use alternate indexing format [80(x)86 only]
+        -fp             do not use instruction name pseudonyms
+        -fr             do not use register name pseudonyms [RISC only]
+        -fu             instructions/registers in upper case

@@ -1,0 +1,150 @@
+<HTML>
+<HEAD>
+  <TITLE>Shaded Buttons 1.15</TITLE>
+</HEAD>
+<BODY BACKGROUND="Border.gif">
+<CENTER><IMG SRC="ShadeBtn.gif" ALT="Shaded Buttons"><BR>
+v. 1.15 (1998)</CENTER>
+<BR>
+<HR NOSHADE>
+<BR>
+
+<TABLE>
+<TR><TD><IMG SRC="Spacer.gif"></TD><TD>
+<H3>CONTENTS</H3>
+<OL>
+<LI><A HREF="#notmyfault">Disclaimer</A><BR>
+<LI><A HREF="#what">What it is</A><BR>
+<LI><A HREF="Usage.html">How to use it</A><BR>
+<OL>
+<LI><A HREF="Usage.html#styles">Button Styles</A>
+<LI><A HREF="Usage.html#messages">Window Messages</A>
+<LI><A HREF="Usage.html#presparams">Presentation Parameters</A>
+</OL>
+<LI><A HREF="#bugs">Known bugs/limitations</A><BR>
+<LI><A HREF="#soon">Coming soon</A><BR>
+<LI><A HREF="History.html">History</A><BR>
+<LI><A HREF="#me">Author</A><BR>
+<LI><A HREF="#cost">Cost</A><BR>
+<LI><A HREF="#where">Where to get it</A><BR>
+<LI><A HREF="Ack.html">Acknowledgements</A>
+</OL>
+
+<A NAME="notmyfault"><H3>1. DISCLAIMER</H3>
+If you screw up your computer, it's your problem.
+
+<A NAME="what"><H3>2. WHAT IT IS</H3>
+<P>It is a new window class that creates buttons with a rounded look by using a
+gradient pattern, so that the top of the button is lighter and the bottom is
+darker.  Buttons can also have rounded sides, they can have icons, and they can
+be vertical (so that the gradient pattern goes from left to right instead of
+top to bottom).  IMHO, it looks a lot nicer than normal push buttons.  As well,
+radio buttons and check boxes are supported in the same way that they are in
+the normal button class.
+
+<P>Included are three sample programs.  The first one has three sets of four
+buttons on the left, with up arrow, double-up arrows, double-down arrows, and
+down arrows.  Each one changes the colour of the rectangle on the right.  The
+buttons are coloured corresponding to the component of the colour that they
+change (eg. the red buttons will change the red component).  The double-up and
+double-down buttons change the colour by 10, and the up/down arrows change the
+colour by one.  At the bottom, there is a status bar that shows the current
+colour of the rectangle.  Near the bottom-right, there is a button that pops
+up a dialog to change the outline of the rectangle.  At the top, there is an
+About button, which displays the version of the Shaded Buttons DLL that is
+being used.  (Make sure it's at least v. 1.06). (<A HREF="test1.gif">screen
+shot</A> - 141k)
+
+<P>The second one is modified from Petzold's "OS/2 Presentation Manager
+Programming".  It's a simple window with ten buttons: two in the middle with
+arrows pointing in or out, six coloured buttons on top of those buttons, with
+either a '<' or '>', one labelled "About", and one at the bottom which acts as 
+a status bar.  The buttons in the middle, when pushed, either shrink or enlarge
+the window.  The coloured buttons change the colour of the "About" button.  The
+status bar reports the RGB values for the "About" button.  The "About" button
+does what you think it does. (<A HREF="test2.gif">screen shot</A> - 18k)
+
+<P>The third one is just a simple window with a single button in it.  The icon
+in the button is a rotating cube.  When you press the button, an About box pops
+up.  This was to show how Shaded Buttons reacts to WinSetWindowText. (sorry,
+no screen shot yet.)
+
+<P>I have included the source file.  Feel free to modify it as you please for
+your own programs.  If you can fix any bugs, or if you change/add anything that
+you think may be helpful, send it to me, and I may include it in future
+versions.  In the sample directory, there's a sample.zip that contains the
+source for the sample programs.  (note: the makefiles use tcsh as the shell, so
+you might have to modify it if you want to compile on your system.)
+
+<A NAME="usage"><H3>3. <A HREF="Usage.html">HOW TO USE IT</A></H3>
+
+<A NAME="bugs"><H3>4. KNOWN BUGS/LIMITATIONS</H3>
+<UL>
+<LI>Accelerators don't work yet.
+<LI>URE insists on setting the PP_USER presentation parameter in dialog boxes,
+which is annoying since Shaded Buttons uses the PP_USER presentation parameter
+to control the background colour.  If you don't have any rounded edges on your
+buttons, you won't notice, but if you do, the background will be white.  As far
+as I can tell, you can just remove the part where PP_USER is set (from the .rc
+file).
+<LI>Sometimes there is a noticeable flicker when you click on a button.
+Especially with very large buttons.  I don't think there's much I can do
+about it, without potentially using a huge amount of memory.
+</UL>
+
+<A NAME="soon"><H3>5. COMING SOON (?)</H3>
+Things I will probably add or change (in no particular order):
+<UL>
+<LI>support the normal button's control data
+<LI>make the BS_AUTORADIOBUTTON style work
+<LI>make it behave more like normal buttons
+<LI>make a better example program (ie. that shows off more features)
+<LI>allow bitmaps to be displayed (instead of icons).  Right now, it's not one
+of my priorities, but if anyone absolutely needs it, I can add it.
+<LI>clean up the code!!!  (It's horribly messy.)
+</UL>
+
+<A NAME="history"><H3>6. <A HREF="History.html">HISTORY</A></H3>
+
+<A NAME="me"><H3>7. THE AUTHOR</H3>
+<P>You can e-mail me at <A HREF="mailto:hubert@cs.ualberta.ca">hubert@cs.ualberta.ca</A>,
+or snail mail me at
+<UL>
+<ADDRESS>Hubert Chan<BR>
+3 Falstaff Ave.<BR>
+St. Albert, AB<BR>
+Canada, T8N 1V3<BR></ADDRESS>
+</UL>
+Send me comments, criticism, or $$$ ;-)
+
+<P>I have a home page set up at <A HREF="http://www.ualberta.ca/~hyc/Programming/">http://www.ualberta.ca/~hyc/Programming/</A>.
+The newest version of Shaded Buttons will always be there.  (Actually, the
+absolutely newest version will always be on my computer, but good luck trying to
+get it from there.)
+
+<A NAME="cost"><H3>8. COST</H3>
+<P>Free.  If you really do want to send me something, though, I'm not going to
+complain.
+<P>Of course, I would very much appreciate if you acknowledged your use of
+Shaded Buttons. :-)
+
+<A NAME="where"><H3>9. WHERE TO GET IT</H3>
+<P>From my home page: <A HREF="http://www.ualberta.ca/~hyc/Programming/">http://www.ualberta.ca/~hyc/Programming/</A>
+<P>From Hobbes: <A HREF="http://hobbes.nmsu.edu">web</A> or <A HREF="ftp://hobbes.nmsu.edu">ftp</A>
+<P>These are the only places that I will put the files in.  Feel free to upload it
+to other sites.<BR>
+
+<A NAME="ack"><H3>3. <A HREF="Ack.html">ACKNOWLEDGEMENTS</A></H3>
+
+<BR>
+<HR NOSHADE>
+<BR>
+<FONT SIZE="-1">Last updated March 21, 1998. &lt;&gt;&lt;<BR>
+Created by <A HREF="mailto:hubert@cs.ualberta.ca">Hubert Chan</A>.<BR>
+Optimized for Netscape 2.02 for OS/2.<BR>
+</FONT>
+</TD></TR>
+</TABLE>
+</BODY>
+</HTML>
+

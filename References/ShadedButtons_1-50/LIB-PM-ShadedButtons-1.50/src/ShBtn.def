@@ -1,0 +1,13 @@
+LIBRARY     ShBtn  INITINSTANCE TERMINSTANCE
+
+DESCRIPTION 'Shaded Buttons PMCX, Hubert Chan, 1998'
+
+CODE        MOVEABLE
+DATA        MULTIPLE NONSHARED MOVEABLE
+
+EXETYPE     OS2
+
+EXPORTS     ShBtnRegister         @1
+            ShBtnQuery            @2
+            ShBtnStyles           @3
+

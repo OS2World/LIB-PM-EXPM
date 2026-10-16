@@ -1,0 +1,221 @@
+<HTML>
+<HEAD>
+  <TITLE>Shaded Buttons: How to use it</TITLE>
+</HEAD>
+<BODY BACKGROUND="Border.gif">
+<TABLE>
+<TR><TD><IMG SRC="Spacer.gif"></TD><TD>
+<H3>3. HOW TO USE IT</H3>
+<P>Include ShadeBtn.H in your source file.  To register the class with the
+Presentation Manager, call shBtnInit.  The class is called WC_shBUTTON.  To
+make a button, call WinCreateWindow as you normally would to create a button
+(except that you use WC_shBUTTON instead of WC_BUTTON as the window class).
+
+<P>I've tried to make it so that all you would have to do is replace WC_BUTTON
+with WC_shBUTTON.  There are only a few button styles that Shaded Buttons does
+not support (see <A HREF="#styles">3.1</A> for more info).  I'm thinking
+of creating another class that would be completely compatible with normal buttons.
+
+<P>You can also make a button in a dialog box in a resource file.  See
+the .rc files in the samples directory for an example.
+
+<P>When the button is pushed, it will send a WM_COMMAND (or WM_CONTROL) message
+to its owner, just like a normal push button does.  It can also be activated by
+hitting the space bar when it has the focus.
+
+<P>To change the colour of the button, send it a shBM_SETCOLOR with mp1 set to
+the RGB value of the colour, and mp2 set to shBSC_BUTTONFACE to change the
+button face colour, or shBSC_BACKGROUND to change the background colour.
+
+<P>Another way to change the colour of the button is to use presentation
+parameters.  You can also change the font this way.  (see <A HREF="#presparams">3.3</A>
+for the presentation parameters supported)  To try it out, drag a colour from
+the Mixed Color Palette onto a button in the demo program.  Or drag a font from
+the Font Pallette.  (Try doing that in Windows!)
+
+<P>To determine the version of Shaded Buttons, use shBtnQueryVersion().  It
+returns the version number * 100 (eg. v 1.20 -> 1.20 * 100 = 120).
+
+<P>When you link your program, link it with ShadeBtn.lib.  (hopefully it should
+work with compilers other than emx.  If not, let me know, and I'll see what I
+can do about it.)  Make sure ShadeBtn.dll is in a directory in your LIBPATH.
+
+<P>Shaded Buttons is also a PMCX control, so it can be used in the Universal
+Resource Editor, and Prominare Designer, as well as any other PMCX tools.  Just
+register ShBtn.dll and it should work fine.  Make sure ShadeBtn.dll is in your
+LIBPATH (or in the same path as ShBtn.dll), and make sure that you add
+ShadeBtn.h to your header file before you try to compile.
+(<A HREF="pmcx.gif">screen shot</A> - 34k)
+
+<A NAME="styles"><H4>3.1 Button Styles</H4>
+<P>These are the button styles supported by Shaded Buttons.  All the styles that
+it has in common with normal buttons (except shBS_NOBORDER) are equivalent to
+using just BS_xxxxxxx.
+<TABLE BORDER=0 CELLSPACING=0 CELLPADDING=5>
+<TR VALIGN=TOP><TD>shBS_PUSHBUTTON</TD>
+<TD>creates a pushbutton (default)</TD></TR>
+<TR VALIGN=TOP><TD>shBS_CHECKBOX</TD>
+<TD>creates a check box</TD></TR>
+<TR VALIGN=TOP><TD>shBS_RADIOBUTTON</TD>
+<TD>creates a radio button</TD></TR>
+<TR VALIGN=TOP><TD>shBS_3STATE</TD>
+<TD>creates a 3 state button</TD></TR>
+<TR BGCOLOR=7F7F7F VALIGN=TOP><TD>shBS_AUTOxxxxx</TD>
+<TD>makes the button automatically check/uncheck itself (AUTORADIOBUTTON is not
+implemented yet)</TD></TR>
+<TR VALIGN=TOP><TD>shBS_ICON</TD>
+<TD>uses an icon instead of text.
+Uses button "text" as the id number of the icon.  The text
+should be in the form "#[iconid]<,[disablediconid]>" where
+[iconid] is the id number of the icon, [disablediconid] is
+the id number of the icon to be displayed when the button
+is disabled.  The portion in between the triangular
+brackets ( "<...>" ) is optional.  Normal text can be
+placed at the end, and will be displayed along with the
+icon.</TD></TR>
+<TR BGCOLOR=7F7F7F VALIGN=TOP><TD>shBS_BITMAP</TD>
+<TD>like shBS_ICON, but uses a bitmap instead.</TD></TR>
+<TR VALIGN=TOP><TD>shBS_MINIICON</TD>
+<TD>same as shBS_ICON, but uses the smaller icon size</TD></TR>
+<TR VALIGN=TOP><TD>shBS_HELP</TD>
+<TD>sends a WM_HELP message when clicked</TD></TR>
+<TR VALIGN=TOP><TD>shBS_SYSCOMMAND</TD>
+<TD>sends a WM_SYSCOMMAND message when clicked</TD></TR>
+<TR BGCOLOR=7F7F7F VALIGN=TOP><TD>shBS_DEFAULT</TD>
+<TD>makes the button the default</TD></TR>
+<TR VALIGN=TOP><TD>shBS_NOLEFTLINE</TD>
+<TD>removes the border on the left side of the button</TD></TR>
+<TR VALIGN=TOP><TD>shBS_LEFTROUND</TD>
+<TD>makes the left side rounded</TD></TR>
+<TR VALIGN=TOP><TD>shBS_NORIGHTLINE</TD>
+<TD>removes the border on the right side of the button</TD></TR>
+<TR VALIGN=TOP><TD>shBS_RIGHTROUND</TD>
+<TD>makes the right side rounded</TD></TR>
+<TR VALIGN=TOP><TD>shBS_VERTICAL</TD>
+<TD>makes the button vertical (left to right gradient pattern)</TD></TR>
+<TR VALIGN=TOP><TD>shBS_NOTOPLINE</TD>
+<TD>removes the border on the top side of the button (when
+VERTICAL is set)</TD></TR>
+<TR VALIGN=TOP><TD>shBS_TOPROUND</TD>
+<TD>makes the top side rounded (when VERTICAL is set)</TD></TR>
+<TR VALIGN=TOP><TD>shBS_NOBOTTOMLINE</TD>
+<TD>removes the border on the bottom side of the button (when
+VERTICAL is set)</TD>
+<TR VALIGN=TOP><TD>shBS_BOTTOMROUND</TD>
+<TD>makes the bottom side rounded (when VERTICAL is set)</TD></TR>
+<TR VALIGN=TOP><TD>shBS_NOPUSH</TD>
+<TD>makes the button non-pushable (eg. to make status bars)</TD></TR>
+<TR VALIGN=TOP><TD>shBS_NOBORDER</TD>
+<TD>removes the border on the edges of the button. (left and
+right borders if horizontal, top and bottom if vertical)</TD></TR>
+</TABLE>
+
+NOTE: the shaded styles are not yet implemented
+
+<P>I've tried to make it as compatible with the normal button class.  Unless you
+use BS_NOPOINTERFOCUS, BS_NOBORDER, BS_NOCURSORSELECT, or BS_AUTOSIZE, you
+should be able to just replace WC_BUTTON with WC_shBUTTON in your source files.
+(Note that shBS_AUTORADIO and shBS_USERBUTTON aren't implemented yet.)
+
+<A NAME="messages"><H4>3.2 Window Messages</H4>
+<P>Shaded Buttons sends the following messages to its owner:
+<TABLE>
+<TR><TH>Message</TH><TH>Description</TH></TR>
+<TR><TD VALIGN = TOP>WM_COMMAND</TD><TD>Sent when the button is clicked (when it's a push-button).<BR>
+mp1: Notification Code | ID<BR>
+mp2: CMDSRC_PUSHBUTTON | pressed by keyboard?<BR>
+the notification code can be one of BN_CLICKED, BN_DBLCLICKED (not implemented),
+BN_PAINT (not implemented)</TD></TR>
+<TR><TD VALIGN = TOP>WM_CONTROL</TD><TD>Sent when the button is clicked (when it's a radio
+button, check box, or 3-state).  Message parameters are like for WM_COMMAND.</TD></TR>
+<TR><TD VALIGN = TOP>WM_SYSCOMMAND</TD><TD>Sent when the button is clicked (when it's a
+push-button and has the shBS_SYSCOMMAND flag set).  Message parameters are like
+for WM_COMMAND.</TD></TR>
+<TR><TD VALIGN = TOP>WM_HELP</TD><TD>Sent when the button is clicked (when it's a push-button
+and has the shBS_HELP flag set).  Message parameters are like for WM_COMMAND.
+</TD></TR>
+</TABLE>
+Note: the message parameters for WM_SYSCOMMAND and WM_HELP are likely to change
+once I figure out how they're <B>supposed</B> to be done.
+
+
+<P>Shaded Buttons handles the following messages:
+<TABLE>
+<TR><TH>Message</TH><TH>Description</TH></TR>
+<TR><TD VALIGN = TOP>WM_CREATE</TD><TD>Sent when the button is created.  The button saves
+the button text, the presentation parameters, loads icons if necessary, sets up
+variables for painting.</TD></TR>
+<TR><TD VALIGN = TOP>WM_DESTROY</TD><TD>Sent when the button is destroyed.  The button
+unloads icons that it has loaded, and frees up memory that it allocated.</TD></TR>
+<TR><TD VALIGN = TOP>WM_PAINT</TD><TD>Sent when the button is to be painted.  The button
+paints itself.</TD></TR>
+<TR><TD VALIGN = TOP>shBM_SETCOLOR</TD><TD>Sent when the button colour is to be changed.  The
+button saves the colours, and redraws.<BR>
+mp1: RGB value of the colour<BR>
+mp2: shBSC_BUTTONFACE for the button face, or shBSC_BACKGROUND for the background.
+<TR><TD VALIGN = TOP>WM_SETWINDOWPARAMS</TD><TD>Sent when a window parameter is changed.
+The only window parameter handled is WPM_TEXT</TD></TR>
+<TR><TD VALIGN = TOP>WM_QUERYWINDOWPARAMS</TD><TD>Sent when the program wants to query
+a window parameter.  Handles WPM_TEXT, WPM_CCHTEXT, WPM_CBCTLDATA
+and WPM_CTLDATA.</TD></TR>
+<TR><TD VALIGN = TOP>WM_QUERYDLGCODE</TD><TD>Returns DLGC_BUTTON or'd with
+either DLGC_PUSHBUTTON, DLGC_RADIOBUTTON, or DLGC_CHECKBOX</TD></TR>
+<TR><TD VALIGN = TOP>WM_QUERYCONVERTPOS</TD><TD>Returns QCP_NOCONVERT.  I
+don't know why, but Prominare said to do it.</TD></TR>
+<TR><TD VALIGN = TOP>WM_PRESPARAMCHANGED</TD><TD>Sent when a presentation parameter is
+changed.  The button saves the presentation parameters, and redraws. (see
+<A HREF="#presparams">3.3</A> for the presentation parameters supported)</TD></TR>
+<TR><TD VALIGN = TOP>WM_SYSCOLORCHANGE</TD><TD>Sent when the system's colour scheme is
+changed.  The button saves the presentation parameters, and redraws.</TD></TR>
+<TR><TD VALIGN = TOP>BM_SETCHECK</TD><TD>Sent to set the state of a check box, radio button, or
+3-state.  The button sets its state.</TD></TR>
+<TR><TD VALIGN = TOP>BM_QUERYCHECK</TD><TD>Sent to query the state of a check box, radio button,
+or 3-state.  The button returns the state.</TD></TR>
+<TR><TD VALIGN = TOP>WM_BUTTON1DOWN</TD><TD>Sent when the mouse button is pressed.
+The button sets appropriate flags, and redraws the button (in the "down" state).</TD></TR>
+<TR><TD VALIGN = TOP>WM_MOUSEMOVE</TD><TD>Sent when the mouse is moved.  The
+button checks if the mouse button is pressed, and if the mouse is inside the button.
+Redraws if necessary.</TD></TR>
+<TR><TD VALIGN = TOP>WM_BUTTON1UP</TD><TD>Sent when the mouse button is released.
+Sets appropriate flags, and redraws if necessary.  Changes state if it's an AUTOxxxx</TD></TR>
+<TR><TD VALIGN = TOP>WM_ENABLE</TD><TD>Sent when the button is enabled or diabled.
+Redraws.</TD></TR>
+<TR><TD VALIGN = TOP>WM_SETFOCUS</TD><TD>Sent when the button loses or gains
+focus.  Sets appropriate flags, and redraws.</TD></TR>
+<TR><TD VALIGN = TOP>WM_CHAR</TD><TD>Sent when a key is pressed.  Action taken
+depends on the key pressed. (see source code for details)</TD></TR>
+<TR><TD VALIGN = TOP>WM_SIZE</TD><TD>Sent when the button is resized.  Recalculates
+text position, and redraws.</TD></TR>
+<TR><TD VALIGN = TOP>WM_PAINT</TD><TD>Sent when the button is to be repainted.
+Repaints.</TD></TR>
+<TR><TD VALIGN = TOP>WM_DESTROY</TD><TD>Sent when the button is being destoyed.
+Destroys resources.  Frees allocated memory.</TD></TR>
+</TABLE>
+
+<A NAME="presparams"><H4>3.3 Presentation Parameters</H4>
+<P>The presentation parameters that are supported are:
+<TABLE BORDER=0 CELLPADDING = 0>
+<TR><TD VALIGN = TOP>shBPP_BUTTONCOLOR</TD>
+<TD>change the button colour (using RGB values) (equivalent to PP_BACKGROUNDCOLOR)</TD></TR>
+<TR><TD VALIGN = TOP>shBPP_BUTTONCOLORINDEX</TD>
+<TD>change the button colour (using colour indices) (equivalent to PP_BACKGROUNDCOLORINDEX)</TD></TR>
+<TR><TD VALIGN = TOP>shBPP_BUTTONBGCOLOR</TD>
+<TD>change the background colour (using RGB values) (equivalent to PP_USER)</TD></TR>
+<TR><TD VALIGN = TOP>shBPP_BUTTONBGCOLORINDEX</TD>
+<TD>change the background colour (using colour indices) (equivalent to PP_USER+1)</TD></TR>
+<TR><TD VALIGN = TOP>PP_FONTNAMESIZE</TD>
+<TD>change the font</TD></TR>
+</TABLE>
+
+<BR>
+<HR NOSHADE>
+<BR>
+<A HREF="ShadeBtn.html">Back</A><BR>
+<FONT SIZE="-1">Last updated March 21, 1998. &lt;&gt;&lt;<BR>
+Created by <A HREF="mailto:hubert@cs.ualberta.ca">Hubert Chan</A>.<BR>
+Optimized for Netscape 2.02 for OS/2.<BR>
+</FONT>
+</TD></TR>
+</TABLE>
+</BODY>
+</HTML>

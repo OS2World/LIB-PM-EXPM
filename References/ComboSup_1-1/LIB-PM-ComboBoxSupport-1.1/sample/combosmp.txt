@@ -1,0 +1,30 @@
+
+# Abbreviations
+#
+LF	= /align:16 /nod
+OBJS	= combosmp.obj
+
+# Inference Rules
+#
+
+.c.obj:
+    cl -Zp -W3 -c -AL -G2s $*.c
+
+# C files
+#
+
+combosmp.obj:    combosmp.c
+
+
+# Main files:  combosmp.EXE
+#
+combosmp.lnk:	combosmp
+    echo $(OBJS)	>  combosmp.lnk
+    echo combosmp.exe	>> combosmp.lnk
+    echo combosmp.map	>> combosmp.lnk
+    echo os2 llibce combosup   >> combosmp.lnk
+    echo combosmp.def	>> combosmp.lnk
+
+combosmp.exe:	combosmp combosmp.def $(OBJS)
+    link $(LF) @combosmp.lnk
+    rc combosmp.rc combosmp.exe

@@ -1,0 +1,23 @@
+/*
+** Module   :HISTORY.TXT
+** Abstract :
+**
+** Copyright (C) Sergey I. Yevtushenko
+**
+** Log: Thu  29/04/1999 Created
+**      Wed  25/10/2000 Updated for version 0.7b
+*/
+
++ - added
+* - fixed
+- - dropped
+
+v0.7b
+    + Support for swapping cells via SetSplitType()
+    + Support for "rotating" splitbar via RMB click on splitbar
+    + Support for hiding cells at run time
+    * Minor bug fixes and enchancements
+
+v0.6e
+    * Some samples and makefile cleaned up
+

@@ -1,0 +1,259 @@
+EXPM - Control Plus module
+===========================
+
+Control Plus adds four supplementary Presentation Manager controls to
+EXPM: a meter (thermometer / analog), a switch (button / throw), a
+draggable rectangle and a chained decimal digit (counter).
+
+This is a clean-room reimplementation in C (2026) of the closed-source
+"Controls+" 1.40 library (CTLPLUS.DLL), written from the published
+Controls+ API (ctlplus.h) and the Controls+ manual.  Window classes,
+style bits, message and notification codes keep their upstream names so
+that existing Controls+ code links against EXPM with only the three
+entry-point names changed.  EXPM is LGPLv3 (see LICENSE); the module
+source carries no third-party source.
+
+Entry-point renames
+-------------------
+
+    CtlInitialize   ->  WinCtlInit        (HAB hab)
+    CtlTerminate    ->  WinCtlTerminate   (VOID)
+    CtlVersion      ->  WinCtlVersion     (VOID)  -> MPFROM2SHORT(major,minor)
+
+All class names, style/message/notification macros and the public
+structures keep their upstream spelling.  The private message range
+base is named CTL_MSG_BASE here (upstream calls it MSG_BASE).
+
+    #define CTL_MSG_BASE   (WM_USER+0x800)
+
+Initialisation
+--------------
+
+    USHORT WinCtlInit( HAB hab );
+
+        Registers the four window classes.  Call once, after
+        WinCreateMsgQueue and before creating any Control Plus window.
+        Returns TRUE on success, FALSE if a class could not be
+        registered.  (Each class reserves window data for its per-window
+        state, retrieved with WinQueryWindowULong(hwnd, QWL_USER).)
+
+    USHORT WinCtlTerminate( VOID );
+
+        Releases Control Plus resources; call after the application
+        windows are destroyed.  Returns TRUE.
+
+    MRESULT WinCtlVersion( VOID );
+
+        Returns MPFROM2SHORT(major, minor); the current module reports
+        1.40.
+
+General messages (accepted by all four controls)
+------------------------------------------------
+
+    CTLM_QUERYSTYLE   ->  returns the control's current style ULONG
+    CTLM_SETSTYLE     ->  mp1 = new style ULONG
+
+Window classes
+--------------
+
+    WC_METER    "meterCtl"
+    WC_SWITCH   "switchCtl"
+    WC_RECT     "rectCtl"
+    WC_COUNTER  "counterCtl"
+
+Windows are created with the usual WinCreateWindow / WinCreateStdWindow
+call, passing the class name above, an id, and a pointer to the matching
+create structure as the pCtlData argument in mp2 of WM_CREATE.  A NULL
+create structure selects the defaults noted below.
+
+------------------------------------------------------------------------
+Meter  (WC_METER)
+------------------------------------------------------------------------
+
+Create structure:
+
+    typedef struct {
+        ULONG mtStyle;
+        ULONG mtFgColor;
+    } METERDATA, *PMETERDATA;     /* PMTCREATE */
+
+Styles:
+
+    MTS_THERM       0x00010000   thermometer (vertical bar)   [default]
+    MTS_ANALOG      0x00020000   analog meter (reserved)
+    MTS_NOTIFYOWNER 0x00000001   send WM_CONTROL notifications
+    MTS_NOINPUT     0x00000002   ignore mouse input
+    MTS_HALFTICK    0x00000100   half ticks
+    MTS_QUARTERTICK 0x00000200   quarter ticks
+
+The meter is drawn as a vertical track with a filled portion.  Unless
+MTS_NOINPUT is set, pressing the primary button (and dragging) sets the
+value from the vertical cursor position.
+
+Messages:
+
+    MTM_SETRANGE     mp1 = MPFROM2SHORT(lower, upper)
+                     Sets the value range (upper exclusive).  If
+                     upper <= lower, upper is forced to lower+1.
+    MTM_QUERYRANGE   -> MPFROM2SHORT(lower, upper)
+    MTM_SETVALUE     mp1 = MPFROMSHORT(value); value is clamped to the
+                     range
+    MTM_QUERYVALUE   -> current value
+
+Notifications (WM_CONTROL, USHORT1 = control id, SHORT2 = code):
+
+    MTN_CHGRANGE   after MTM_SETRANGE          MP2 = MPFROM2SHORT(lower,upper)
+    MTN_CHGVALUE   after the value changes     MP2 = MPFROMSHORT(value)
+
+Default range is 0..100, default value 0, default colour CLR_BLUE.
+
+------------------------------------------------------------------------
+Switch  (WC_SWITCH)
+------------------------------------------------------------------------
+
+Create structure:
+
+    typedef struct {
+        ULONG swStyle;
+        ULONG swFgColor;
+        char  swUpText   [32];   /* caption when on / up   */
+        char  swDownText [32];   /* caption when off / down */
+    } SWITCHDATA, *PSWITCHDATA;  /* PSWCREATE */
+
+Styles:
+
+    SWS_BUTTON      0x00010000   two-state button          [default]
+    SWS_THROW       0x00020000   two-position throw switch
+    SWS_NOTIFYOWNER 0x00000001   send WM_CONTROL notifications
+
+For the button style the control draws a standard raised/sunken border
+with upText when set and downText when clear.  SWS_THROW draws two
+stacked text fields with a level marker that moves up/down.
+
+Messages:
+
+    SWM_SETVALUE      mp1 = MPFROMSHORT(value)  (0 = down, 1 = up)
+    SWM_QUERYVALUE    -> MPFROMSHORT(value)
+    SWM_SETUPTEXT     mp1 = PSZ; copies the "up" text
+    SWM_QUERYUPTEXT   mp1 = PSZ buffer; fills with the "up" text
+    SWM_SETDOWNTEXT   mp1 = PSZ; copies the "down" text
+    SWM_QUERYDOWNTEXT mp1 = PSZ buffer; fills with the "down" text
+
+Notifications:
+
+    SWN_CHGVALUE      MP2 = MPFROMSHORT(value)
+    SWN_CHGUPTEXT
+    SWN_CHGDOWNTEXT
+
+Pressing the primary button toggles the value.
+
+------------------------------------------------------------------------
+Rect  (WC_RECT)
+------------------------------------------------------------------------
+
+Create structure:
+
+    typedef struct {
+        ULONG rcsStyle;
+        ULONG rcFgColor;
+        LONG  cxMin, cyMin;   /* minimum size */
+        LONG  cxMax, cyMax;   /* maximum size */
+    } RECTDATA, *PRECTDATA;   /* upstream: RECTSTR / PRECTSTR */
+
+Styles:
+
+    RCS_NOTIFYOWNER  0x00000001
+    RCS_VERTSIZE     0x00000002   size vertically
+    RCS_HORZSIZE     0x00000004   size horizontally
+    RCS_VERTHORZSIZE 0x00000006   size both ways
+    RCS_NOMOVE       0x00000008   no move, resize only
+    RCS_MINSIZE      0x00000010   honour cxMin/cyMin
+    RCS_MAXSIZE      0x00000020   honour cxMax/cyMax
+    RCS_KSQUARE      0x00000040   keep square
+    RCS_KCIRCLE      0x00000080   keep circle
+
+A movable / resizable rectangle with grab handles on the edges and
+corners.  The style bits select which operations are permitted.
+
+Messages:
+
+    RCM_SETHANDLE     mp1 = opaque owner handle (stored, not interpreted)
+    RCM_QUERYHANDLE   -> stored handle
+    RCM_SETMINSIZE    mp1 = PRECTL (uses xRight as width, yTop as height);
+                      only applied when RCS_MINSIZE is set
+    RCM_QUERYMINSIZE  mp1 = PRECTL (filled with the minimum size)
+    RCM_SETMAXSIZE    mp1 = PRECTL; only when RCS_MAXSIZE is set
+    RCM_QUERYMAXSIZE  mp1 = PRECTL (filled with the maximum size)
+
+Notifications:
+
+    RCN_SIZE          the rectangle was resized
+    RCN_DRAG          the rectangle was dragged
+    RCN_PAINT         the rectangle is about to be painted
+
+------------------------------------------------------------------------
+Counter  (WC_COUNTER)
+------------------------------------------------------------------------
+
+Create structure:
+
+    typedef struct {
+        ULONG cntStyle;
+        ULONG cntFgColor;
+        ULONG cntBgColor;
+        HWND  cntNext;    /* next, more-significant digit */
+    } COUNTERSTR, *PCOUNTERSTR;
+
+Styles:
+
+    CTS_NOTIFYOWNER 0x00000001
+    CTS_BIN         0x00000002   radix 2
+    CTS_DEC         0x00000004   radix 10 (default)
+    CTS_HEX         0x00000008   radix 16
+    CTS_NOROLL      0x00000010   never roll into cntNext
+    CTS_NOSCROLL    0x00000020   ignore mouse (upper/lower half) input
+
+A single seven-segment digit.  cntNext chains digits: the least
+significant digit is the one the user drives; each digit rolls into its
+cntNext (more-significant) digit on overflow/underflow, so a row of
+counters forms a multi-digit number.
+
+Messages:
+
+    CTM_SETVALUE      mp1 = MPFROMSHORT(value); ignored if out of range
+    CTM_QUERYVALUE    -> current value
+    CTM_SETNEXT       mp1 = HWND of the next digit
+    CTM_QUERYNEXT     -> HWND of the next digit
+    CTM_INC           increment (roll on overflow)
+    CTM_DEC           decrement (roll on underflow)
+    CTM_INCNOROLL     increment, do not roll into cntNext
+    CTM_DECNOROLL     decrement, do not roll
+
+Notifications:
+
+    CTN_CHGVALUE      MP2 = MPFROM2SHORT(value, maxValue)
+    CTN_OVERFLOW      MP2 = MPFROMSHORT(maxValue)
+    CTN_UNDERFLOW     MP2 = MPFROMSHORT(maxValue)
+
+Roll-over rules: incrementing at maxValue wraps the digit to 0 and then
+either rolls a CTM_INC into cntNext (when a next digit exists, CTS_NOROLL
+is clear and the call was not a *NOROLL variant) or, when there is no
+next digit, raises CTN_OVERFLOW if CTS_NOTIFYOWNER is set.  Decrementing
+at 0 wraps to maxValue and rolls/raises CTN_UNDERFLOW symmetrically.
+Unless CTS_NOSCROLL is set, clicking the upper half of the digit
+increments and the lower half decrements.
+
+The radix (2, 10 or 16) selects which 7-segment glyphs are used and sets
+maxValue to radix-1.
+
+------------------------------------------------------------------------
+Sample
+------------------------------------------------------------------------
+
+    sample\ctlplus\ctlpsmp.exe
+
+Creates a frame window with a client area containing all four controls:
+a meter, two switches (button and throw), a draggable rectangle and
+three chained decimal digits driven by Inc/Dec/Reset buttons.  A status
+line reports the controls' notifications.  It expects expm.dll on
+LIBPATH (or next to the EXE).

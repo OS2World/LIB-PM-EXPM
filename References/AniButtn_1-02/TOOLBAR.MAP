@@ -1,0 +1,28 @@
+
+ TOOLBAR
+
+ Start         Length     Name                   Class
+ 0001:00000000 000002F24H CODE32                 CODE 32-bit
+ 0001:00002F24 000000030H _MSGSEG32              CODE 32-bit
+ 0002:00000000 000000A70H DATA32                 DATA 32-bit
+ 0002:00000A70 000000000H CTOR_DTOR1             DATA 32-bit
+ 0002:00000A70 000000000H CTOR_DTOR2             DATA 32-bit
+ 0002:00000A70 000000000H CTOR_DTOR3             DATA 32-bit
+ 0002:00000A70 0000000E0H CONST32                CONST 32-bit
+ 0002:00000B50 00000000CH EDC1                   EDC_CLASS 32-bit
+ 0002:00000B5C 000000150H EDC2                   EDC_CLASS 32-bit
+ 0002:00000CAC 000000004H EDC3                   EDC_CLASS 32-bit
+ 0002:00000CB0 000000000H BSS32                  BSS 32-bit
+ 0002:00000CB0 000000158H c_common               BSS 32-bit
+ 0002:00000E10 000003F40H STACK32                STACK 32-bit
+
+ Origin   Group
+ 0002:0   DGROUP
+ 0000:0   FLAT
+
+ Address       Export                  Alias
+
+ 0001:00000394 TOOLBAR                 TOOLBAR
+ 0001:00000227 WNDPROC                 WNDPROC
+
+Program entry point at 0001:00000A38

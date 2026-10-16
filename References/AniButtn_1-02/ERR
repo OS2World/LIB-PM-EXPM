@@ -1,0 +1,50 @@
+
+Operating System/2 Program Maintenance Utility
+Version 2.001.000 Feb 16 1993
+Copyright (C) IBM Corporation 1988-1993
+Copyright (C) Microsoft Corp. 1988-1991
+All rights reserved.
+
+	ICC.EXE /C+ /Sa /Ss  /G4 .\ToolBar.c
+	link386  /PACKD /PM:PM ToolBar.obj, ToolBar.exe, ,..\AniButtn.lib,ToolBar.def
+
+Operating System/2 Linear Executable Linker
+Version 2.01.005 Mar 16 1993
+Copyright (C) IBM Corporation 1988-1993.
+Copyright (C) Microsoft Corp. 1988-1993.
+ All rights reserved.
+
+	rc toolbar ToolBar.exe
+Operating System/2  Resource Compiler
+Version 2.01.000 Feb 09 1993
+(C) Copyright IBM Corporation 1988-1993
+(C) Copyright Microsoft Corp. 1985-1993
+All rights reserved.
+
+
+Creating binary resource file toolbar.RES
+RC:  RCPP -E -D RC_INVOKED -f toolbar.RC -ef D:\OS2\RCPP.ERR -I D:\MUGLIB -I E:\SQLLIB -I f:\toolkt20\cplus\os2h -I F:\IBMCPP\INCLUDE -I F:\IBMCPP\IBMCLASS -I F:\TOOLKT20\C\OS2H -I F:\TOOLKT20\ASM\OS2INC
+
+toolbar.RC................
+Writing resources to OS/2 v2.0 Linear .EXE file
+Copying PRELOAD pages:  1 objects containing 3 page(s)
+Writing 2 DEMAND resource object(s)
+  Writing:  6912 bytes in 2 page(s)
+    100.1 (3192 bytes)
+    1000.1 (3192 bytes)
+    1000.4 (475 bytes)
+    7.5 (51 bytes)
+  Writing:  14340 bytes in 4 page(s)
+    1013.2 (1190 bytes)
+    1015.2 (1204 bytes)
+    1016.2 (1190 bytes)
+    1017.2 (1190 bytes)
+    1018.2 (1190 bytes)
+    1019.2 (1190 bytes)
+    1020.2 (1204 bytes)
+    1021.2 (1190 bytes)
+    1022.2 (1190 bytes)
+    1023.2 (1190 bytes)
+    4403.2 (1204 bytes)
+    4404.2 (1190 bytes)
+

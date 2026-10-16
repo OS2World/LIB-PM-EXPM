@@ -1,0 +1,195 @@
+NOTE: This article was originally published in EDM/2, issue 0604.
+
+
+
+Split Views And Toolbars
+
+Written by Sergey Yevtushenko
+
+Foreword
+
+  This article will try to explain techniques which can be used to build
+PM applications with more-or-less modern user interfaces.
+
+  The term "modern user interface" means just some "bells and whistles"
+which will make your program at least as usable and user friendly as
+the best programs on the market.
+
+  These "bells and whistles" can be divided into two relatively
+independent parts. First is split views. This is a representation of
+information in windows split (horizontally or vertically or both) into two
+or more parts. You can find this style in many commercial and shareware
+programs. For example look at PMMail or the mail and news clients in
+Netscape Navigator. The main thing in split views is the possibility for
+users to change the sizes of parts of the split views as they like. So,
+for example, a window split into two parts will really consist of three
+parts: two panels and the splitbar itself. The second part is toolbars.
+This theme is common in EDM/2 issues, but the main goal of previous
+articles in EDM/2 was to build toolbars with minimal effort for the
+developer, but not to build toolbars which really can improve usability
+and/or the look of application.
+
+  These pieces were implemented in the usual way: I just subclass window
+procedures for many standard windows. To make the developer's life easy,
+the details of this were hidden behind a simple high level interface. I
+considered using the C language for implementation just because something
+written in C can be easily be used in C++ programs, but the reverse is not
+true. The second reason was even simpler: size and speed. With this
+package you can write very small applications, where the ratio of
+functionality code vs. interface code is near 1.
+
+Using Package
+
+  As I mentioned, the use of the package is very simple: you create some
+structures filled with constants, call one function and get a window
+created for you. Take a look at example code (simple.c):
+
+
+  CellDef cdLeftPane =
+  {
+      CELL_WINDOW,
+      WC_LISTBOX,
+      "List",
+      LS_NOADJUSTPOS | WS_VISIBLE,
+      ID_LPANE
+  };
+
+
+This declaration defines one panel for a split view which will consist of
+just a simple listbox. This listbox will have window ID ID_LPANE. Another
+declaration:
+
+
+  CellDef cdRightPane =
+  {
+      CELL_WINDOW,
+      WC_MLE,
+      "SampleText",
+      MLS_BORDER | WS_VISIBLE,
+      ID_RPANE
+  };
+
+
+This is also a simple MLE with window ID set to ID_RPANE, with border
+(MLS_BORDER is set) and with text "Sample Text" in it. The third
+declaration is more complicated:
+
+
+  CellDef mainClient =
+  {
+      CELL_VSPLIT | CELL_SPLITBAR | CELL_SPLIT30x70,
+      0,
+      "Simple",
+      FCF_TITLEBAR | FCF_SYSMENU  | FCF_MENU |
+      FCF_MINMAX   | FCF_TASKLIST | FCF_SIZEBORDER |
+      0,
+      MAIN_FRAME,
+      &cdLeftPane,
+      &cdRightPane,
+      0,
+      MainClientProc
+  };
+
+
+This declaration will define the main application window. You can note the
+difference in flags. Instead of CELL_WINDOW, we create a vertically split
+window (CELL_VSPLIT), which will have a splitbar (CELL_SPLITBAR),
+initially divided into 30/70% of the window width for left and right parts
+of the window, respectively. Window classes (second argument) have no
+meaning for this case, they are always WC_FRAME. Also, instead of window
+creation flags (fourth argument), there are frame creation flags. More
+detailed explanations of meanings of these flags can be found in the
+toolkit documentation. This window will have ID MAIN_FRAME, two panels
+(description for which is in cdLeftPane and cdRightPane respectively), and
+have client window procedure "MainClientProc". In doing this procedure, we
+subclass the procedure for the internal window class CELL_CLIENT. So, you
+need to call the subclassed procedure at the end of message processing.
+For this purpose you receive a pointer to structure WindowCellCtlData
+(defined in cell.h) by issuing a call to WinQueryWindowULong. For now this
+structure contains only one field, but you can add any necessary fields.
+Because this structure will be allocated for you in the package code and
+they need to know the size of it, you should recompile cell.c each time
+you make changes in WindowCellCtlData. The rest of the fields will be
+filled with 0 with the same code.
+
+  Now we ready to create the main window for the application. This is
+done by calling CreateCell. This function takes three parameters:
+definition of the window (explained above), a window handle for the parent
+window and a window handle for the owner window. The last parameter for
+the main window should be 0. In all other cases, this parameter should be
+set to windows which will receive notification messages from other
+windows. Usually this is the main window of the application. You should
+note that the main application window definition does not have the flag
+WS_VISIBLE set. This is important, because after creating windows, we may
+need to do some other work before the application window will appear on
+the screen.
+
+  What else do we need to do? We need fill controls with some data, add
+the toolbar and set the main window position on the screen.
+
+  Creating the toolbar is similar to creating windows: you fill
+structures, call a function and get a toolbar in your application. The
+structure contains three elements: flags, toolbar ID and a pointer to an
+array of button ID's. Note that the last element in this array is 0. This
+signals the end of the toolbar button definitions. For all IDs listed in
+the button array, you should define bitmaps in the resource file and
+optionally an element in the stringtable. The element in the string table
+is needed only if in the toolbar flags you set the flag TB_BUBBLE. If you
+want to divide buttons into groups with gaps between them, you can use the
+predefined flag ID TB_SEPARATOR. For this ID you do not need to define
+bitmaps or stringtable elements (indeed, separators are not even buttons).
+The function CreateToolbar receives two parameters: a pointer to the
+toolbar definition structure and the handle of the parent window. Really,
+this is just a window with which the toolbar will communicate when
+attaching/detaching, and which will own (and receive messages from) the
+buttons contained in the toolbar. A few words about toolbar flags: they
+define the look of the toolbar only at the starting of the application and
+can be changed by user. The flags TB_ATTACHED_* define the side of the
+parent window to which the toolbar will be attached initially:
+
+
+  TB_ATTACHED_LT - left
+  TB_ATTACHED_TP - top
+  TB_ATTACHED_RT - right
+  TB_ATTACHED_BT - bottom
+
+
+If none of these are specified, the toolbar will float detached from the
+parent window. Setting the flag TB_VERTICAL together with one of the TB
+flags will be ignored. The user can at any time change the toolbar state.
+Toolbar have a "hand" for dragging, so the user can drag the attached
+toolbar and detach it from the window. By double-clicking with the left
+mouse button on this "hand" button, the user can change the orientation of
+the detached toolbar (horizontal/vertical). By double-clicking with the
+right mouse button on the "hand" you will disable/enable bubble help, if
+this was allowed by the developer (by setting the TB_BUBBLE flag). To fill
+controls with data you need to know the window handle of the control. This
+not a problem if you created this control, but this is not the case. For
+this purpose you can use the function CellWindowFromID.
+
+  As you can see, this package is powerful enough to build applications
+with a modern user-friendly interface. Although this has not been
+explained before, your application is not restricted to having windows
+split into only two parts. Each panel can also be a split view. This can
+be achieved by specifying the proper flags in the subwindow definition
+structure. Another thing not explained is the possibility of having panels
+with fixed width. This can be done by toggling the flag CELL_FIXED.
+Furthermore, you can have panels with fixed absolute size and with fixed
+relative size. If you not specify the flag CELL_SPLITBAR, you will get
+windows with panels whose sizes will change with the main window's size,
+but the relationship between them remains intact. I should note that you
+can't have both panels with fixed absolute size, but this was not the goal :).
+
+Final Words
+
+  This package was developed for my own purpose and you should always keep
+in mind that package may not exactly respond to your needs. But you have
+the sources, so do what you need to yourself :) You can use this code as
+you wish, as long as you don't forget to send me e-mail about this fact.
+Also, I would be pleased to know about any bugs which you find in my code.
+
+Regards,
+        Sergey I. Yevtushenko.
+
+Autor can be contacted via email at : evsi@naverex.kiev.ua
+

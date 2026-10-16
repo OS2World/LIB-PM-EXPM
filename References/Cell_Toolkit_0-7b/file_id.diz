@@ -1,0 +1,15 @@
+Cell Toolkit Version 0.7B
+
+    Cell toolkit is a small library for OS/2 PM. It was designed to
+simplify implementation of two important parts of user interface (UI):
+
+    - Split views
+    - Toolbars
+
+    What is split view? This is representation of information in one
+window splitted vertically or horizontally into two or more parts
+(sub windows or cells) with splitbar which can be moved by user
+(i.e. relative size of parts can be changed).
+You can find this approach in many popular applications, such as
+PMMail, Netscape Navigator, ProNews and many others.
+

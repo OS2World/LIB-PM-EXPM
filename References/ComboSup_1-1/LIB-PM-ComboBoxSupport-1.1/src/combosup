@@ -1,0 +1,34 @@
+
+# Abbreviations
+#
+LF	= /align:16 /nod
+OBJS	= combosup.obj
+
+# Inference Rules
+#
+
+.c.obj:
+    cl -Zp -W3 -c -u -Alfu -G2s $*.c
+
+# Import Libraries
+#
+combosup.lib:	combosup combosup.def
+    implib $*.lib $*.def
+
+# C files
+#
+
+combosup.obj:    combosup.c combosup.h
+
+
+# Main files:  combosup.DLL, combosup.SYM
+#
+combosup.lnk:	combosup
+    echo $(OBJS)	>  combosup.lnk
+    echo combosup.dll	>> combosup.lnk
+    echo combosup.map	>> combosup.lnk
+    echo os2 llibcdll   >> combosup.lnk
+    echo combosup.def	>> combosup.lnk
+
+combosup.dll:	combosup combosup.def $(OBJS)
+    link $(LF) @combosup.lnk

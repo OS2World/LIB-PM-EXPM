@@ -1,0 +1,96 @@
+EXPM - AniButtn module
+======================
+
+AniButtn turns an ordinary push button into a graphical two-state
+button: it shows one bitmap while it is up and a second bitmap while it
+is pressed, and it can display a help string in a static-text field
+while the pointer is over it.  The button keeps behaving like a normal
+push button - it still sends WM_COMMAND / BN_CLICKED to its owner.
+
+Clean-room clone of the AniButtn 1.02 library by Greg Ratajik (1993),
+written from its published header (ANIBUTTN.H) and manual (ANIBUTTN.DOC)
+only; no original source was used.  The upstream entry points were
+renamed to the PM style:
+
+    AniCreateButton  ->  WinCreateAniButton
+    AniDeleteButton  ->  WinDeleteAniButton
+
+Public API
+----------
+
+    VOID EXPENTRY WinCreateAniButton( HWND   hwndDlg,
+                                      SHORT  id,
+                                      USHORT idUp,
+                                      USHORT idDown,
+                                      USHORT cx,
+                                      USHORT cy,
+                                      PSZ    pszStatus,
+                                      USHORT idStatus );
+
+        Makes the existing control `id` of dialog `hwndDlg` an animated
+        button.  The control must be a WC_BUTTON with style
+        BS_USERBUTTON.  A second call for the same button is ignored.
+
+          id          identifier of the user button in the dialog.
+          idUp        bitmap resource id shown while the button is up.
+          idDown      bitmap resource id shown while it is pressed.
+          cx, cy      bitmap size in pels.
+          pszStatus   help string shown in the status field while the
+                      pointer is over the button, or NULL for none.
+          idStatus    identifier of the static-text field that displays
+                      pszStatus (0 = no status help).
+
+    VOID EXPENTRY WinDeleteAniButton( HWND  hwndDlg,
+                                      USHORT id );
+
+        Releases the animated button: restores the button's original
+        window procedure, frees the loaded bitmaps and the saved status
+        string, and (when it was the dialog's last animated button)
+        restores the dialog procedure and the status field's original
+        text.  Call it from the WM_DESTROY (or WM_CLOSE) handler of the
+        dialog.
+
+How it works
+------------
+
+A BS_USERBUTTON does not draw itself; instead it asks its owner to draw
+it by sending WM_CONTROL with the code BN_PAINT (3) and mp2 pointing at
+a USERBUTTON structure { hwnd; hps; fsState; fsStateOld; }.  The library
+subclasses the owning dialog and answers that request, blitting the up
+bitmap or - when the BDS_HILITED (0x0100) bit is set in fsState - the
+down bitmap into the supplied presentation space.
+
+A second subclass, on the button itself, watches WM_MOUSEMOVE to write
+the help string into the status field; the dialog's own WM_MOUSEMOVE
+restores the field to the text it held before the library first touched
+it.  All three pieces of state (button, status field, subclassed dialog)
+are tracked in process-wide lists held in the DLL's static data.
+
+Bitmap requirements
+-------------------
+
+The bitmaps are loaded from the application executable by
+GpiLoadBitmap(hps, NULLHANDLE, id, cx, cy), so idUp and idDown must be
+BITMAP resources of the application, not of EXPM.DLL.  Any bitmap format
+that GpiLoadBitmap accepts will do; the sample generates OS/2 2.x
+4bpp bitmaps (BITMAPINFOHEADER2) 68 x 31 pels.  cx and cy must match the
+resource size.
+
+Sample
+------
+
+    sample\anibtn\anismp.exe (source in sample\anibtn\anismp.c).
+
+Displays a small toolbar dialog with twelve animated buttons (about /
+info / exit / next / last plus seven unused buttons sharing one bitmap
+pair).  Moving the pointer over a button shows a help string in the
+status line; clicking a button pops up a message box.  The EXIT button
+ends the program.
+
+Runtime requirements
+--------------------
+
+    - expm.dll must be reachable on LIBPATH (or next to the executable).
+    - The dialog must not otherwise subclass the button or the dialog
+      window, or the two procedures must be layered carefully: only one
+      window procedure can be installed directly.

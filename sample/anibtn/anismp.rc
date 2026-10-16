@@ -1,0 +1,53 @@
+/*
+ * EXPM - Extended Presentation Manager library
+ *
+ * sample/anibtn/anismp.rc -- resources for the AniButtn sample.
+ *
+ * The toolbar dialog holds twelve WC_BUTTON controls of style
+ * BS_USERBUTTON; WinCreateAniButton turns each into a two-state
+ * graphical push button using the BITMAP resources below.
+ *
+ * Copyright (C) 2026 The EXPM Project Authors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ */
+
+#include <os2.h>
+#include "anismp.h"
+
+BITMAP BMP_ABT_UP "ABT_UP.BMP"
+BITMAP BMP_ABT_DN "ABT_DN.BMP"
+BITMAP BMP_NXT_UP "NXT_UP.BMP"
+BITMAP BMP_NXT_DN "NXT_DN.BMP"
+BITMAP BMP_LST_UP "LST_UP.BMP"
+BITMAP BMP_LST_DN "LST_DN.BMP"
+BITMAP BMP_INF_UP "INF_UP.BMP"
+BITMAP BMP_INF_DN "INF_DN.BMP"
+BITMAP BMP_EXT_UP "EXT_UP.BMP"
+BITMAP BMP_EXT_DN "EXT_DN.BMP"
+BITMAP BMP_NA_UP  "NA_UP.BMP"
+BITMAP BMP_NA_DN  "NA_DN.BMP"
+
+DLGTEMPLATE DLG_TOOLBAR LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "AniButtn Test", DLG_TOOLBAR, 0, 0, 440, 44, NOT WS_VISIBLE,
+            FCF_SYSMENU | FCF_TITLEBAR | FCF_MINMAX
+    BEGIN
+        CONTROL  "", TBB_FILE, 5,   19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_NEW,  40,  19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_EXIT, 75,  19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_NEXT, 110, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_LAST, 145, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_NA1,  180, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_NA2,  215, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_NA3,  250, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_NA4,  285, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_NA5,  320, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_NA6,  355, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        CONTROL  "", TBB_NA7,  390, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
+        LTEXT    "Move the pointer over a button.", TX_HELP, 6, 3, 428, 16, DT_WORDBREAK
+    END
+END

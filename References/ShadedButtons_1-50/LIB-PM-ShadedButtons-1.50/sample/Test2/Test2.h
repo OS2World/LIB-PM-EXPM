@@ -1,0 +1,6 @@
+#define IDP_SMALLER 100
+#define IDP_LARGER  101
+#define IDP_SMALLERD 110
+#define IDP_LARGERD 111
+
+#define IDD_ABOUT   200

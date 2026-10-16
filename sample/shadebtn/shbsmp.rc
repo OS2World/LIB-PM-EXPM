@@ -1,0 +1,99 @@
+/*
+ * EXPM - Extended Presentation Manager library
+ *
+ * sample/shadebtn/shbsmp.rc -- resources for the Shaded Buttons sample.
+ *
+ * Every control is a WC_shBUTTON (see src/shadebtn/shadebtn.c).  The
+ * check box, radio button and three-state indicators are drawn from
+ * EXPM.DLL's own pointer resources; the icon buttons below use the
+ * pointer resources of the sample itself.
+ *
+ * Copyright (C) 2026 The EXPM Project Authors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ */
+
+#define INCL_WIN
+#include <os2.h>
+#include "shadebtn.h"
+#include "shbsmp.h"
+
+POINTER IDP_UP     "Up.ICO"
+POINTER IDP_UPD    "UpD.ICO"
+POINTER IDP_UPUP   "UpUp.ICO"
+POINTER IDP_UPUPD  "UpUpD.ICO"
+POINTER IDP_DN     "Dn.ICO"
+POINTER IDP_DND    "DnD.ICO"
+POINTER IDP_DNDN   "DnDn.ICO"
+POINTER IDP_DNDND  "DnDnD.ICO"
+
+DLGTEMPLATE DLG_MAIN LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "Shaded Buttons Test", DLG_MAIN, 0, 0, 300, 188, NOT WS_VISIBLE,
+            FCF_SYSMENU | FCF_TITLEBAR | FCF_NOBYTEALIGN
+    BEGIN
+        /* ---- Push buttons -------------------------------------- */
+        GROUPBOX "Push buttons", -1, 8, 120, 140, 56
+        CONTROL  "Red",   BTN_RED,   14, 146, 40, 14, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_LEFTROUND | shBS_RIGHTROUND
+                 PRESPARAMS shBPP_BUTTONCOLOR, 0x00ffcccc
+        CONTROL  "Green", BTN_GREEN, 58, 146, 40, 14, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_LEFTROUND | shBS_RIGHTROUND
+                 PRESPARAMS shBPP_BUTTONCOLOR, 0x00ccffcc
+        CONTROL  "Blue",  BTN_BLUE, 102, 146, 40, 14, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_LEFTROUND | shBS_RIGHTROUND
+                 PRESPARAMS shBPP_BUTTONCOLOR, 0x00ccccff
+        CONTROL  "Default", BTN_DEF, 14, 128, 128, 14, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_LEFTROUND | shBS_RIGHTROUND
+
+        /* ---- Icon and vertical buttons ------------------------- */
+        GROUPBOX "Icons and vertical", -1, 156, 120, 136, 56
+        CONTROL  "#200", ICO_ICON, 162, 147, 18, 17, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_ICON
+        CONTROL  "#204", ICO_MINI, 182, 147, 18, 17, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_MINIICON
+        CONTROL  "#201", ICO_DIS,  202, 147, 18, 17, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_ICON | WS_DISABLED
+        CONTROL  "Top", BTN_V1, 226, 126, 20, 38, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_VERTICAL | shBS_TOPROUND
+                 PRESPARAMS shBPP_BUTTONCOLOR, 0x00ffdddd
+        CONTROL  "Mid", BTN_V2, 248, 126, 20, 38, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_VERTICAL
+                 PRESPARAMS shBPP_BUTTONCOLOR, 0x00ddffdd
+        CONTROL  "Low", BTN_V3, 270, 126, 20, 38, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_VERTICAL | shBS_BOTTOMROUND
+                 PRESPARAMS shBPP_BUTTONCOLOR, 0x00ddddff
+
+        /* ---- Check boxes --------------------------------------- */
+        GROUPBOX "Check boxes", -1, 8, 58, 140, 52
+        CONTROL  "Auto check box",  CHK_AUTO,   14, 86, 128, 12, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_AUTOCHECKBOX
+        CONTROL  "Three-state box", CHK_3STATE, 14, 71, 128, 12, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_AUTO3STATE
+        CONTROL  "Disabled box",    CHK_OFF,    14, 60, 128, 12, WC_shBUTTON,
+                 WS_VISIBLE | shBS_AUTOCHECKBOX | WS_DISABLED
+
+        /* ---- Radio buttons ------------------------------------- */
+        GROUPBOX "Radio buttons", -1, 156, 58, 136, 52
+        CONTROL  "Radio button one", RAD_1, 162, 86, 126, 12, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_AUTORADIOBUTTON
+        CONTROL  "Radio button two", RAD_2, 162, 71, 126, 12, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_AUTORADIOBUTTON
+        CONTROL  "Radio button three", RAD_3, 162, 60, 126, 12, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_AUTORADIOBUTTON
+
+        /* ---- Status bar (non-pushable, rounded) ---------------- */
+        CONTROL  "Ready.", ST_BAR, 8, 36, 284, 14, WC_shBUTTON,
+                 WS_VISIBLE | shBS_NOPUSH | shBS_LEFTROUND | shBS_RIGHTROUND
+
+        /* ---- Dialog buttons ------------------------------------ */
+        CONTROL  "OK",     PB_OK,     200, 14, 44, 16, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | WS_GROUP |
+                 shBS_LEFTROUND | shBS_RIGHTROUND
+        CONTROL  "Cancel", PB_CANCEL, 248, 14, 44, 16, WC_shBUTTON,
+                 WS_VISIBLE | WS_TABSTOP | shBS_LEFTROUND | shBS_RIGHTROUND
+    END
+END

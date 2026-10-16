@@ -1,0 +1,34 @@
+/*
+ * EXPM - Extended Presentation Manager library
+ *
+ * src/shadebtn/shadebtn.rc -- pointer graphics for the shaded-button
+ * window class.
+ *
+ * Merged from the LIB-PM-ShadedButtons 1.50 library (Shaded Buttons
+ * 1.50, Hubert Chan).  The ten .ptr files are the OS/2 native pointer
+ * resources of the original ShadeBtn.dll; WinShadeBtnInit loads them
+ * from EXPM.DLL and draws the check box, radio button and three-state
+ * indicators.
+ *
+ * Copyright (C) 2026 The EXPM Project Authors
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ */
+
+#define INCL_WIN
+#include <os2.h>
+#include "shaderes.h"
+
+POINTER IDP_RADIOUP      "RadioUp.ptr"
+POINTER IDP_RADIOUPSEL   "RadioUpSel.ptr"
+POINTER IDP_RADIODOWN    "RadioDown.ptr"
+POINTER IDP_RADIODOWNSEL "RadioDownSel.ptr"
+POINTER IDP_CHECKUP      "CheckUp.ptr"
+POINTER IDP_CHECKUPSEL   "CheckUpSel.ptr"
+POINTER IDP_CHECKDOWN    "CheckDown.ptr"
+POINTER IDP_CHECKDOWNSEL "CheckDownSel.ptr"
+POINTER IDP_3STATEUP     "3StateUp.ptr"
+POINTER IDP_3STATEDOWN   "3StateDown.ptr"

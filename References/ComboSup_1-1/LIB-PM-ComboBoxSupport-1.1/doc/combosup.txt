@@ -1,0 +1,86 @@
+
+
+                           Combo Box Support Routines
+                           Dave Briccetti, 74475,1072
+                                January 28, 1990
+
+
+     The routines in COMBOSUP.C are used to  help set up combo boxes.  They
+     make it easy to add strings to the combo box's listbox,  and to select
+     the initial listbox item.
+
+     There are two routines provided:
+
+          InitComboBox -                takes  an  array  of   pointers  to
+                                        strings,  and  adds each  string to
+                                        the listbox
+
+          InitComboBoxFromRcStrings -   takes an array  of resource  string
+                                        identifiers,   loads  the   strings
+                                        corresponding  to  the identifiers,
+                                        and adds the strings to the listbox
+
+     Both of these  routines also  take a parameter  which specifies  which
+     listbox entry, if any, is to be selected initially.
+
+     These routines come compiled and linked into a DLL file, COMBOSUP.DLL.
+     Library  COMBOSUP.LIB  can  be  used  for  linking,  to   establish  a
+     connection to the routines in the DLL.
+
+     COMBOSMP.C  is a sample  program which uses the  two combo box support
+     routines.  It creates a standard window containing two combo boxes. It
+     initializes  one combo  box  with  InitComboBox,  and the  other  with
+     InitComboBoxFromRcStrings.
+
+     COMBOSMP comes compiled and  linked into COMBOSMP.EXE.  It  expects to
+     find COMBOSUP.DLL in the LIBPATH.
+
+     These programs may be used without any restrictions.
+
+     Dave Briccetti
+
+
+------------------------------------------------------------------------
+
+                        32-bit Port for ArcaOS / Warp 4
+
+     The original library was written for 16-bit OS/2 PM using Microsoft C.
+     The following changes were made to port it to 32-bit OS/2 flat model
+     using OpenWatcom 2.0.1.
+
+     Source changes (combosup.c):
+
+          halloc / hfree  -  replaced with malloc / free.  The huge-model
+                             allocators are not available in 32-bit flat
+                             model.
+
+     Source changes (combosmp.c):
+
+          USHORT msg  -  the window procedure's second parameter corrected
+                         to ULONG.  In 32-bit OS/2 the PFNWP callback type
+                         passes msg as a ULONG; using USHORT produced a
+                         type mismatch that corrupted the stack under
+                         OpenWatcom's _System (callee-cleanup) convention.
+
+          SHORT cyFrame  -  changed to LONG.  WinQuerySysValue returns a
+                            LONG in 32-bit OS/2; storing it in a SHORT
+                            could truncate on large displays.
+
+     Calling convention:
+
+          EXPENTRY expands to _System in 32-bit os2.h.  Export names are
+          therefore mixed-case (InitComboBox, InitComboBoxFromRcStrings)
+          rather than the uppercase PASCAL names used in 16-bit builds.
+
+     Build system:
+
+          The original Microsoft C makefile (cl, link, rc) is replaced by
+          an OpenWatcom wmake file (makefile.wat) and a build script
+          (compile.cmd).  The wlink step uses "option implib=" to generate
+          combosup.lib automatically as a side effect of linking the DLL,
+          so no separate librarian step is needed.
+
+          Compiler flags: wcc386 -bt=os2 -zp1 -w3
+          DLL system:     system os2v2 dll initinstance terminstance
+          EXE system:     system os2v2_pm
+
