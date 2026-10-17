@@ -3,7 +3,7 @@
  *
  * src/colorwheel/colorwheel.c -- ColorWheel (modal color-picker dialog).
  *
- * Implements WinEditColorDlg(), a ready-to-use modal PM dialog wrapping
+ * Implements XpmEditColorDlg(), a ready-to-use modal PM dialog wrapping
  * the undocumented OS/2 "ColorSelectClass" color wheel control that lives
  * inside WPCONFIG.DLL (the Workplace Shell configuration DLL).
  *
@@ -46,7 +46,7 @@
 #include "expm.h"
 
 
-/* Per-dialog instance data.  Allocated on the heap by WinEditColorDlg
+/* Per-dialog instance data.  Allocated on the heap by XpmEditColorDlg
  * and freed during WM_DESTROY; a pointer to it is stored in the dialog's
  * window words at offset 0 (QWL_USER). */
 
@@ -85,13 +85,13 @@ static VOID SetSpins(HWND hwnd, CLR clr);
 
 
 /*=========================================================================
- * WinEditColorDlg() - Display the "Edit Color" modal dialog.
+ * XpmEditColorDlg() - Display the "Edit Color" modal dialog.
  *
  * Allocates per-dialog state (APPDATA), loads WPCONFIG.DLL to register
  * the ColorSelectClass window class, then runs the dialog modally via
  * WinDlgBox.  The APPDATA block is freed during WM_DESTROY.
  *=========================================================================*/
-LONG EXPENTRY WinEditColorDlg(HWND hwndParent,
+LONG EXPENTRY XpmEditColorDlg(HWND hwndParent,
                               HWND hwndOwner,
                               COLOR color,
                               PSZ pszTitle) {

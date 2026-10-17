@@ -49,7 +49,7 @@
 #define BMP_NA_UP       211
 #define BMP_NA_DN       212
 
-/* Bitmap size in pels, passed to WinCreateAniButton */
+/* Bitmap size in pels, passed to XpmCreateAniButton */
 #define BMP_CX          68
 #define BMP_CY          31
 

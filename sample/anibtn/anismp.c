@@ -4,7 +4,7 @@
  * sample/anibtn/anismp.c -- AniButtn sample application.
  *
  * Displays a small "toolbar" dialog holding twelve animated push
- * buttons made with WinCreateAniButton().  Moving the pointer over a
+ * buttons made with XpmCreateAniButton().  Moving the pointer over a
  * button shows a help string in the status line at the bottom; clicking
  * a button pops up a message box (the EXIT button ends the program).
  *
@@ -96,30 +96,30 @@ MRESULT EXPENTRY ToolBarDlg(HWND hwndDlg, ULONG msg,
  * available" buttons share one pair, as in the original sample.
  *-------------------------------------------------------------------------*/
 static VOID CreateButtons(HWND hwndDlg) {
-   WinCreateAniButton(hwndDlg, TBB_FILE, BMP_ABT_UP, BMP_ABT_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_FILE, BMP_ABT_UP, BMP_ABT_DN, BMP_CX, BMP_CY,
                       "About this program.", TX_HELP);
-   WinCreateAniButton(hwndDlg, TBB_NEW,  BMP_INF_UP, BMP_INF_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_NEW,  BMP_INF_UP, BMP_INF_DN, BMP_CX, BMP_CY,
                       "Show information about the current item.", TX_HELP);
-   WinCreateAniButton(hwndDlg, TBB_EXIT, BMP_EXT_UP, BMP_EXT_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_EXIT, BMP_EXT_UP, BMP_EXT_DN, BMP_CX, BMP_CY,
                       "Close the AniButtn sample.", TX_HELP);
-   WinCreateAniButton(hwndDlg, TBB_NEXT, BMP_NXT_UP, BMP_NXT_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_NEXT, BMP_NXT_UP, BMP_NXT_DN, BMP_CX, BMP_CY,
                       "Go to the next item.", TX_HELP);
-   WinCreateAniButton(hwndDlg, TBB_LAST, BMP_LST_UP, BMP_LST_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_LAST, BMP_LST_UP, BMP_LST_DN, BMP_CX, BMP_CY,
                       "Go to the previous item.", TX_HELP);
 
-   WinCreateAniButton(hwndDlg, TBB_NA1, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_NA1, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
                       "This button is not used in the sample.", TX_HELP);
-   WinCreateAniButton(hwndDlg, TBB_NA2, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_NA2, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
                       "This button is not used in the sample.", TX_HELP);
-   WinCreateAniButton(hwndDlg, TBB_NA3, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_NA3, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
                       "This button is not used in the sample.", TX_HELP);
-   WinCreateAniButton(hwndDlg, TBB_NA4, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_NA4, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
                       "This button is not used in the sample.", TX_HELP);
-   WinCreateAniButton(hwndDlg, TBB_NA5, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_NA5, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
                       "This button is not used in the sample.", TX_HELP);
-   WinCreateAniButton(hwndDlg, TBB_NA6, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_NA6, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
                       "This button is not used in the sample.", TX_HELP);
-   WinCreateAniButton(hwndDlg, TBB_NA7, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
+   XpmCreateAniButton(hwndDlg, TBB_NA7, BMP_NA_UP, BMP_NA_DN, BMP_CX, BMP_CY,
                       "This button is not used in the sample.", TX_HELP);
 }
 
@@ -127,18 +127,18 @@ static VOID CreateButtons(HWND hwndDlg) {
  * DeleteButtons() - release every animated button again.
  *-------------------------------------------------------------------------*/
 static VOID DeleteButtons(HWND hwndDlg) {
-   WinDeleteAniButton(hwndDlg, TBB_FILE);
-   WinDeleteAniButton(hwndDlg, TBB_NEW);
-   WinDeleteAniButton(hwndDlg, TBB_EXIT);
-   WinDeleteAniButton(hwndDlg, TBB_NEXT);
-   WinDeleteAniButton(hwndDlg, TBB_LAST);
-   WinDeleteAniButton(hwndDlg, TBB_NA1);
-   WinDeleteAniButton(hwndDlg, TBB_NA2);
-   WinDeleteAniButton(hwndDlg, TBB_NA3);
-   WinDeleteAniButton(hwndDlg, TBB_NA4);
-   WinDeleteAniButton(hwndDlg, TBB_NA5);
-   WinDeleteAniButton(hwndDlg, TBB_NA6);
-   WinDeleteAniButton(hwndDlg, TBB_NA7);
+   XpmDeleteAniButton(hwndDlg, TBB_FILE);
+   XpmDeleteAniButton(hwndDlg, TBB_NEW);
+   XpmDeleteAniButton(hwndDlg, TBB_EXIT);
+   XpmDeleteAniButton(hwndDlg, TBB_NEXT);
+   XpmDeleteAniButton(hwndDlg, TBB_LAST);
+   XpmDeleteAniButton(hwndDlg, TBB_NA1);
+   XpmDeleteAniButton(hwndDlg, TBB_NA2);
+   XpmDeleteAniButton(hwndDlg, TBB_NA3);
+   XpmDeleteAniButton(hwndDlg, TBB_NA4);
+   XpmDeleteAniButton(hwndDlg, TBB_NA5);
+   XpmDeleteAniButton(hwndDlg, TBB_NA6);
+   XpmDeleteAniButton(hwndDlg, TBB_NA7);
 }
 
 /*-------------------------------------------------------------------------

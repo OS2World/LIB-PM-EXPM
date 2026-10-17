@@ -7,8 +7,8 @@
  * written by Dave Briccetti in 1990 as a 16-bit OS/2 PM library, then
  * ported to 32-bit OS/2.  The two entry points were renamed to the PM
  * naming style:
- *     InitComboBox             -> WinInitComboBox
- *     InitComboBoxFromRcStrings -> WinInitComboBoxFromRes
+ *     InitComboBox             -> XpmInitComboBox
+ *     InitComboBoxFromRcStrings -> XpmInitComboBoxFromRes
  *
  * Copyright (C) 2026 The EXPM Project Authors
  *
@@ -41,7 +41,7 @@
 
 /* ------------------------------------------------------------------ */
 
-USHORT EXPENTRY WinInitComboBox( HWND  hwndOwner,
+USHORT EXPENTRY XpmInitComboBox( HWND  hwndOwner,
                                  ULONG idCombo,
                                  PCSZ *apszInit,
                                  LONG  iInitialSelection )
@@ -67,7 +67,7 @@ USHORT EXPENTRY WinInitComboBox( HWND  hwndOwner,
 
 /* ------------------------------------------------------------------ */
 
-USHORT EXPENTRY WinInitComboBoxFromRes( HAB     hab,
+USHORT EXPENTRY XpmInitComboBoxFromRes( HAB     hab,
                                         HMODULE hmodRes,
                                         HWND    hwndOwner,
                                         ULONG   idCombo,
@@ -113,7 +113,7 @@ USHORT EXPENTRY WinInitComboBoxFromRes( HAB     hab,
             strcpy( (PSZ)apszInit[i], pszString );
     }
 
-    WinInitComboBox( hwndOwner, idCombo, apszInit, iInitialSelection );
+    XpmInitComboBox( hwndOwner, idCombo, apszInit, iInitialSelection );
 
     for( i = 0; i < cIds; i++ )
         free( (PSZ)apszInit[i] );

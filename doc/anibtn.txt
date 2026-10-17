@@ -12,13 +12,13 @@ written from its published header (ANIBUTTN.H) and manual (ANIBUTTN.DOC)
 only; no original source was used.  The upstream entry points were
 renamed to the PM style:
 
-    AniCreateButton  ->  WinCreateAniButton
-    AniDeleteButton  ->  WinDeleteAniButton
+    AniCreateButton  ->  XpmCreateAniButton
+    AniDeleteButton  ->  XpmDeleteAniButton
 
 Public API
 ----------
 
-    VOID EXPENTRY WinCreateAniButton( HWND   hwndDlg,
+    VOID EXPENTRY XpmCreateAniButton( HWND   hwndDlg,
                                       SHORT  id,
                                       USHORT idUp,
                                       USHORT idDown,
@@ -40,7 +40,7 @@ Public API
           idStatus    identifier of the static-text field that displays
                       pszStatus (0 = no status help).
 
-    VOID EXPENTRY WinDeleteAniButton( HWND  hwndDlg,
+    VOID EXPENTRY XpmDeleteAniButton( HWND  hwndDlg,
                                       USHORT id );
 
         Releases the animated button: restores the button's original

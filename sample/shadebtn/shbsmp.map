@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/16 18:32:42
+Created on:       26/10/16 21:25:38
 Executable Image: sample\shadebtn\shbsmp.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -54,7 +54,7 @@ STACK                  STACK          DGROUP         0002:000003c0   00002000
 Address        Symbol
 =======        ======
 
-Module: obj\shbsmp.obj(D:\Projects\LIBs\ExPM\sample\shadebtn\shbsmp.c)
+Module: obj\shbsmp.obj(D:\Projects\LIBs\LIB-PM-EXPM\sample\shadebtn\shbsmp.c)
 0001:00000010  main_
 0001:000000cf+ MainDlg
 Module: C:\WATCOM/lib386/os2\clib3r.lib(stk)
@@ -198,7 +198,7 @@ Symbol                              Module
 
 WinInitialize                       PMWIN
 WinCreateMsgQueue                   PMWIN
-WinShadeBtnInit                     expm.dll
+XpmShadeBtnInit                     expm.dll
 WinMessageBox                       PMWIN
 WinLoadDlg                          PMWIN
 WinGetMsg                           PMWIN
@@ -206,7 +206,7 @@ WinDispatchMsg                      PMWIN
 WinDestroyWindow                    PMWIN
 WinDestroyMsgQueue                  PMWIN
 WinTerminate                        PMWIN
-WinShadeBtnQueryVersion             expm.dll
+XpmShadeBtnQueryVersion             expm.dll
 WinWindowFromID                     PMWIN
 WinSendMsg                          PMWIN
 WinPostMsg                          PMWIN
@@ -238,4 +238,4 @@ C:\WATCOM/lib386/os2\os2386.lib
 Stack size:  2000 (8192.)
 Memory size:  3d92 (15762.)
 Entry point address: 0001:00000422
-Link time: 00:00.62
+Link time: 00:00.59

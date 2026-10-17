@@ -4,7 +4,7 @@
  * sample/colorwheel/cwsmp.c -- ColorWheel sample application.
  *
  * Creates a standard PM window.  Clicking any mouse button on the client
- * area opens the "Edit Color" dialog (WinEditColorDlg).  While the dialog
+ * area opens the "Edit Color" dialog (XpmEditColorDlg).  While the dialog
  * is open, the client window is repainted live as the user drags the
  * color wheel (WM_COLORWHEELCHANGED).  After the dialog closes, the window
  * title shows the returned RGB values for five seconds.
@@ -90,7 +90,7 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
       case WM_BUTTON1CLICK:
       case WM_BUTTON2CLICK:
       case WM_BUTTON3CLICK:
-         clr.lClr = WinEditColorDlg(HWND_DESKTOP, hwnd,
+         clr.lClr = XpmEditColorDlg(HWND_DESKTOP, hwnd,
                                     (COLOR)clr.lClr, NULL);
          if (clr.lClr == CLR_ERROR)
             break;

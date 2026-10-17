@@ -3,8 +3,8 @@
  *
  * Creates a standard window with two combo boxes:
  *   - combo 1 populated from a resource STRINGTABLE via
- *     WinInitComboBoxFromRes
- *   - combo 2 populated from a hard-coded array via WinInitComboBox
+ *     XpmInitComboBoxFromRes
+ *   - combo 2 populated from a hard-coded array via XpmInitComboBox
  *
  * Adapted from the COMBOSMP sample of LIB-PM-ComboBoxSupport 1.1
  * (public domain, by Dave Briccetti).
@@ -31,6 +31,7 @@
 #define  INCL_WINLISTBOXES
 #define  INCL_WINSYS
 #define  INCL_WINWINDOWMGR
+#define  INCL_GPI
 #include <os2.h>
 
 #include "combosmp.h"
@@ -109,12 +110,12 @@ MRESULT EXPENTRY ComboSampWindowProc( HWND hwnd, ULONG msg,
                 CBS_DROPDOWNLIST, 0, 0, 0, 0,
                 hwnd, HWND_TOP, ID_COMBO2, 0, 0 );
 
-            WinInitComboBoxFromRes( hab, 0, hwnd, ID_COMBO1,
+            XpmInitComboBoxFromRes( hab, 0, hwnd, ID_COMBO1,
                 aCombo1Init,
                 sizeof aCombo1Init / sizeof aCombo1Init[0],
                 40, LIT_NONE );
 
-            WinInitComboBox( hwnd, ID_COMBO2, apszCombo2Init, 1 );
+            XpmInitComboBox( hwnd, ID_COMBO2, apszCombo2Init, 1 );
             break;
         }
 
@@ -129,10 +130,27 @@ MRESULT EXPENTRY ComboSampWindowProc( HWND hwnd, ULONG msg,
                 SWP_MOVE | SWP_SIZE | SWP_SHOW );
             break;
 
+        case WM_ERASEBACKGROUND:
+        {
+            HPS     hps = (HPS)mp1;
+            RECTL   rcl;
+
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
+            WinQueryWindowRect( hwnd, &rcl );
+            WinFillRect( hps, &rcl,
+                (LONG)WinQuerySysColor( HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0 ) );
+            return (MRESULT)TRUE;
+        }
+
         case WM_PAINT:
         {
-            HPS hps = WinBeginPaint( hwnd, 0, 0 );
-            GpiErase( hps );
+            HPS     hps = WinBeginPaint( hwnd, 0, 0 );
+            RECTL   rcl;
+
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
+            WinQueryWindowRect( hwnd, &rcl );
+            WinFillRect( hps, &rcl,
+                (LONG)WinQuerySysColor( HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0 ) );
             WinEndPaint( hps );
             break;
         }

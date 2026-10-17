@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/16 18:32:41
+Created on:       26/10/16 21:25:38
 Executable Image: sample\colorwheel\cwsmp.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -54,7 +54,7 @@ STACK                  STACK          DGROUP         0002:00000370   00002000
 Address        Symbol
 =======        ======
 
-Module: obj\cwsmp.obj(D:\Projects\LIBs\ExPM\sample\colorwheel\cwsmp.c)
+Module: obj\cwsmp.obj(D:\Projects\LIBs\LIB-PM-EXPM\sample\colorwheel\cwsmp.c)
 0001:00000010  main_
 0001:000000d7+ ClientWndProc
 Module: C:\WATCOM/lib386/os2\clib3r.lib(stk)
@@ -208,7 +208,7 @@ WinTerminate                        PMWIN
 WinInvalidateRect                   PMWIN
 WinQueryWindow                      PMWIN
 WinSetWindowText                    PMWIN
-WinEditColorDlg                     expm.dll
+XpmEditColorDlg                     expm.dll
 WinQueryAnchorBlock                 PMWIN
 WinStartTimer                       PMWIN
 WinStopTimer                        PMWIN
@@ -240,4 +240,4 @@ C:\WATCOM/lib386/os2\os2386.lib
 Stack size:  2000 (8192.)
 Memory size:  3c92 (15506.)
 Entry point address: 0001:00000372
-Link time: 00:00.48
+Link time: 00:00.59

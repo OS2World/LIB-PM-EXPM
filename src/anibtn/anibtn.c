@@ -7,7 +7,7 @@
  * Ratajik (1993), written from its published header (ANIBUTTN.H) and
  * manual (ANIBUTTN.DOC) only; no original source was used.
  *
- * WinCreateAniButton() turns an ordinary WC_BUTTON / BS_USERBUTTON
+ * XpmCreateAniButton() turns an ordinary WC_BUTTON / BS_USERBUTTON
  * control into a graphical push button that shows one bitmap while it
  * is up and another while it is pressed, and (optionally) displays a
  * help string in a static-text field while the pointer is over it.  The
@@ -25,8 +25,8 @@
  *
  * The upstream entry points AniCreateButton / AniDeleteButton are
  * renamed to the PM Win* style:
- *     AniCreateButton  ->  WinCreateAniButton
- *     AniDeleteButton  ->  WinDeleteAniButton
+ *     AniCreateButton  ->  XpmCreateAniButton
+ *     AniDeleteButton  ->  XpmDeleteAniButton
  * See doc/anibtn.txt for the API reference.
  *
  * Copyright (C) 2026 The EXPM Project Authors
@@ -111,9 +111,9 @@ static VOID     FreeDialog(HWND hwndDlg);
 
 
 /*=========================================================================
- * WinCreateAniButton() - make an existing user button animated.
+ * XpmCreateAniButton() - make an existing user button animated.
  *=========================================================================*/
-VOID EXPENTRY WinCreateAniButton(HWND hwndDlg,
+VOID EXPENTRY XpmCreateAniButton(HWND hwndDlg,
                                  SHORT id,
                                  USHORT idUp,
                                  USHORT idDown,
@@ -194,9 +194,9 @@ VOID EXPENTRY WinCreateAniButton(HWND hwndDlg,
 
 
 /*=========================================================================
- * WinDeleteAniButton() - release an animated button.
+ * XpmDeleteAniButton() - release an animated button.
  *=========================================================================*/
-VOID EXPENTRY WinDeleteAniButton(HWND hwndDlg, USHORT id) {
+VOID EXPENTRY XpmDeleteAniButton(HWND hwndDlg, USHORT id) {
    PANIBTN p, *pp;
    BOOL    fMore;
 
@@ -351,7 +351,7 @@ static VOID DrawButton(PANIBTN p, HPS hps, ULONG fsState) {
  * FreeDialog() - drop all per-dialog state (procs, fields, buttons) and
  * restore the dialog's original window procedure.
  *
- * Used both by WinDeleteAniButton (when the last button goes) and by the
+ * Used both by XpmDeleteAniButton (when the last button goes) and by the
  * WM_DESTROY safety net.
  *=========================================================================*/
 static VOID FreeDialog(HWND hwndDlg) {
@@ -429,7 +429,7 @@ static MRESULT EXPENTRY AniBtnProc(HWND hwnd, ULONG msg,
  *   WM_CONTROL / BN_PAINT : draw the up or down bitmap.
  *   WM_MOUSEMOVE          : restore the status fields.
  *   WM_DESTROY            : safety net; free anything the application
- *                           forgot to delete with WinDeleteAniButton.
+ *                           forgot to delete with XpmDeleteAniButton.
  *=========================================================================*/
 static MRESULT EXPENTRY AniDlgProc(HWND hwnd, ULONG msg,
                                    MPARAM mp1, MPARAM mp2) {

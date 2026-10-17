@@ -42,7 +42,7 @@ int main(void) {
    HWND hwndFrame = NULLHANDLE;
    QMSG qmsg;
 
-   if (!WinShadeBtnInit()) {
+   if (!XpmShadeBtnInit()) {
       WinMessageBox(HWND_DESKTOP, HWND_DESKTOP,
                     "Could not register the shaded-button window class.",
                     "Shaded Buttons", 0, MB_OK | MB_ERROR);
@@ -73,7 +73,7 @@ MRESULT EXPENTRY MainDlg(HWND hwndDlg, ULONG msg,
 
       case WM_INITDLG: {
          CHAR sz[80];
-         ULONG ulVer = WinShadeBtnQueryVersion();
+         ULONG ulVer = XpmShadeBtnQueryVersion();
 
          sprintf(sz, "Shaded Buttons %d.%02d - press a button.",
                  (int)(ulVer / 100), (int)(ulVer % 100));

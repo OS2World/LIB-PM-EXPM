@@ -15,22 +15,22 @@ window class name, style bits, message and parameter codes keep their
 upstream names, so existing Shaded Button code compiles unchanged.  Only
 the two entry points were renamed to the PM style:
 
-    shBtnInit           ->  WinShadeBtnInit
-    shBtnQueryVersion   ->  WinShadeBtnQueryVersion
+    shBtnInit           ->  XpmShadeBtnInit
+    shBtnQueryVersion   ->  XpmShadeBtnQueryVersion
 
 The upstream PMCX wrapper (ShBtn.dll) is not part of EXPM.
 
 Public API
 ----------
 
-    BOOL EXPENTRY WinShadeBtnInit( VOID );
+    BOOL EXPENTRY XpmShadeBtnInit( VOID );
 
         Registers the window class WC_shBUTTON.  Call it once, after
         WinCreateMsgQueue and before creating any shaded button.
         Returns TRUE on success.  The ten check / radio / three-state
         indicator graphics are loaded from EXPM.DLL on the first call.
 
-    ULONG EXPENTRY WinShadeBtnQueryVersion( VOID );
+    ULONG EXPENTRY XpmShadeBtnQueryVersion( VOID );
 
         Returns the library version times 100 (1.50 reports 150).
 
@@ -111,7 +111,7 @@ and WM_SETFOCUS drive the button state.
 The ten check / radio / three-state indicator graphics are OS/2 pointer
 resources that were extracted from the original ShadeBtn.dll and merged
 into EXPM.DLL (src/shadebtn/*.ptr, listed in src/shadebtn/shadebtn.rc via
-the combined script src/expm.rc).  WinShadeBtnInit finds EXPM.DLL with
+the combined script src/expm.rc).  XpmShadeBtnInit finds EXPM.DLL with
 DosQueryModuleHandle and loads them with WinLoadPointer.
 
 The module keeps its own private CLR colour union rather than using the

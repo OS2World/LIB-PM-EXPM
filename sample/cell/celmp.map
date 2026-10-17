@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/16 18:32:41
+Created on:       26/10/16 21:25:37
 Executable Image: sample\cell\celmp.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -54,7 +54,7 @@ STACK                  STACK          DGROUP         0002:000002c0   00002000
 Address        Symbol
 =======        ======
 
-Module: obj\celmp.obj(D:\Projects\LIBs\ExPM\sample\cell\celmp.c)
+Module: obj\celmp.obj(D:\Projects\LIBs\LIB-PM-EXPM\sample\cell\celmp.c)
 0001:00000010+ MainClientProc
 0001:00000084  main_
 0002:0000001c+ _cdLeftPane
@@ -177,14 +177,14 @@ WinDefWindowProc                    PMWIN
 WinInitialize                       PMWIN
 WinCreateMsgQueue                   PMWIN
 WinTerminate                        PMWIN
-WinCellInit                         expm.dll
+XpmCellInit                         expm.dll
 WinQueryWindowPos                   PMWIN
-WinCreateCell                       expm.dll
-WinCellWindowFromID                 expm.dll
-WinGenResIDStr                      expm.dll
+XpmCreateCell                       expm.dll
+XpmCellWindowFromID                 expm.dll
+XpmGenResIDStr                      expm.dll
 WinSendMsg                          PMWIN
 WinSetWindowPos                     PMWIN
-WinCreateToolbar                    expm.dll
+XpmCreateToolbar                    expm.dll
 WinSetPresParam                     PMWIN
 WinGetMsg                           PMWIN
 WinDispatchMsg                      PMWIN
@@ -211,4 +211,4 @@ C:\WATCOM/lib386/os2\os2386.lib
 Stack size:  2000 (8192.)
 Memory size:  2ae7 (10983.)
 Entry point address: 0001:00000324
-Link time: 00:00.63
+Link time: 00:00.80

@@ -4,7 +4,7 @@
  * sample/anibtn/anismp.rc -- resources for the AniButtn sample.
  *
  * The toolbar dialog holds twelve WC_BUTTON controls of style
- * BS_USERBUTTON; WinCreateAniButton turns each into a two-state
+ * BS_USERBUTTON; XpmCreateAniButton turns each into a two-state
  * graphical push button using the BITMAP resources below.
  *
  * Copyright (C) 2026 The EXPM Project Authors

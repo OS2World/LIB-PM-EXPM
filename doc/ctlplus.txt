@@ -16,9 +16,9 @@ source carries no third-party source.
 Entry-point renames
 -------------------
 
-    CtlInitialize   ->  WinCtlInit        (HAB hab)
-    CtlTerminate    ->  WinCtlTerminate   (VOID)
-    CtlVersion      ->  WinCtlVersion     (VOID)  -> MPFROM2SHORT(major,minor)
+    CtlInitialize   ->  XpmCtlInit        (HAB hab)
+    CtlTerminate    ->  XpmCtlTerminate   (VOID)
+    CtlVersion      ->  XpmCtlVersion     (VOID)  -> MPFROM2SHORT(major,minor)
 
 All class names, style/message/notification macros and the public
 structures keep their upstream spelling.  The private message range
@@ -29,7 +29,7 @@ base is named CTL_MSG_BASE here (upstream calls it MSG_BASE).
 Initialisation
 --------------
 
-    USHORT WinCtlInit( HAB hab );
+    USHORT XpmCtlInit( HAB hab );
 
         Registers the four window classes.  Call once, after
         WinCreateMsgQueue and before creating any Control Plus window.
@@ -37,12 +37,12 @@ Initialisation
         registered.  (Each class reserves window data for its per-window
         state, retrieved with WinQueryWindowULong(hwnd, QWL_USER).)
 
-    USHORT WinCtlTerminate( VOID );
+    USHORT XpmCtlTerminate( VOID );
 
         Releases Control Plus resources; call after the application
         windows are destroyed.  Returns TRUE.
 
-    MRESULT WinCtlVersion( VOID );
+    MRESULT XpmCtlVersion( VOID );
 
         Returns MPFROM2SHORT(major, minor); the current module reports
         1.40.

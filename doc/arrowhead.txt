@@ -1,0 +1,94 @@
+EXPM - ArrowHead module
+=======================
+
+ArrowHead provides a single helper that draws a two-line arrowhead at
+the tip of a line in a GPI presentation space.  The arrowhead is drawn
+with the current GPI line attributes (color, width, line type) of the
+presentation space, and can optionally be filled as a closed area.
+
+Clean-room reimplementation of the ArrowHead API by David Kopp
+(shareware), written from its published header and readme only; no
+third-party source is used (see the "Licence" section below).  The
+single entry point was renamed to the PM style:
+
+    ArrowHead   ->  XpmDrawArrowHead
+
+The window class, message and parameter names of the other modules do
+not apply here: this module has no window class and no resources.
+
+Public API
+----------
+
+    VOID EXPENTRY XpmDrawArrowHead( HPS    hps,
+                                    POINTL ptStart,
+                                    POINTL ptEnd,
+                                    LONG   lLength,
+                                    double dAngle,
+                                    BOOL   bFill );
+
+        Draws two lines that form the "V" of an arrowhead pointing from
+        ptStart toward ptEnd.  The arrowhead is positioned at ptEnd and
+        drawn using the current line attributes of hps.
+
+        hps      presentation space to draw into.
+        ptStart  starting point of the line (tail end; used only to
+                 determine the direction - the shaft is not drawn here).
+        ptEnd    ending point of the line (tip of the arrowhead).
+        lLength  length of each arrowhead line, in world-coordinate
+                 units.
+        dAngle   half-angle of the arrowhead in degrees; each arrowhead
+                 line is offset by this angle from the main line
+                 direction.  30 gives a narrow head, 45 a wide one.
+        bFill    TRUE to fill the arrowhead triangle as a closed area
+                 using GpiBeginArea/GpiEndArea; FALSE to draw the two
+                 open lines only.
+
+        Notes:
+          - When ptStart == ptEnd the function draws nothing (degenerate
+            line).
+          - The fill uses the GPI area attributes (pattern, color) set on
+            the presentation space.  Remember that DRO_FILL and area
+            filling use the current fill pattern, so call
+            GpiSetPattern(hps, PATSYM_SOLID) if a solid fill is wanted.
+
+How it works
+------------
+
+The direction from the tip back toward the tail (ptStart - ptEnd) is
+reduced to a unit vector, and the two arrowhead lines are that vector
+rotated by +half-angle and -half-angle, of length lLength, meeting at
+the tip (ptEnd).  The head is emitted with GpiMove/GpiLine - wrapped in
+GpiBeginArea/GpiEndArea when bFill is TRUE.
+
+Sample
+------
+
+    sample\arrowhead\arsmp.exe (source in sample\arrowhead\arsmp.c).
+
+A resizable PM window that draws three groups of arrows, all scaling
+with the window size:
+
+    - Open arrowheads in the four principal directions (E, N, W, S).
+    - Filled arrowheads on the four diagonals.
+    - Half-angle comparison: 15, 30 and 45 deg, all pointing right.
+
+The shaft of each arrow is drawn with GpiLine; the head is then added by
+calling XpmDrawArrowHead().
+
+Runtime requirements
+--------------------
+
+    - expm.dll must be reachable on LIBPATH (or next to the executable).
+    - INCL_GPI must be in effect for the GPI calls the caller uses to
+      draw the shaft (h/expm.h defines it).
+
+Licence
+-------
+
+The original ArrowHead package (David Kopp) is shareware: the readme
+asks for a donation and gives a contact address; no formal licence is
+stated.  Because that permits neither redistribution nor reuse of the
+source, EXPM does not use the original source.  This module is an
+independent, clean-room reimplementation of the published ArrowHead API,
+written from the header and readme only; it carries no third-party
+source and is covered by the EXPM LGPLv3 licence (see LICENSE).

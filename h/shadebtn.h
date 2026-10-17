@@ -7,8 +7,8 @@
  * 1.50) by Hubert Chan; see src/shadebtn/shadebtn.c for the copyright
  * notice and licence.  The entry points were renamed to the PM style:
  *
- *     shBtnInit          -> WinShadeBtnInit
- *     shBtnQueryVersion  -> WinShadeBtnQueryVersion
+ *     shBtnInit          -> XpmShadeBtnInit
+ *     shBtnQueryVersion  -> XpmShadeBtnQueryVersion
  *
  * The window class name, window styles, messages and presentation
  * parameters keep their upstream names so that code written against
@@ -37,22 +37,22 @@
 #ifndef EXPM_SHADEBTN_H
 #define EXPM_SHADEBTN_H
 
-/* Window class name.  Register it with WinShadeBtnInit, then use
+/* Window class name.  Register it with XpmShadeBtnInit, then use
  * WC_shBUTTON anywhere WC_BUTTON would be used. */
 #define WC_shBUTTON             "shButton"
 
 #ifndef RC_INVOKED
 
-/* WinShadeBtnInit -- register the shaded-button window class.
+/* XpmShadeBtnInit -- register the shaded-button window class.
  * Call once, after WinCreateMsgQueue and before creating any
  * WC_shBUTTON window.  Returns TRUE on success.
  * (Upstream name: shBtnInit) */
-BOOL  EXPENTRY WinShadeBtnInit( VOID );
+BOOL  EXPENTRY XpmShadeBtnInit( VOID );
 
-/* WinShadeBtnQueryVersion -- return the library version times 100
+/* XpmShadeBtnQueryVersion -- return the library version times 100
  * (for example 1.50 reports 150).
  * (Upstream name: shBtnQueryVersion) */
-ULONG EXPENTRY WinShadeBtnQueryVersion( VOID );
+ULONG EXPENTRY XpmShadeBtnQueryVersion( VOID );
 
 #endif /* RC_INVOKED */
 

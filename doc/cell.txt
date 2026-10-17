@@ -24,7 +24,7 @@ per process:
 
     HAB hab = WinInitialize(0);
     ...
-    WinCellInit(hab);
+    XpmCellInit(hab);
 
 The classes registered are "Uni.Cell.Client", "Uni.Tb.Client" and
 "Uni.Tb.Separator".
@@ -43,7 +43,7 @@ Describe the tree with CellDef structures (see h/expm.h for the fields):
                         0, "Main", FCF_TITLEBAR | ..., MAIN_FRAME,
                         &cdLeft, &cdRight, 0, MainClientProc };
 
-    HWND hwndFrame = WinCreateCell(&cdMain, HWND_DESKTOP, 0);
+    HWND hwndFrame = XpmCreateCell(&cdMain, HWND_DESKTOP, 0);
 
 lType combinations:
 
@@ -66,17 +66,17 @@ the first word of the WindowCellCtlData stored at the window's QWL_USER:
 3. Finding and driving panels
 ----------------------------------------------------------------------------
 
-    hwndPanel = WinCellWindowFromID(hwndFrame, ID_LIST);        /* find   */
-    hwndCell  = WinCellParentWindowFromID(hwndFrame, ID_LIST);  /* parent */
+    hwndPanel = XpmCellWindowFromID(hwndFrame, ID_LIST);        /* find   */
+    hwndCell  = XpmCellParentWindowFromID(hwndFrame, ID_LIST);  /* parent */
 
-    LONG pct = WinQueryCellSplit(hwndCell, ID_CELL);            /* ratio  */
-    WinSetCellSplit(hwndCell, ID_CELL, 40);                     /* set %  */
+    LONG pct = XpmQueryCellSplit(hwndCell, ID_CELL);            /* ratio  */
+    XpmSetCellSplit(hwndCell, ID_CELL, 40);                     /* set %  */
 
-    LONG type = WinQueryCellSplitType(hwndCell, ID_CELL);       /* dir    */
-    WinSetCellSplitType(hwndCell, ID_CELL, CELL_HSPLIT);        /* change */
+    LONG type = XpmQueryCellSplitType(hwndCell, ID_CELL);       /* dir    */
+    XpmSetCellSplitType(hwndCell, ID_CELL, CELL_HSPLIT);        /* change */
 
-    WinShowCell(hwndFrame, ID_LIST, FALSE);                     /* hide   */
-    WinShowCell(hwndFrame, ID_LIST, TRUE);                      /* show   */
+    XpmShowCell(hwndFrame, ID_LIST, FALSE);                     /* hide   */
+    XpmShowCell(hwndFrame, ID_LIST, TRUE);                      /* show   */
 
 
 4. Toolbars
@@ -87,11 +87,11 @@ Build a TbDef and attach it to a cell frame window:
     ULONG  aItems[] = { IDB_OPEN, TB_SEPARATOR, IDB_EXIT, 0 };
     TbDef  tb       = { TB_ATTACHED_TP | TB_BUBBLE, ID_TOOLBAR, aItems };
 
-    WinCreateToolbar(hwndFrame, &tb);
+    XpmCreateToolbar(hwndFrame, &tb);
 
   * aItems is NULL-terminated; TB_SEPARATOR inserts a gap.
   * Buttons are WC_BUTTON controls with BS_BITMAP; each button resolves
-    its bitmap from the '#nnn' text built by WinGenResIDStr.
+    its bitmap from the '#nnn' text built by XpmGenResIDStr.
   * With TB_BUBBLE, hover help is read from a STRINGTABLE in the
     application resources numbered from the item IDs, and is shown in a
     small window whose ID is TB_BUBBLEID.
@@ -99,26 +99,26 @@ Build a TbDef and attach it to a cell frame window:
     undocked and TB_VERTICAL makes the default orientation vertical.
   * The toolbar reports WM_COMMAND (with the button ID) to the client
     window.  Buttons can be disabled/enabled via WinEnableWindow on the
-    button window found with WinCellWindowFromID.
+    button window found with XpmCellWindowFromID.
 
-WinGenResIDStr(buf, id) formats '#nnn' for a resource ID; it is used by
+XpmGenResIDStr(buf, id) formats '#nnn' for a resource ID; it is used by
 bitmap buttons and list items alike.
 
 
 5. Naming mapping (upstream Cell Toolkit 0.7b -> EXPM)
 ----------------------------------------------------------------------------
 
-    ToolkitInit            -> WinCellInit
-    CreateCell             -> WinCreateCell
-    CellWindowFromID       -> WinCellWindowFromID
-    CellParentWindowFromID -> WinCellParentWindowFromID
-    CreateToolbar          -> WinCreateToolbar
-    GenResIDStr            -> WinGenResIDStr
-    GetSplit               -> WinQueryCellSplit
-    SetSplit               -> WinSetCellSplit
-    GetSplitType           -> WinQueryCellSplitType
-    SetSplitType           -> WinSetCellSplitType
-    ShowCell               -> WinShowCell
+    ToolkitInit            -> XpmCellInit
+    CreateCell             -> XpmCreateCell
+    CellWindowFromID       -> XpmCellWindowFromID
+    CellParentWindowFromID -> XpmCellParentWindowFromID
+    CreateToolbar          -> XpmCreateToolbar
+    GenResIDStr            -> XpmGenResIDStr
+    GetSplit               -> XpmQueryCellSplit
+    SetSplit               -> XpmSetCellSplit
+    GetSplitType           -> XpmQueryCellSplitType
+    SetSplitType           -> XpmSetCellSplitType
+    ShowCell               -> XpmShowCell
 
 Constants (CELL_*, TB_*, CellDef, TbDef, WindowCellCtlData) keep their
 upstream names and meanings; see h/expm.h.

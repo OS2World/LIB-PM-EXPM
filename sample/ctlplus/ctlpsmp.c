@@ -195,32 +195,47 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             ReportControl(hwnd, ID_CNT0, CTN_CHGVALUE);
             return (MRESULT)FALSE;
 
+        case WM_ERASEBACKGROUND:
+        {
+            HPS   hps = (HPS)mp1;
+            RECTL rcl;
+
+            GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
+            WinQueryWindowRect(hwnd, &rcl);
+            WinFillRect(hps, &rcl,
+                        (LONG)WinQuerySysColor(HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0));
+            return (MRESULT)TRUE;
+        }
+
         case WM_PAINT:
         {
             HPS   hps = WinBeginPaint(hwnd, NULLHANDLE, NULL);
             RECTL rcl, rLab;
+            LONG  clrBack = (LONG)WinQuerySysColor(HWND_DESKTOP,
+                                                   SYSCLR_DIALOGBACKGROUND, 0);
 
             WinQueryWindowRect(hwnd, &rcl);
-            WinFillRect(hps, &rcl, CLR_BLUE);
+            GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
+            WinFillRect(hps, &rcl, clrBack);
 
             rLab.xLeft =  20; rLab.xRight = 170; rLab.yBottom = 414; rLab.yTop = 438;
-            WinDrawText(hps, -1, "Throw Switch", &rLab, CLR_WHITE, CLR_BLUE,
+            WinDrawText(hps, -1, "Throw Switch", &rLab, CLR_BLACK, clrBack,
                         DT_CENTER | DT_VCENTER | DT_ERASERECT);
 
             rLab.xLeft =  20; rLab.xRight = 170; rLab.yBottom = 194; rLab.yTop = 218;
-            WinDrawText(hps, -1, "Button Switch", &rLab, CLR_WHITE, CLR_BLUE,
+            WinDrawText(hps, -1, "Button Switch", &rLab, CLR_BLACK, clrBack,
                         DT_CENTER | DT_VCENTER | DT_ERASERECT);
 
             rLab.xLeft = 190; rLab.xRight = 320; rLab.yBottom = 414; rLab.yTop = 438;
-            WinDrawText(hps, -1, "Therm Meter", &rLab, CLR_WHITE, CLR_BLUE,
+            WinDrawText(hps, -1, "Therm Meter", &rLab, CLR_BLACK, clrBack,
                         DT_CENTER | DT_VCENTER | DT_ERASERECT);
 
             rLab.xLeft = 330; rLab.xRight = 500; rLab.yBottom = 414; rLab.yTop = 438;
-            WinDrawText(hps, -1, "Sizing Rect", &rLab, CLR_WHITE, CLR_BLUE,
+            WinDrawText(hps, -1, "Sizing Rect", &rLab, CLR_BLACK, clrBack,
                         DT_CENTER | DT_VCENTER | DT_ERASERECT);
 
             rLab.xLeft = 505; rLab.xRight = 645; rLab.yBottom = 358; rLab.yTop = 382;
-            WinDrawText(hps, -1, "Digit Counters", &rLab, CLR_WHITE, CLR_BLUE,
+            WinDrawText(hps, -1, "Digit Counters", &rLab, CLR_BLACK, clrBack,
                         DT_CENTER | DT_VCENTER | DT_ERASERECT);
 
             WinEndPaint(hps);
@@ -292,7 +307,7 @@ INT main(VOID)
         return -3;
     }
 
-    WinCtlInit(hab);
+    XpmCtlInit(hab);
 
     hwndFrame = WinCreateStdWindow(HWND_DESKTOP,
                                    WS_VISIBLE,
@@ -315,7 +330,7 @@ INT main(VOID)
         WinDestroyWindow(hwndFrame);
     }
 
-    WinCtlTerminate();
+    XpmCtlTerminate();
     WinDestroyMsgQueue(hmq);
     WinTerminate(hab);
 

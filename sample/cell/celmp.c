@@ -8,7 +8,7 @@
  * Adapted from the SIMPLE sample of the Cell Toolkit 0.7b
  * (copyright (C) Sergey I. Yevtushenko, BSD-2 terms; see
  * src/cell/cell.c).  Toolkit calls use the Presentation Manager-style
- * EXPM names (WinCellInit, WinCreateCell, ...); see doc/cell.txt.
+ * EXPM names (XpmCellInit, XpmCreateCell, ...); see doc/cell.txt.
  *
  * Copyright (C) 2026 The EXPM Project Authors
  *
@@ -152,19 +152,19 @@ INT main(VOID)
         return -2;
     }
 
-    WinCellInit(hab);
+    XpmCellInit(hab);
 
     WinQueryWindowPos(HWND_DESKTOP, &swp);
 
-    hwndFrame = WinCreateCell(&mainClient, HWND_DESKTOP, 0);
+    hwndFrame = XpmCreateCell(&mainClient, HWND_DESKTOP, 0);
     if(hwndFrame)
     {
         HWND hwndList;
 
-        hwndList = WinCellWindowFromID(hwndFrame, ID_LPANE);
+        hwndList = XpmCellWindowFromID(hwndFrame, ID_LPANE);
 
         if(!hwndList)
-            hwndList = WinCellWindowFromID(hwndFrame, ID_LIST);
+            hwndList = XpmCellWindowFromID(hwndFrame, ID_LIST);
 
         if(hwndList)
         {
@@ -176,7 +176,7 @@ INT main(VOID)
 
             for(i = 0; i < 15; i++)
             {
-                WinGenResIDStr(cText + sizeof(cListItem) - 1, i);
+                XpmGenResIDStr(cText + sizeof(cListItem) - 1, i);
                 WinSendMsg(hwndList,
                            LM_INSERTITEM,
                            MPFROMSHORT(LIT_END),
@@ -191,11 +191,11 @@ INT main(VOID)
                         (swp.cy / 4) * 3,
                         SWP_ACTIVATE | SWP_MOVE | SWP_SIZE | SWP_SHOW);
 
-        WinCreateToolbar(hwndFrame, &mainTb);
+        XpmCreateToolbar(hwndFrame, &mainTb);
 
         /* Set MLE color */
 
-        hwndTmp = WinCellWindowFromID(hwndFrame, ID_MLE);
+        hwndTmp = XpmCellWindowFromID(hwndFrame, ID_MLE);
 
         WinSendMsg(hwndTmp,
                    MLM_SETBACKCOLOR,
@@ -204,7 +204,7 @@ INT main(VOID)
 
         /* Set list color */
 
-        hwndTmp = WinCellWindowFromID(hwndFrame, ID_LIST);
+        hwndTmp = XpmCellWindowFromID(hwndFrame, ID_LIST);
 
         WinSetPresParam(hwndTmp,
                         PP_BACKGROUNDCOLORINDEX,

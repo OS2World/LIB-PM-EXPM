@@ -43,7 +43,7 @@
  *
  * WM_COLORWHEELCHANGED
  *   Sent by the color wheel control to its owner when the user changes
- *   the color by dragging the wheel.  Also forwarded by WinEditColorDlg
+ *   the color by dragging the wheel.  Also forwarded by XpmEditColorDlg
  *   to hwndOwner while the dialog is open.
  *   mp1 = (MPARAM)(LONG) new RGB color value, mp2 = MPVOID.
  *
@@ -52,7 +52,7 @@
  *   mp1 = (MPARAM)(LONG) RGB color value to set, mp2 = MPVOID.
  *
  * Warp 4 (QSV_VERSION_MINOR > 30) uses 0x0601 / 0x0602; Warp 3 uses
- * different values.  WinEditColorDlg selects the right pair at runtime. */
+ * different values.  XpmEditColorDlg selects the right pair at runtime. */
 
 #define WM_COLORWHEELCHANGED        0x0601
 #define CWM_COLORWHEELSETVAL        0x0602

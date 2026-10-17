@@ -17,10 +17,10 @@
  * Changes for EXPM (2026):
  *   - ported from C++ (shadebtn.cpp) to conservative C;
  *   - entry points renamed to the Presentation Manager style:
- *       shBtnInit          -> WinShadeBtnInit
- *       shBtnQueryVersion  -> WinShadeBtnQueryVersion
+ *       shBtnInit          -> XpmShadeBtnInit
+ *       shBtnQueryVersion  -> XpmShadeBtnQueryVersion
  *   - the ten pointer resources were merged into EXPM.DLL and are now
- *     loaded lazily by WinShadeBtnInit from EXPM.DLL's own module
+ *     loaded lazily by XpmShadeBtnInit from EXPM.DLL's own module
  *     handle (the original loaded them from _DLL_InitTerm);
  *   - the PMCX wrapper (ShBtn.dll) is not part of EXPM.
  *
@@ -132,7 +132,7 @@ static MRESULT  GBTN_PaintRadio(HWND, PGBTN);
 /*=========================================================================
  * LoadPointers() - load the check / radio / three-state indicator
  * graphics from EXPM.DLL's own resources.  Called once, on the first
- * WinShadeBtnInit.
+ * XpmShadeBtnInit.
  *=========================================================================*/
 static VOID LoadPointers(VOID) {
    HMODULE hmod;
@@ -158,10 +158,10 @@ static VOID LoadPointers(VOID) {
 
 
 /*=========================================================================
- * WinShadeBtnInit() - register the WC_shBUTTON window class.
+ * XpmShadeBtnInit() - register the WC_shBUTTON window class.
  * (Upstream name: shBtnInit)
  *=========================================================================*/
-BOOL EXPENTRY WinShadeBtnInit(VOID) {
+BOOL EXPENTRY XpmShadeBtnInit(VOID) {
    LoadPointers();
    return WinRegisterClass((HAB)0, WC_shBUTTON, ButtonClassProc,
                            CS_SIZEREDRAW, USER_CWINDOWWORDS + sizeof(PGBTN));
@@ -169,10 +169,10 @@ BOOL EXPENTRY WinShadeBtnInit(VOID) {
 
 
 /*=========================================================================
- * WinShadeBtnQueryVersion() - return the version times 100.
+ * XpmShadeBtnQueryVersion() - return the version times 100.
  * (Upstream name: shBtnQueryVersion)
  *=========================================================================*/
-ULONG EXPENTRY WinShadeBtnQueryVersion(VOID) {
+ULONG EXPENTRY XpmShadeBtnQueryVersion(VOID) {
    return 150L;
 }
 

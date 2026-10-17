@@ -127,12 +127,12 @@ static HAB hab;
 ******************************************************************************
 */
 
-void EXPENTRY WinShowCell(HWND hwnd, LONG lID, BOOL bAction)
+void EXPENTRY XpmShowCell(HWND hwnd, LONG lID, BOOL bAction)
 {
     CellCtlData* pCtlData = 0;
     LONG lCell = 0;
 
-    hwnd = WinCellParentWindowFromID(hwnd, lID);
+    hwnd = XpmCellParentWindowFromID(hwnd, lID);
 
     if(!hwnd)
         return;
@@ -169,11 +169,11 @@ void EXPENTRY WinShowCell(HWND hwnd, LONG lID, BOOL bAction)
         WinSendMsg(hwnd, WM_UPDATEFRAME, 0, 0);
 }
 
-LONG EXPENTRY WinQueryCellSplit(HWND hwnd, LONG lID)
+LONG EXPENTRY XpmQueryCellSplit(HWND hwnd, LONG lID)
 {
     CellCtlData* pCtlData = 0;
 
-    hwnd = WinCellWindowFromID(hwnd, lID);
+    hwnd = XpmCellWindowFromID(hwnd, lID);
 
     if(!hwnd)
         return 0;
@@ -186,11 +186,11 @@ LONG EXPENTRY WinQueryCellSplit(HWND hwnd, LONG lID)
     return pCtlData->lSplit;
 }
 
-LONG EXPENTRY WinSetCellSplit(HWND hwnd, LONG lID, LONG lNewSplit)
+LONG EXPENTRY XpmSetCellSplit(HWND hwnd, LONG lID, LONG lNewSplit)
 {
     CellCtlData* pCtlData = 0;
 
-    hwnd = WinCellWindowFromID(hwnd, lID);
+    hwnd = XpmCellWindowFromID(hwnd, lID);
 
     if(!hwnd)
         return 0;
@@ -215,11 +215,11 @@ LONG EXPENTRY WinSetCellSplit(HWND hwnd, LONG lID, LONG lNewSplit)
     return pCtlData->lSplit;
 }
 
-LONG EXPENTRY WinQueryCellSplitType(HWND hwnd, LONG lID)
+LONG EXPENTRY XpmQueryCellSplitType(HWND hwnd, LONG lID)
 {
     CellCtlData* pCtlData = 0;
 
-    hwnd = WinCellWindowFromID(hwnd, lID);
+    hwnd = XpmCellWindowFromID(hwnd, lID);
 
     if(!hwnd)
         return 0;
@@ -232,11 +232,11 @@ LONG EXPENTRY WinQueryCellSplitType(HWND hwnd, LONG lID)
     return (pCtlData->lType & (CELL_VSPLIT | CELL_HSPLIT | CELL_SWAP));
 }
 
-void EXPENTRY WinSetCellSplitType(HWND hwnd, LONG lID, LONG lNewSplit)
+void EXPENTRY XpmSetCellSplitType(HWND hwnd, LONG lID, LONG lNewSplit)
 {
     CellCtlData* pCtlData = 0;
 
-    hwnd = WinCellWindowFromID(hwnd, lID);
+    hwnd = XpmCellWindowFromID(hwnd, lID);
 
     if(!hwnd)
         return;
@@ -955,7 +955,7 @@ static MRESULT EXPENTRY CellClientProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM 
 **       all subwindows will have this frame window as Owner.
 */
 
-HWND EXPENTRY WinCreateCell(CellDef* pCell, HWND hWndParent, HWND hWndOwner)
+HWND EXPENTRY XpmCreateCell(CellDef* pCell, HWND hWndParent, HWND hWndOwner)
 {
     HWND hwndFrame        = NULLHANDLE;
     CellCtlData* pCtlData = 0;
@@ -1061,10 +1061,10 @@ HWND EXPENTRY WinCreateCell(CellDef* pCell, HWND hWndParent, HWND hWndOwner)
             else
                 WinSetOwner(pCtlData->hwndSplitbar, hWndOwner);
 
-            pCtlData->hwndPanel1 = WinCreateCell(pCell->pPanel1,
+            pCtlData->hwndPanel1 = XpmCreateCell(pCell->pPanel1,
                                               hwndFrame,
                                               hWndOwner);
-            pCtlData->hwndPanel2 = WinCreateCell(pCell->pPanel2,
+            pCtlData->hwndPanel2 = XpmCreateCell(pCell->pPanel2,
                                               hwndFrame,
                                               hWndOwner);
 
@@ -1188,7 +1188,7 @@ static HWND CreateTb(TbDef* pTb, HWND hWndParent, HWND hWndOwner)
 	        flCreate = BS_PUSHBUTTON | BS_BITMAP |
     	               BS_AUTOSIZE | BS_NOPOINTERFOCUS;
 
-            WinGenResIDStr(cButtText, pTb->tbItems[lCount]);
+            XpmGenResIDStr(cButtText, pTb->tbItems[lCount]);
 
             pTbCtlData->hItems[lCount] =
     	                            WinCreateWindow(hwndTb,
@@ -1919,11 +1919,11 @@ static MRESULT EXPENTRY TbClientProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
     return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
 
-/* Function: WinCellInit
+/* Function: XpmCellInit
 ** Abstract: Registers classes needed for toolkit
 */
 
-void EXPENTRY WinCellInit(HAB aHab)
+void EXPENTRY XpmCellInit(HAB aHab)
 {
     hab = aHab;
     WinRegisterClass(hab,
@@ -1945,11 +1945,11 @@ void EXPENTRY WinCellInit(HAB aHab)
                      sizeof(ULONG));
 }
 
-/* Function: WinCreateToolbar
+/* Function: XpmCreateToolbar
 ** Abstract: Creates toolbar for cell frame window
 */
 
-void EXPENTRY WinCreateToolbar(HWND hwnd, TbDef* pTb)
+void EXPENTRY XpmCreateToolbar(HWND hwnd, TbDef* pTb)
 {
     CellCtlData* pCtlData = 0;
     CellTb*      pCellTb  = 0;
@@ -1982,30 +1982,30 @@ void EXPENTRY WinCreateToolbar(HWND hwnd, TbDef* pTb)
     WinSendMsg(hwnd, WM_UPDATEFRAME, 0, 0);
 }
 
-/* Function: WinCellWindowFromID
+/* Function: XpmCellWindowFromID
 ** Abstract: Locate control window with given ID
 */
 
-HWND EXPENTRY WinCellWindowFromID(HWND hwndCell, ULONG ulID)
+HWND EXPENTRY XpmCellWindowFromID(HWND hwndCell, ULONG ulID)
 {
     return (HWND)WinSendMsg(hwndCell, TKM_SEARCH_ID, MPFROMLONG(ulID), 0);
 }
 
-/* Function: WinCellParentWindowFromID
+/* Function: XpmCellParentWindowFromID
 ** Abstract: Locate parent window for window with given ID
 */
 
-HWND EXPENTRY WinCellParentWindowFromID(HWND hwndCell, ULONG ulID)
+HWND EXPENTRY XpmCellParentWindowFromID(HWND hwndCell, ULONG ulID)
 {
     return (HWND)WinSendMsg(hwndCell, TKM_SEARCH_PARENT, MPFROMLONG(ulID), 0);
 }
 
-/* Function: WinGenResIDStr
+/* Function: XpmGenResIDStr
 ** Abstract: Generate string '#nnnn' for a given ID for using with Button
 **           controls
 */
 
-void EXPENTRY WinGenResIDStr(CHAR *buff, ULONG ulID)
+void EXPENTRY XpmGenResIDStr(CHAR *buff, ULONG ulID)
 {
     char *str;
     int  slen = 0;

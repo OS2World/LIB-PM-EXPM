@@ -32,6 +32,7 @@
 #define INCL_WINENTRYFIELDS
 #define INCL_WINWINDOWMGR
 #define INCL_WINBUTTONS
+#define INCL_GPI
 #include <os2.h>
 
 #ifdef __cplusplus
@@ -43,7 +44,7 @@ extern "C" {
 /* Combo box support (merged from LIB-PM-ComboBoxSupport 1.1)         */
 /* ------------------------------------------------------------------ */
 
-/* WinInitComboBox -- populate a combo box list from a NULL-terminated
+/* XpmInitComboBox -- populate a combo box list from a NULL-terminated
  * array of strings, then select one item.
  *
  *   hwndOwner          owner window (dialog or client window)
@@ -52,12 +53,12 @@ extern "C" {
  *   iInitialSelection  index of the item to preselect, or LIT_NONE
  *
  * Returns 0 on success. */
-USHORT EXPENTRY WinInitComboBox( HWND  hwndOwner,
+USHORT EXPENTRY XpmInitComboBox( HWND  hwndOwner,
                                  ULONG idCombo,
                                  PCSZ *apszInit,
                                  LONG  iInitialSelection );
 
-/* WinInitComboBoxFromRes -- like WinInitComboBox, but the strings are
+/* XpmInitComboBoxFromRes -- like XpmInitComboBox, but the strings are
  * loaded from a resource STRINGTABLE.
  *
  *   hab                anchor block handle
@@ -70,7 +71,7 @@ USHORT EXPENTRY WinInitComboBox( HWND  hwndOwner,
  *   iInitialSelection  index of the item to preselect, or LIT_NONE
  *
  * Returns 0 on success, or 1 if memory could not be allocated. */
-USHORT EXPENTRY WinInitComboBoxFromRes( HAB    hab,
+USHORT EXPENTRY XpmInitComboBoxFromRes( HAB    hab,
                                         HMODULE hmodRes,
                                         HWND   hwndOwner,
                                         ULONG  idCombo,
@@ -139,7 +140,7 @@ USHORT EXPENTRY WinInitComboBoxFromRes( HAB    hab,
  *   pszClass  window class name when lType == CELL_WINDOW
  *   pszName   caption
  *   ulStyle   window (CELL_WINDOW) or frame creation (FCF_*) style
- *   ulID      window ID used with WinCellWindowFromID etc.
+ *   ulID      window ID used with XpmCellWindowFromID etc.
  *   pPanel1   left/top panel child
  *   pPanel2   right/bottom panel child
  *   pClassProc      optional replacement class window proc for panels
@@ -181,51 +182,51 @@ typedef struct
     PFNWP pOldProc;
 } WindowCellCtlData;
 
-/* WinCellInit -- register the window classes used by the Cell Toolkit.
+/* XpmCellInit -- register the window classes used by the Cell Toolkit.
  * Must be called once with the process anchor block before any other
  * Cell Toolkit routine. */
-void  EXPENTRY WinCellInit( HAB hab );
+void  EXPENTRY XpmCellInit( HAB hab );
 
-/* WinCreateCell -- create a cell window from a CellDef tree. */
-HWND  EXPENTRY WinCreateCell( CellDef* pCell, HWND hWndParent, HWND hWndOwner );
+/* XpmCreateCell -- create a cell window from a CellDef tree. */
+HWND  EXPENTRY XpmCreateCell( CellDef* pCell, HWND hWndParent, HWND hWndOwner );
 
-/* WinCellWindowFromID -- find the direct or indirect child window of a
+/* XpmCellWindowFromID -- find the direct or indirect child window of a
  * cell with the given window ID. */
-HWND  EXPENTRY WinCellWindowFromID( HWND hwndCell, ULONG ulID );
+HWND  EXPENTRY XpmCellWindowFromID( HWND hwndCell, ULONG ulID );
 
-/* WinCellParentWindowFromID -- find the cell that directly manages a
+/* XpmCellParentWindowFromID -- find the cell that directly manages a
  * window with the given window ID. */
-HWND  EXPENTRY WinCellParentWindowFromID( HWND hwndCell, ULONG ulID );
+HWND  EXPENTRY XpmCellParentWindowFromID( HWND hwndCell, ULONG ulID );
 
-/* WinCreateToolbar -- attach a toolbar described by pTb to a cell
+/* XpmCreateToolbar -- attach a toolbar described by pTb to a cell
  * window.  Bubble help is installed when TB_BUBBLE is set; place the
  * help strings in a resource STRINGTABLE numbered from the toolbar's
  * ulID. */
-void  EXPENTRY WinCreateToolbar( HWND hwndCell, TbDef* pTb );
+void  EXPENTRY XpmCreateToolbar( HWND hwndCell, TbDef* pTb );
 
-/* WinGenResIDStr -- format ulID as the '#nnnn' string that bitmap
+/* XpmGenResIDStr -- format ulID as the '#nnnn' string that bitmap
  * buttons use to reference a resource. */
-void  EXPENTRY WinGenResIDStr( CHAR *buff, ULONG ulID );
+void  EXPENTRY XpmGenResIDStr( CHAR *buff, ULONG ulID );
 
-/* WinQueryCellSplit -- return the split ratio (in %) of a split cell. */
-LONG  EXPENTRY WinQueryCellSplit( HWND hwnd, LONG lID );
+/* XpmQueryCellSplit -- return the split ratio (in %) of a split cell. */
+LONG  EXPENTRY XpmQueryCellSplit( HWND hwnd, LONG lID );
 
-/* WinSetCellSplit -- set the split ratio (in %) of a split cell,
+/* XpmSetCellSplit -- set the split ratio (in %) of a split cell,
  * subject to the CELL_TOP/CELL_BOTTOM limits.  Returns the effective
  * ratio. */
-LONG  EXPENTRY WinSetCellSplit( HWND hwnd, LONG lID, LONG lNewSplit );
+LONG  EXPENTRY XpmSetCellSplit( HWND hwnd, LONG lID, LONG lNewSplit );
 
-/* WinQueryCellSplitType -- return the CELL_VSPLIT/CELL_HSPLIT/CELL_SWAP
+/* XpmQueryCellSplitType -- return the CELL_VSPLIT/CELL_HSPLIT/CELL_SWAP
  * flags of a split cell. */
-LONG  EXPENTRY WinQueryCellSplitType( HWND hwnd, LONG lID );
+LONG  EXPENTRY XpmQueryCellSplitType( HWND hwnd, LONG lID );
 
-/* WinSetCellSplitType -- change the split direction of a cell,
+/* XpmSetCellSplitType -- change the split direction of a cell,
  * optionally swapping its panels when CELL_SWAP is set. */
-void  EXPENTRY WinSetCellSplitType( HWND hwnd, LONG lID, LONG lNewType );
+void  EXPENTRY XpmSetCellSplitType( HWND hwnd, LONG lID, LONG lNewType );
 
-/* WinShowCell -- show (bAction = TRUE) or hide (bAction = FALSE) the
+/* XpmShowCell -- show (bAction = TRUE) or hide (bAction = FALSE) the
  * panel with the given window ID. */
-void  EXPENTRY WinShowCell( HWND hwnd, LONG lID, BOOL bAction );
+void  EXPENTRY XpmShowCell( HWND hwnd, LONG lID, BOOL bAction );
 
 
 /* ------------------------------------------------------------------ */
@@ -376,21 +377,21 @@ typedef struct
 #define CTM_INCNOROLL           (CTL_MSG_BASE+0x27)
 #define CTM_DECNOROLL           (CTL_MSG_BASE+0x28)
 
-/* WinCtlInit -- register the Control Plus window classes.  Call once,
+/* XpmCtlInit -- register the Control Plus window classes.  Call once,
  * after WinCreateMsgQueue and before creating any Control Plus window.
  * Returns TRUE on success.
  * (Controls+ name: CtlInitialize) */
-USHORT  EXPENTRY WinCtlInit( HAB hab );
+USHORT  EXPENTRY XpmCtlInit( HAB hab );
 
-/* WinCtlTerminate -- release Control Plus resources.  Call after the
+/* XpmCtlTerminate -- release Control Plus resources.  Call after the
  * application windows are destroyed and before WinDestroyMsgQueue.
  * Returns TRUE on success.
  * (Controls+ name: CtlTerminate) */
-USHORT  EXPENTRY WinCtlTerminate( VOID );
+USHORT  EXPENTRY XpmCtlTerminate( VOID );
 
-/* WinCtlVersion -- return the Control Plus version as MPFROM2SHORT
+/* XpmCtlVersion -- return the Control Plus version as MPFROM2SHORT
  * (major, minor).  (Controls+ name: CtlVersion) */
-MRESULT EXPENTRY WinCtlVersion( VOID );
+MRESULT EXPENTRY XpmCtlVersion( VOID );
 
 
 /* ------------------------------------------------------------------ */
@@ -428,7 +429,7 @@ typedef union {
 
 #pragma pack()
 
-/* WinEditColorDlg -- display a modal "Edit Color" dialog.
+/* XpmEditColorDlg -- display a modal "Edit Color" dialog.
  *
  *   hwndParent  parent window; the dialog centers itself over it
  *   hwndOwner   owner window; receives WM_COLORWHEELCHANGED while the
@@ -438,7 +439,7 @@ typedef union {
  *
  * Returns the selected LONG RGB color on OK, the original color on
  * Cancel / Close, or CLR_ERROR if initialization failed. */
-LONG EXPENTRY WinEditColorDlg( HWND  hwndParent,
+LONG EXPENTRY XpmEditColorDlg( HWND  hwndParent,
                                HWND  hwndOwner,
                                COLOR color,
                                PSZ   pszTitle );
@@ -454,7 +455,7 @@ LONG EXPENTRY WinEditColorDlg( HWND  hwndParent,
 /* renamed to the PM Win* style (see doc/anibtn.txt).                  */
 /* ------------------------------------------------------------------ */
 
-/* WinCreateAniButton -- turn an existing WC_BUTTON control of style
+/* XpmCreateAniButton -- turn an existing WC_BUTTON control of style
  * BS_USERBUTTON into an animated two-state graphical push button.
  *
  *   hwndDlg    dialog (or other window) that owns the button
@@ -471,7 +472,7 @@ LONG EXPENTRY WinEditColorDlg( HWND  hwndParent,
  * cx by cy pels.  The control keeps the behaviour of a normal push
  * button: it sends WM_COMMAND / BN_CLICKED to its owner.  A second call
  * for the same button has no effect. */
-VOID EXPENTRY WinCreateAniButton( HWND   hwndDlg,
+VOID EXPENTRY XpmCreateAniButton( HWND   hwndDlg,
                                   SHORT  id,
                                   USHORT idUp,
                                   USHORT idDown,
@@ -480,12 +481,12 @@ VOID EXPENTRY WinCreateAniButton( HWND   hwndDlg,
                                   PSZ    pszStatus,
                                   USHORT idStatus );
 
-/* WinDeleteAniButton -- release an animated button created with
- * WinCreateAniButton.  Call it when the owning dialog is closed, before
+/* XpmDeleteAniButton -- release an animated button created with
+ * XpmCreateAniButton.  Call it when the owning dialog is closed, before
  * the dialog window is destroyed.  Deleting the last animated button of
  * a dialog also restores the dialog's original window procedure and the
  * status fields' original text. */
-VOID EXPENTRY WinDeleteAniButton( HWND hwndDlg, USHORT id );
+VOID EXPENTRY XpmDeleteAniButton( HWND hwndDlg, USHORT id );
 
 
 /* ------------------------------------------------------------------ */
@@ -496,11 +497,23 @@ VOID EXPENTRY WinDeleteAniButton( HWND hwndDlg, USHORT id );
 /* and licence.  Registers WC_shBUTTON, a WC_BUTTON replacement that   */
 /* paints a gradient face and adds check box, radio, three-state,      */
 /* rounded, vertical and icon variants.  The upstream entry points     */
-/* shBtnInit / shBtnQueryVersion are renamed to WinShadeBtnInit /      */
-/* WinShadeBtnQueryVersion (see doc/shadebtn.txt).                     */
+/* shBtnInit / shBtnQueryVersion are renamed to XpmShadeBtnInit /      */
+/* XpmShadeBtnQueryVersion (see doc/shadebtn.txt).                     */
 /* ------------------------------------------------------------------ */
 
 #include "shadebtn.h"
+
+
+/* ------------------------------------------------------------------ */
+/* ArrowHead (GPI arrowhead drawing helper)                            */
+/*                                                                     */
+/* Merged from the ArrowHead 1.1 library by David Kopp; see            */
+/* src/arrowhead/arrowhead.c for the copyright notice and licence.     */
+/* The upstream entry point ArrowHead is renamed to the PM Win* style  */
+/* (see doc/arrowhead.txt).                                            */
+/* ------------------------------------------------------------------ */
+
+#include "arrowhead.h"
 
 
 #ifdef __cplusplus

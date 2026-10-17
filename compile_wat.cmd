@@ -30,6 +30,7 @@ echo   sample\ctlplus\ctlpsmp.exe   -- Control Plus controls sample
 echo   sample\colorwheel\cwsmp.exe  -- ColorWheel dialog sample
 echo   sample\anibtn\anismp.exe     -- AniButtn animated buttons sample
 echo   sample\shadebtn\shbsmp.exe   -- Shaded Buttons sample
+echo   sample\arrowhead\arsmp.exe  -- ArrowHead drawing sample
 goto buildend
 
 :buildfail

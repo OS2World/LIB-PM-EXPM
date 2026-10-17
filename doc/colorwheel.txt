@@ -22,7 +22,7 @@ What changed for EXPM
       EXPM.DLL, so the dialog template is loaded from EXPM.DLL's own
       resource section (src/colorwheel/colorwheel.rc).
     - The two internal helpers EditColorDlgProc() and SetSpins() are now
-      file-static; the only exported entry point is WinEditColorDlg().
+      file-static; the only exported entry point is XpmEditColorDlg().
     - Public declarations moved into h/expm.h; the message numbers, the
       window class name and the resource IDs live in h/colorwheel.h
       (shared with the dialog template).
@@ -30,7 +30,7 @@ What changed for EXPM
 Public API
 ----------
 
-    LONG EXPENTRY WinEditColorDlg( HWND  hwndParent,
+    LONG EXPENTRY XpmEditColorDlg( HWND  hwndParent,
                                    HWND  hwndOwner,
                                    COLOR color,
                                    PSZ   pszTitle );
@@ -99,7 +99,7 @@ Runtime requirements
 
     - expm.dll must be reachable on LIBPATH (or next to the executable).
     - WPCONFIG.DLL (part of the OS/2 Workplace Shell) must be present.
-      WinEditColorDlg loads it (with WinLoadLibrary) to register the
+      XpmEditColorDlg loads it (with WinLoadLibrary) to register the
       ColorSelectClass window class, and unloads it (WinDeleteLibrary)
       when the dialog is destroyed.
 

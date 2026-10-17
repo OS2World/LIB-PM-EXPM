@@ -2,7 +2,7 @@
  * sample/cell/celmp.rc -- resources for the EXPM CELL sample.
  *
  * Bitmap buttons of the toolbar reference these BITMAP resources
- * through the '#nnn' strings built by WinGenResIDStr.
+ * through the '#nnn' strings built by XpmGenResIDStr.
  *
  * Adapted from the SIMPLE.RC of the Cell Toolkit 0.7b (copyright (C)
  * Sergey I. Yevtushenko, BSD-2 terms).

@@ -6,7 +6,7 @@
  *
  * Merged from the LIB-PM-ShadedButtons 1.50 library (Shaded Buttons
  * 1.50, Hubert Chan).  The ten .ptr files are the OS/2 native pointer
- * resources of the original ShadeBtn.dll; WinShadeBtnInit loads them
+ * resources of the original ShadeBtn.dll; XpmShadeBtnInit loads them
  * from EXPM.DLL and draws the check box, radio button and three-state
  * indicators.
  *

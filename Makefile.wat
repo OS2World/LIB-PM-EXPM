@@ -9,6 +9,7 @@
 #   sample\colorwheel\cwsmp.exe -- ColorWheel dialog sample application
 #   sample\anibtn\anismp.exe   -- AniButtn animated buttons sample application
 #   sample\shadebtn\shbsmp.exe -- Shaded Buttons sample application
+#   sample\arrowhead\arsmp.exe -- ArrowHead drawing sample application
 #
 # Usage (run from the project root, where this file lives):
 #   wmake -f Makefile.wat           # build all
@@ -32,7 +33,7 @@ DLL = dll
     -mkdir $(OBJ) 2>NUL
     -mkdir $(DLL) 2>NUL
 
-all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe .SYMBOLIC
+all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe .SYMBOLIC
 
 # -----------------------------------------------------------------------
 # Library DLL: dll\expm.dll (also produces lib\expm.lib via OPTION IMPLIB)
@@ -61,7 +62,10 @@ $(OBJ)\anibtn.obj: src\anibtn\anibtn.c h\expm.h
 $(OBJ)\shadebtn.obj: src\shadebtn\shadebtn.c h\expm.h h\shadebtn.h src\shadebtn\shaderes.h
     $(CC) $(CFLAGS_DLL) -i=src\shadebtn -fo=$@ src\shadebtn\shadebtn.c
 
-$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\expm.res
+$(OBJ)\arrowhead.obj: src\arrowhead\arrowhead.c h\expm.h h\arrowhead.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\arrowhead\arrowhead.c
+
+$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\arrowhead.obj $(OBJ)\expm.res
     wlink &
         system os2v2 dll initinstance terminstance &
         name $(DLL)\expm.dll &
@@ -71,27 +75,29 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         file $(OBJ)\colorwheel.obj &
         file $(OBJ)\anibtn.obj &
         file $(OBJ)\shadebtn.obj &
-        export WinInitComboBox &
-        export WinInitComboBoxFromRes &
-        export WinCellInit &
-        export WinCreateCell &
-        export WinCellWindowFromID &
-        export WinCellParentWindowFromID &
-        export WinCreateToolbar &
-        export WinGenResIDStr &
-        export WinQueryCellSplit &
-        export WinSetCellSplit &
-        export WinQueryCellSplitType &
-        export WinSetCellSplitType &
-        export WinShowCell &
-        export WinCtlInit &
-        export WinCtlTerminate &
-        export WinCtlVersion &
-        export WinEditColorDlg &
-        export WinCreateAniButton &
-        export WinDeleteAniButton &
-        export WinShadeBtnInit &
-        export WinShadeBtnQueryVersion &
+        file $(OBJ)\arrowhead.obj &
+        export XpmInitComboBox &
+        export XpmInitComboBoxFromRes &
+        export XpmCellInit &
+        export XpmCreateCell &
+        export XpmCellWindowFromID &
+        export XpmCellParentWindowFromID &
+        export XpmCreateToolbar &
+        export XpmGenResIDStr &
+        export XpmQueryCellSplit &
+        export XpmSetCellSplit &
+        export XpmQueryCellSplitType &
+        export XpmSetCellSplitType &
+        export XpmShowCell &
+        export XpmCtlInit &
+        export XpmCtlTerminate &
+        export XpmCtlVersion &
+        export XpmEditColorDlg &
+        export XpmCreateAniButton &
+        export XpmDeleteAniButton &
+        export XpmShadeBtnInit &
+        export XpmShadeBtnQueryVersion &
+        export XpmDrawArrowHead &
         option implib=lib\expm.lib &
         option map=$(DLL)\expm.map
     wrc -q -bt=os2 $(OBJ)\expm.res $(DLL)\expm.dll
@@ -223,6 +229,23 @@ sample\shadebtn\shbsmp.exe: $(OBJ)\shbsmp.obj $(OBJ)\shbsmp.res $(DLL)\expm.dll
     wrc -q -bt=os2 $(OBJ)\shbsmp.res sample\shadebtn\shbsmp.exe
 
 # -----------------------------------------------------------------------
+# Sample: ARROWHEAD
+# -----------------------------------------------------------------------
+
+$(OBJ)\arsmp.obj: sample\arrowhead\arsmp.c h\expm.h
+    $(CC) $(CFLAGS_EXE) -fo=$@ sample\arrowhead\arsmp.c
+
+sample\arrowhead\arsmp.exe: $(OBJ)\arsmp.obj $(DLL)\expm.dll
+    wlink &
+        system os2v2_pm &
+        name sample\arrowhead\arsmp.exe &
+        file $(OBJ)\arsmp.obj &
+        option stack=8192 &
+        option heap=8192 &
+        library lib\expm.lib &
+        option map=sample\arrowhead\arsmp.map
+
+# -----------------------------------------------------------------------
 # Clean
 # -----------------------------------------------------------------------
 
@@ -236,3 +259,4 @@ clean: .SYMBOLIC
     -rm -f sample\colorwheel\cwsmp.exe sample\colorwheel\cwsmp.map sample\colorwheel\cwsmp.sym
     -rm -f sample\anibtn\anismp.exe sample\anibtn\anismp.map sample\anibtn\anismp.sym
     -rm -f sample\shadebtn\shbsmp.exe sample\shadebtn\shbsmp.map sample\shadebtn\shbsmp.sym
+    -rm -f sample\arrowhead\arsmp.exe sample\arrowhead\arsmp.map sample\arrowhead\arsmp.sym

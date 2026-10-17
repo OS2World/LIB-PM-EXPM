@@ -1241,7 +1241,7 @@ static MRESULT EXPENTRY CounterProc( HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp
 /* Public entry points                                                */
 /* ================================================================== */
 
-USHORT EXPENTRY WinCtlInit( HAB hab )
+USHORT EXPENTRY XpmCtlInit( HAB hab )
 {
     if( !WinRegisterClass( hab, WC_METER,   MeterProc,   CS_SIZEREDRAW,
                            sizeof( ULONG ) ) )
@@ -1258,12 +1258,12 @@ USHORT EXPENTRY WinCtlInit( HAB hab )
     return TRUE;
 }
 
-USHORT EXPENTRY WinCtlTerminate( VOID )
+USHORT EXPENTRY XpmCtlTerminate( VOID )
 {
     return TRUE;
 }
 
-MRESULT EXPENTRY WinCtlVersion( VOID )
+MRESULT EXPENTRY XpmCtlVersion( VOID )
 {
     return MPFROM2SHORT( 1, 40 );
 }

@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/16 18:32:42
+Created on:       26/10/16 21:25:38
 Executable Image: sample\anibtn\anismp.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -54,7 +54,7 @@ STACK                  STACK          DGROUP         0002:000002b0   00002000
 Address        Symbol
 =======        ======
 
-Module: obj\anismp.obj(D:\Projects\LIBs\ExPM\sample\anibtn\anismp.c)
+Module: obj\anismp.obj(D:\Projects\LIBs\LIB-PM-EXPM\sample\anibtn\anismp.c)
 0001:00000010  main_
 0001:00000067+ ToolBarDlg
 Module: C:\WATCOM/lib386/os2\clib3r.lib(stk)
@@ -173,8 +173,8 @@ WinSendMsg                          PMWIN
 WinMessageBox                       PMWIN
 WinDismissDlg                       PMWIN
 WinDefDlgProc                       PMWIN
-WinCreateAniButton                  expm.dll
-WinDeleteAniButton                  expm.dll
+XpmCreateAniButton                  expm.dll
+XpmDeleteAniButton                  expm.dll
 WinQueryWindowRect                  PMWIN
 WinSetWindowPos                     PMWIN
 DosWrite                            DOSCALLS
@@ -198,4 +198,4 @@ C:\WATCOM/lib386/os2\os2386.lib
 Stack size:  2000 (8192.)
 Memory size:  2bb7 (11191.)
 Entry point address: 0001:000003fc
-Link time: 00:00.31
+Link time: 00:00.41
