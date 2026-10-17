@@ -31,6 +31,7 @@ echo   sample\colorwheel\cwsmp.exe  -- ColorWheel dialog sample
 echo   sample\anibtn\anismp.exe     -- AniButtn animated buttons sample
 echo   sample\shadebtn\shbsmp.exe   -- Shaded Buttons sample
 echo   sample\arrowhead\arsmp.exe  -- ArrowHead drawing sample
+echo   sample\owndraw\ownsmpl.exe  -- Owner-Draw Listbox sample
 goto buildend
 
 :buildfail

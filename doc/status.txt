@@ -1,0 +1,185 @@
+EXPM - Status control module (XpmStatusClass)
+=============================================
+
+The status control module provides the window class XpmStatusClass, a
+text field that behaves like a PM static control but can align and
+automatically scale its text, show a disabled/highlighted state, draw its
+own frame and optionally delegate its background to its owner.  It is a
+clean-room reimplementation for the EXPM project (2026) of the AsuaCtl
+1.0 status window (WC_STATUS).  It was written in C from the published
+AsuaCtl status header (include/status.h) and the IPF manual
+(doc/src/status/doc/status.inc); no AsuaCtl source was copied.  AsuaCtl
+is GPLv2, EXPM is LGPLv3.
+
+Every public name carries the EXPM "Xpm" prefix so it never clashes with
+the original asuactl.dll:
+
+    WC_STATUS                ->  XpmStatusClass ("XpmStatus")
+    CtlStatusInitialize      ->  XpmStatusInit
+    SS_*                     ->  XpmSS_*
+    SM_*                     ->  XpmSM_*
+    SMN_PRESPARAMCHANGED     ->  XpmSMN_PRESPARAMCHANGED
+    STAT_FIRST_MSG/LAST_MSG  ->  XpmSTAT_FIRST_MSG/XpmSTAT_LAST_MSG
+    OWNERBACK / POWNERBACK   ->  XpmOwnerBack / PXpmOwnerBack
+
+
+Creating the control
+--------------------
+
+    #define INCL_WIN
+    #include <os2.h>
+    #include "expm.h"
+
+    XpmControlsInit( hab );                       /* register classes */
+
+    WinCreateWindow( hwndParent, XpmStatusClass, pszText,
+                     WS_VISIBLE | XpmSS_BORDER | XpmSS_CENTER,
+                     x, y, cx, cy,
+                     hwndParent, HWND_TOP, id, NULL, NULL );
+
+As with any control, XpmControlsInit must have been called first (it
+calls XpmStatusInit).  XpmStatusInit may be called on its own when only
+the status control is used.  The creation text pszText becomes the
+control's text.
+
+Like the original, the control keeps its own copy of the window text and
+answers WM_QUERYWINDOWPARAMS / WM_SETWINDOWPARAMS itself, so that
+WinQueryWindowText, WinQueryWindowTextLength and WinSetWindowText all
+work on it.  Text set through WinSetWindowText is re-measured and the
+control is redrawn.
+
+
+Styles
+------
+
+Border drawing (XpmSS_BORDER = all four edges):
+
+    XpmSS_BORDER            0x000F   complete frame, all four edges
+    XpmSS_THINFRAME         0x0080   thin (1 pixel) black frame
+    XpmSS_LEFTFRAME         0x0001   draw left edge
+    XpmSS_RIGHTFRAME        0x0002   draw right edge
+    XpmSS_TOPFRAME          0x0004   draw top edge
+    XpmSS_BOTTOMFRAME       0x0008   draw bottom edge
+
+Horizontal text alignment (mutually exclusive):
+
+    XpmSS_LEFT              0x0000   text at the left edge
+    XpmSS_CENTER            0x0020   text centred
+    XpmSS_RIGHT             0x0040   text at the right edge
+    XpmSS_AUTOSHIFT         0x0060   left if it fits, else right
+
+Automatic scaling (applied through WM_ADJUSTWINDOWPOS so the control
+sizes itself to its text):
+
+    XpmSS_XAUTOSCALE        0x0100   width follows the text
+    XpmSS_YAUTOSCALE        0x0200   height follows the font
+
+Additional options:
+
+    XpmSS_OWNERDRAW         0x0010   owner paints the background
+    XpmSS_MOUSETRANSPARENT  0x0400   mouse passes through (WM_HITTEST)
+    XpmSS_WINSTYLE          0x0800   12x12 sizing grip, no text
+
+A standard frame is drawn as two one-pixel rings (light/dark, then
+light2/dark2); XpmSS_THINFRAME replaces it with a single dark ring.
+
+
+Messages
+--------
+
+    XpmSTAT_FIRST_MSG   (WM_USER+5)
+    XpmSTAT_LAST_MSG    (XpmSTAT_FIRST_MSG+7)
+
+    XpmSM_QUERYMAXCHARINC   (XpmSTAT_FIRST_MSG+0)
+    XpmSM_QUERYTEXTHEIGHT   (XpmSTAT_FIRST_MSG+1)
+    XpmSM_QUERYTEXTWIDTH    (XpmSTAT_FIRST_MSG+2)
+    XpmSM_QUERYHEIGHT       (XpmSTAT_FIRST_MSG+3)
+    XpmSM_QUERYHILITE       (XpmSTAT_FIRST_MSG+4)
+    XpmSM_QUERYWIDTH        (XpmSTAT_FIRST_MSG+5)
+    XpmSM_SETHILITE         (XpmSTAT_FIRST_MSG+6)
+
+The QUERY* messages take reserved (0) mp1/mp2 and return the requested
+value (ideal width/height, text width/height, maximum character
+increment, or the highlight state).  XpmSM_SETHILITE sets the highlight
+(active) state; mp1 is the new state (a non-zero value highlights the
+control).
+
+When the highlight state or a presentation parameter changes, the
+control posts WM_CONTROL to its owner with the notification code
+
+    XpmSMN_PRESPARAMCHANGED 0x0400
+
+and the changed parameter id in mp2.
+
+
+Owner-drawn background
+----------------------
+
+With XpmSS_OWNERDRAW the control sends WM_DRAWITEM to its owner after
+drawing the frame.  mp1's low word is the control id; mp2 points to an
+XpmOwnerBack:
+
+    typedef struct _XPMOWNERBACK
+    {
+        HWND   hwnd;       /* window being repainted       */
+        HPS    hps;        /* presentation space to draw in */
+        RECTL  bound;      /* rectangle to repaint (client) */
+        POINTL refpoint;   /* bound.xLeft / bound.yBottom    */
+    } XpmOwnerBack, *PXpmOwnerBack;
+
+The owner should paint the background into hps within bound and return
+TRUE; returning FALSE tells the control to paint the background itself.
+
+IMPORTANT: the presentation space handed to the owner is in colour
+*index* mode (as are all PSs from WinBeginPaint / WinGetPS).  An owner
+that draws with RGB values must first select RGB mode:
+
+    GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0, 0, NULL );
+
+
+Presentation parameters
+-----------------------
+
+The control honours the standard PM colour presentation parameters:
+
+    PP_BACKGROUNDCOLOR           active background
+    PP_FOREGROUNDCOLOR           active text colour
+    PP_DISABLEDBACKGROUNDCOLOR   background when disabled
+    PP_DISABLEDFOREGROUNDCOLOR   text colour when disabled
+    PP_FONTNAMESIZE              font
+
+When a colour is absent the value from XpmQueryPresColors is used: the
+matching SYSCLR_* system colour, or a built-in RGB default
+(SYSCLR_ENTRYFIELD / white background, SYSCLR_WINDOWTEXT / black
+foreground).  The font is taken from the window presentation space; the
+control does not call GpiSetFont.
+
+Windows created with a non-NULL pPresParams in CREATESTRUCT have those
+parameters copied in at WM_CREATE (via XpmStorePresParams).
+
+
+32-bit port notes (relative to AsuaCtl 1.0)
+--------------------------------------------
+
+    - The control owns its text buffer (STATUS_MAXTEXT = 512 bytes) and
+      implements WM_QUERYWINDOWPARAMS / WM_SETWINDOWPARAMS (WNDPARAMS is
+      passed in mp1 for both).
+    - Painting uses GpiCharStringPosAt with CHS_OPAQUE | CHS_CLIP and the
+      PS switched to RGB colour mode; the font comes from the window PS.
+    - Per-window data is attached with WinSetWindowULong(hwnd, QWL_USER,
+      ...) and freed at WM_DESTROY.
+    - Automatic scaling is done in WM_ADJUSTWINDOWPOS by adjusting the
+      SWP passed in mp1.
+
+
+Building and sample
+-------------------
+
+    compile_wat.cmd
+
+Outputs: dll\expm.dll, lib\expm.lib, sample\status\stsmp.exe.
+
+sample\status\stsmp.exe shows five status fields (left, centred, right
+with a thin frame, owner-drawn background and auto-shift) plus buttons
+that enable/disable all fields, set an over-long text and query the
+control metrics.  It expects expm.dll on LIBPATH (or next to the EXE).

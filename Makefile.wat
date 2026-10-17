@@ -10,6 +10,8 @@
 #   sample\anibtn\anismp.exe   -- AniButtn animated buttons sample application
 #   sample\shadebtn\shbsmp.exe -- Shaded Buttons sample application
 #   sample\arrowhead\arsmp.exe -- ArrowHead drawing sample application
+#   sample\owndraw\ownsmpl.exe -- Owner-Draw Listbox sample application
+#   sample\status\stsmp.exe    -- AsuaCtl status control sample application
 #
 # Usage (run from the project root, where this file lives):
 #   wmake -f Makefile.wat           # build all
@@ -33,7 +35,7 @@ DLL = dll
     -mkdir $(OBJ) 2>NUL
     -mkdir $(DLL) 2>NUL
 
-all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe .SYMBOLIC
+all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe sample\owndraw\ownsmpl.exe sample\status\stsmp.exe .SYMBOLIC
 
 # -----------------------------------------------------------------------
 # Library DLL: dll\expm.dll (also produces lib\expm.lib via OPTION IMPLIB)
@@ -65,7 +67,16 @@ $(OBJ)\shadebtn.obj: src\shadebtn\shadebtn.c h\expm.h h\shadebtn.h src\shadebtn\
 $(OBJ)\arrowhead.obj: src\arrowhead\arrowhead.c h\expm.h h\arrowhead.h
     $(CC) $(CFLAGS_DLL) -fo=$@ src\arrowhead\arrowhead.c
 
-$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\arrowhead.obj $(OBJ)\expm.res
+$(OBJ)\owndraw.obj: src\owndraw\owndraw.c h\expm.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\owndraw\owndraw.c
+
+$(OBJ)\ctlcommon.obj: src\ctlcommon\ctlcommon.c h\expm.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\ctlcommon\ctlcommon.c
+
+$(OBJ)\status.obj: src\status\status.c h\expm.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\status\status.c
+
+$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\arrowhead.obj $(OBJ)\owndraw.obj $(OBJ)\ctlcommon.obj $(OBJ)\status.obj $(OBJ)\expm.res
     wlink &
         system os2v2 dll initinstance terminstance &
         name $(DLL)\expm.dll &
@@ -76,6 +87,9 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         file $(OBJ)\anibtn.obj &
         file $(OBJ)\shadebtn.obj &
         file $(OBJ)\arrowhead.obj &
+        file $(OBJ)\owndraw.obj &
+        file $(OBJ)\ctlcommon.obj &
+        file $(OBJ)\status.obj &
         export XpmInitComboBox &
         export XpmInitComboBoxFromRes &
         export XpmCellInit &
@@ -98,6 +112,15 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         export XpmShadeBtnInit &
         export XpmShadeBtnQueryVersion &
         export XpmDrawArrowHead &
+        export XpmInitLBWidthHeight &
+        export XpmDrawLBItems &
+        export XpmQueryPresColors &
+        export XpmStorePresParams &
+        export XpmDrawBitmap &
+        export XpmControlsInit &
+        export XpmGetVersion &
+        export XpmGetComponentVersion &
+        export XpmStatusInit &
         option implib=lib\expm.lib &
         option map=$(DLL)\expm.map
     wrc -q -bt=os2 $(OBJ)\expm.res $(DLL)\expm.dll
@@ -246,6 +269,40 @@ sample\arrowhead\arsmp.exe: $(OBJ)\arsmp.obj $(DLL)\expm.dll
         option map=sample\arrowhead\arsmp.map
 
 # -----------------------------------------------------------------------
+# Sample: OWNDRAW
+# -----------------------------------------------------------------------
+
+$(OBJ)\ownsmpl.obj: sample\owndraw\ownsmpl.c h\expm.h
+    $(CC) $(CFLAGS_EXE) -fo=$@ sample\owndraw\ownsmpl.c
+
+sample\owndraw\ownsmpl.exe: $(OBJ)\ownsmpl.obj $(DLL)\expm.dll
+    wlink &
+        system os2v2_pm &
+        name sample\owndraw\ownsmpl.exe &
+        file $(OBJ)\ownsmpl.obj &
+        option stack=8192 &
+        option heap=8192 &
+        library lib\expm.lib &
+        option map=sample\owndraw\ownsmpl.map
+
+# -----------------------------------------------------------------------
+# Sample: STATUS (AsuaCtl status control)
+# -----------------------------------------------------------------------
+
+$(OBJ)\stsmp.obj: sample\status\stsmp.c h\expm.h
+    $(CC) $(CFLAGS_EXE) -fo=$@ sample\status\stsmp.c
+
+sample\status\stsmp.exe: $(OBJ)\stsmp.obj $(DLL)\expm.dll
+    wlink &
+        system os2v2_pm &
+        name sample\status\stsmp.exe &
+        file $(OBJ)\stsmp.obj &
+        option stack=8192 &
+        option heap=8192 &
+        library lib\expm.lib &
+        option map=sample\status\stsmp.map
+
+# -----------------------------------------------------------------------
 # Clean
 # -----------------------------------------------------------------------
 
@@ -260,3 +317,5 @@ clean: .SYMBOLIC
     -rm -f sample\anibtn\anismp.exe sample\anibtn\anismp.map sample\anibtn\anismp.sym
     -rm -f sample\shadebtn\shbsmp.exe sample\shadebtn\shbsmp.map sample\shadebtn\shbsmp.sym
     -rm -f sample\arrowhead\arsmp.exe sample\arrowhead\arsmp.map sample\arrowhead\arsmp.sym
+    -rm -f sample\owndraw\ownsmpl.exe sample\owndraw\ownsmpl.map sample\owndraw\ownsmpl.sym
+    -rm -f sample\status\stsmp.exe sample\status\stsmp.map sample\status\stsmp.sym

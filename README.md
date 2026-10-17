@@ -23,6 +23,9 @@ https://www.edm2.com/index.php/Presentation_Manager_Functions.
 | AniButtn   | src/anibtn/anibtn.c        | Two-state graphical push buttons         |
 | ShadedBtn  | src/shadebtn/shadebtn.c    | Gradient-shaded button window class      |
 | ArrowHead  | src/arrowhead/arrowhead.c  | GPI arrowhead drawing helper             |
+| OwnerDraw  | src/owndraw/owndraw.c      | Column alignment for owner-draw listboxes |
+| CtlCommon  | src/ctlcommon/ctlcommon.c  | AsuaCtl shared helpers + version API     |
+| Status     | src/status/status.c        | Status text control (clone of AsuaCtl)   |
 
 ### ComboSup (merged from LIB-PM-ComboBoxSupport 1.1)
 
@@ -166,6 +169,57 @@ The function is declared with `EXPENTRY` (`_System`) so that the
 `POINTL`-by-value and `double` parameters pass correctly across the DLL
 boundary.
 
+### OwnerDraw (merged from DEV-SAMPLES-C-LIB-PM-Owner_Drawn_Listbox)
+
+The DEV-SAMPLES-C-LIB-PM-Owner_Drawn_Listbox library (BSD 3-Clause;
+original by ASH Software, Inc., 1992; updates by Martin Iturbide /
+OS2World, 2026) was merged into EXPM. It provides two helpers that make
+an `LS_OWNERDRAW` listbox align its text in fixed columns under a
+proportional-spaced font: `XpmInitLBWidthHeight` (called from
+`WM_MEASUREITEM`) and `XpmDrawLBItems` (called from `WM_DRAWITEM`). The
+upstream entry points were renamed to EXPM's `Xpm` prefix; the constants
+keep their upstream names:
+
+| Original (Owner-Drawn Listbox) | EXPM name              |
+|--------------------------------|------------------------|
+| `ODInitLBWidthHeight`          | `XpmInitLBWidthHeight` |
+| `ODDrawLBItems`                | `XpmDrawLBItems`       |
+
+Columns are described by a zero-terminated array of 1-based character
+positions (e.g. `{24, 36, 0}`); items may embed `'\t'` characters to
+advance to the next column. The BSD 3-Clause notice is retained in
+`src/owndraw/owndraw.c`.
+
+### AsuaCtl (clean-room clone of AsuaCtl 1.0)
+
+EXPM provides a clean-room reimplementation of AsuaCtl 1.0 (asuactl.dll,
+GPLv2) split across `src/ctlcommon/ctlcommon.c` (shared helpers and the
+version / initialisation API) and `src/status/status.c` (the status text
+control, `WC_STATUS`). It was written in C from the published AsuaCtl
+headers and IPF manuals only; no AsuaCtl source is used, which keeps EXPM
+LGPLv3. Every public name - window classes, styles, messages,
+notifications and structures - carries the EXPM `Xpm` prefix so it never
+clashes with the original:
+
+| Original (AsuaCtl)     | EXPM name                |
+|------------------------|--------------------------|
+| `AsuCtlInitialize`     | `XpmControlsInit`        |
+| `AsuGetVersion`        | `XpmGetVersion`          |
+| `AsuGetComponentVersion` | `XpmGetComponentVersion` |
+| `PpmQueryPresColors`   | `XpmQueryPresColors`     |
+| `PpmStorePresParams`   | `XpmStorePresParams`     |
+| `GrfDrawBitmap`        | `XpmDrawBitmap`          |
+| `CtlStatusInitialize`  | `XpmStatusInit`          |
+| `WC_STATUS`            | `XpmStatusClass`         |
+| `SS_*` / `SM_*`        | `XpmSS_*` / `XpmSM_*`    |
+
+`XpmControlsInit` registers the AsuaCtl-derived classes; the status
+control is created with the class `XpmStatusClass` and styled with the
+`XpmSS_*` bits (borders, alignment, automatic scaling, owner-drawn
+background, sizing grip). This release covers the shared helpers, the
+version/initialisation API and the status control; further AsuaCtl
+controls are planned. See `doc/ctlcommon.txt` and `doc/status.txt`.
+
 
 ## Directory layout
 
@@ -204,12 +258,16 @@ Outputs:
 | `sample\anibtn\anismp.exe`    | AniButtn animated-button sample |
 | `sample\shadebtn\shbsmp.exe`  | Shaded Buttons sample         |
 | `sample\arrowhead\arsmp.exe`  | ArrowHead drawing sample      |
+| `sample\owndraw\ownsmpl.exe`  | Owner-Draw Listbox sample     |
+| `sample\status\stsmp.exe`     | Status control sample         |
 
 API reference: `doc\cell.txt` (Cell module), `doc\expm.txt` (ComboSup
 module), `doc\ctlplus.txt` (Control Plus module), `doc\colorwheel.txt`
 (ColorWheel module), `doc\anibtn.txt` (AniButtn module),
-`doc\shadebtn.txt` (Shaded Buttons module) and `doc\arrowhead.txt`
-(ArrowHead module).
+`doc\shadebtn.txt` (Shaded Buttons module), `doc\arrowhead.txt`
+(ArrowHead module), `doc\owndraw.txt` (Owner-Draw Listbox module),
+`doc\ctlcommon.txt` (AsuaCtl shared helpers) and `doc\status.txt`
+(Status control).
 
 ## Runtime
 
@@ -227,6 +285,8 @@ All components listed in `Idea.txt` have been merged or cloned:
 - AniButtn (animated buttons)
 - Shaded Buttons (gradient-shaded button window class)
 - ArrowHead (GPI arrowhead drawing helper)
+- Owner-Draw Listbox (column alignment for LS_OWNERDRAW listboxes)
+- AsuaCtl (shared helpers, version API and status control; more controls planned)
 
 ## Licences of merged modules
 
@@ -242,5 +302,11 @@ third-party source. The Shaded Buttons module is used under its original
 freeware terms (original code by Hubert Chan); its copyright notice is
 retained in `src/shadebtn/shadebtn.c`. The ArrowHead module is a
 clean-room reimplementation of the shareware ArrowHead API by David Kopp
-and carries no third-party source. EXPM itself is LGPLv3 (see
-`LICENSE`).
+and carries no third-party source. The Owner-Draw Listbox module is used
+under its BSD 3-Clause licence (original by ASH Software, Inc., 1992;
+updates by Martin Iturbide / OS2World); its copyright notice is retained
+in `src/owndraw/owndraw.c`. The AsuaCtl module (shared helpers, version
+API and status control) is a clean-room reimplementation of the AsuaCtl
+1.0 API and manuals, written without consulting the GPLv2 AsuaCtl source,
+and carries no third-party source; see `doc/ctlcommon.txt` and
+`doc/status.txt`. EXPM itself is LGPLv3 (see `LICENSE`).

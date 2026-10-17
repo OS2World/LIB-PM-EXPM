@@ -3,9 +3,10 @@
  *
  * h/expm.h -- public declarations for applications using EXPM.
  *
- * Function names follow the Presentation Manager style (Win* for
- * window-manager helpers).  See doc/expm.txt for the API reference
- * and the mapping of merged third-party routines.
+ * Function names use the EXPM "Xpm" prefix (for the window-manager
+ * helpers), keeping clear of IBM's reserved Win, Gpi and Dos namespaces.
+ * See doc/expm.txt for the API reference and the mapping of merged
+ * third-party routines.
  *
  * Copyright (C) 2026 The EXPM Project Authors
  *
@@ -32,6 +33,7 @@
 #define INCL_WINENTRYFIELDS
 #define INCL_WINWINDOWMGR
 #define INCL_WINBUTTONS
+#define INCL_WINSYS
 #define INCL_GPI
 #include <os2.h>
 
@@ -514,6 +516,231 @@ VOID EXPENTRY XpmDeleteAniButton( HWND hwndDlg, USHORT id );
 /* ------------------------------------------------------------------ */
 
 #include "arrowhead.h"
+
+
+/* ------------------------------------------------------------------ */
+/* Owner-Draw Listbox (column alignment for LS_OWNERDRAW listboxes)    */
+/*                                                                     */
+/* Merged from DEV-SAMPLES-C-LIB-PM-Owner_Drawn_Listbox, distributed   */
+/* under the BSD 3-Clause License (original by ASH Software, Inc.,     */
+/* 1992; updates by Martin Iturbide / OS2World, 2026).  See            */
+/* src/owndraw/owndraw.c for the copyright notice.  The upstream entry */
+/* points ODInitLBWidthHeight / ODDrawLBItems are renamed to the EXPM  */
+/* Xpm* style (see doc/owndraw.txt).                                   */
+/* ------------------------------------------------------------------ */
+
+/* sfCharWidth values for XpmInitLBWidthHeight */
+#define AVERAGE_WIDTH   0   /* use lAveCharWidth from FONTMETRICS */
+#define MAXIMUM_WIDTH   1   /* use lMaxCharInc from FONTMETRICS   */
+
+/* Maximum length (in characters) of a single listbox item string.
+ * Longer strings are silently truncated during drawing. */
+#define MAX_TEXT_CHARS  255
+
+/* PMWIN.H declares OWNERITEM / POWNERITEM only when INCL_WINMENUS is
+ * in effect.  Forward-declaring the tag here keeps the prototype below
+ * independent of the caller's include order (POWNERITEM is exactly
+ * "struct _OWNERITEM *"). */
+struct _OWNERITEM;
+
+/* XpmInitLBWidthHeight -- initialise column width/height for an
+ * owner-draw listbox.  Call from the WM_MEASUREITEM handler and return
+ * the value it returns.
+ *
+ *   hListBox           handle to the listbox window
+ *   sfCharWidth        AVERAGE_WIDTH or MAXIMUM_WIDTH
+ *   sMaxNumberOfChars  longest string (in characters) that will be
+ *                      inserted
+ *   lCharWidth         receives the per-character pixel width used for
+ *                      column calculations; pass this to XpmDrawLBItems
+ *
+ * Returns MRESULT: HIUSHORT = maximum baseline extent (row height),
+ *                  LOUSHORT = total item width in pixels. */
+MRESULT EXPENTRY XpmInitLBWidthHeight( HWND   hListBox,
+                                       SHORT  sfCharWidth,
+                                       SHORT  sMaxNumberOfChars,
+                                       LONG  *lCharWidth );
+
+/* XpmDrawLBItems -- draw one owner-draw listbox item with column
+ * alignment.  Call from the WM_DRAWITEM handler and return the value it
+ * returns.
+ *
+ *   pOwnerItem  pointer to the OWNERITEM structure passed in mp2
+ *   lCharWidth  per-character pixel width from XpmInitLBWidthHeight
+ *   psTabStops  array of 1-based character-column numbers defining each
+ *               column boundary; the array must be terminated with 0
+ *
+ * Returns (MRESULT)TRUE to indicate the item has been drawn. */
+MRESULT EXPENTRY XpmDrawLBItems( struct _OWNERITEM *pOwnerItem,
+                                 LONG               lCharWidth,
+                                 SHORT             *psTabStops );
+
+
+/* ------------------------------------------------------------------ */
+/* AsuaCtl controls (clean-room reimplementation of AsuaCtl 1.0)       */
+/*                                                                     */
+/* Reimplemented in C from the published AsuaCtl headers and IPF       */
+/* manual only; no AsuaCtl source was consulted.  AsuaCtl is GPLv2, so */
+/* a clean-room rewrite keeps EXPM LGPLv3.  Every public name (window  */
+/* classes, styles, messages, notifications and structures) is renamed */
+/* with the EXPM "Xpm" prefix so it never clashes with the original    */
+/* asuactl.dll.  See doc\ctlcommon.txt and doc\status.txt.             */
+/*                                                                     */
+/* This release covers the shared helpers, the version/initialisation  */
+/* API and the status control (WC_STATUS).                             */
+/* ------------------------------------------------------------------ */
+
+/* Window class names */
+#define XpmStatusClass          "XpmStatus"
+
+/* Status control message range.  AsuaCtl used WM_USER+5..+11 for the
+ * status window; the same numeric range is kept, but every macro is
+ * renamed with the Xpm prefix. */
+#define XpmSTAT_FIRST_MSG       (WM_USER+5)
+#define XpmSTAT_LAST_MSG        (XpmSTAT_FIRST_MSG+7)
+
+/* Status control messages.  All take reserved (0) mp1/mp2 except
+ * XpmSM_SETHILITE, whose mp1 is the new enable state. */
+#define XpmSM_QUERYMAXCHARINC   (XpmSTAT_FIRST_MSG+0)
+#define XpmSM_QUERYTEXTHEIGHT   (XpmSTAT_FIRST_MSG+1)
+#define XpmSM_QUERYTEXTWIDTH    (XpmSTAT_FIRST_MSG+2)
+#define XpmSM_QUERYHEIGHT       (XpmSTAT_FIRST_MSG+3)
+#define XpmSM_QUERYHILITE       (XpmSTAT_FIRST_MSG+4)
+#define XpmSM_QUERYWIDTH        (XpmSTAT_FIRST_MSG+5)
+#define XpmSM_SETHILITE         (XpmSTAT_FIRST_MSG+6)
+
+/* Notification codes delivered in WM_CONTROL */
+#define XpmSMN_PRESPARAMCHANGED 0x0400
+
+/* Initialisation error codes */
+#define XpmERR_PNL_CLASSREG     0x0001
+
+/* Status control styles */
+/* Border drawing */
+#define XpmSS_BORDER            0x000F  /* complete frame, all four edges */
+#define XpmSS_THINFRAME         0x0080  /* thin (1 pixel) black frame    */
+#define XpmSS_LEFTFRAME         0x0001  /* draw left edge                */
+#define XpmSS_RIGHTFRAME        0x0002  /* draw right edge               */
+#define XpmSS_TOPFRAME          0x0004  /* draw top edge                 */
+#define XpmSS_BOTTOMFRAME       0x0008  /* draw bottom edge              */
+/* Horizontal text alignment */
+#define XpmSS_LEFT              0x0000
+#define XpmSS_CENTER            0x0020
+#define XpmSS_RIGHT             0x0040
+#define XpmSS_AUTOSHIFT         0x0060
+/* Automatic scaling */
+#define XpmSS_XAUTOSCALE        0x0100
+#define XpmSS_YAUTOSCALE        0x0200
+/* Additional options */
+#define XpmSS_OWNERDRAW         0x0010
+#define XpmSS_MOUSETRANSPARENT  0x0400
+#define XpmSS_WINSTYLE          0x0800
+
+/* XpmOwnerBack -- passed to the owner of an owner-draw control in
+ * WM_DRAWITEM so it can repaint the background.  The owner should draw
+ * into hps within bound (client coordinates) and return TRUE; returning
+ * FALSE tells the control to paint the background itself.
+ *
+ *   hwnd      window being repainted
+ *   hps       presentation space to draw with
+ *   bound     rectangle to repaint (client coordinates)
+ *   refpoint  coordinates of bound.xLeft / bound.yBottom
+ */
+#pragma pack(1)
+typedef struct _XPMOWNERBACK
+{
+    HWND   hwnd;
+    HPS    hps;
+    RECTL  bound;
+    POINTL refpoint;
+} XpmOwnerBack, *PXpmOwnerBack;
+
+/* XpmPPTemplate -- one entry of the configuration table used by
+ * XpmQueryPresColors / XpmStorePresParams.
+ *
+ *   ulPresParam  presentation parameter to read (PP_*)
+ *   ulPresFlags  QPF_* flags passed to WinQueryPresParam
+ *   ulSysColor   SYSCLR_* fallback used when the parameter is absent
+ *   ulRgbColor   hard-coded RGB fallback used when ulSysColor is 0
+ */
+typedef struct
+{
+    ULONG ulPresParam;
+    ULONG ulPresFlags;
+    ULONG ulSysColor;
+    ULONG ulRgbColor;
+} XpmPPTemplate, *PXpmPPTemplate;
+#pragma pack()
+
+/* Shared helpers (from AsuaCtl's pparams / graphics modules) */
+
+/* XpmQueryPresColors -- build a colour table from a window's
+ * presentation parameters.  (AsuaCtl name: PpmQueryPresColors)
+ *
+ *   hwnd       window to query
+ *   nColors    number of entries in ppt and lColTable
+ *   ppt        table of presentation parameters to read
+ *   lColTable  receives one RGB colour per entry
+ *
+ * Returns 0 (reserved). */
+LONG EXPENTRY XpmQueryPresColors( HWND hwnd, LONG nColors,
+                                  XpmPPTemplate *ppt, LONG *lColTable );
+
+/* XpmStorePresParams -- copy presentation parameters from a PRESPARAMS
+ * list (for example CREATESTRUCT.pPresParams) into a window.
+ * (AsuaCtl name: PpmStorePresParams)
+ *
+ *   hwnd     window to store into
+ *   ppm      PRESPARAMS list to copy
+ *   ppt      optional filter: when non-NULL only parameters listed in
+ *            ppt are copied; when NULL all non-font parameters are
+ *   nColors  number of entries in ppt
+ *
+ * Returns 0 (reserved). */
+/* The PRESPARAMS tag is forward-declared so this prototype does not
+ * depend on the caller having enabled INCL_WINSYS. */
+struct _PRESPARAMS;
+LONG EXPENTRY XpmStorePresParams( HWND hwnd, struct _PRESPARAMS *ppm,
+                                  XpmPPTemplate *ppt, LONG nColors );
+
+/* XpmDrawBitmap -- draw a colour bitmap together with an optional
+ * monochrome transparency mask.  (AsuaCtl name: GrfDrawBitmap)
+ *
+ *   hps         presentation space
+ *   hbmColor    colour bitmap to draw
+ *   hbmMono     monochrome mask (1 bits are transparent), or NULL
+ *   pos         destination point, or NULL for the current position
+ *   flPattern   TRUE: paint the bitmap background (BM_OVERPAINT);
+ *               FALSE: leave the background untouched
+ *
+ * Returns 0 (reserved). */
+LONG EXPENTRY XpmDrawBitmap( HPS hps, HBITMAP hbmColor, HBITMAP hbmMono,
+                             POINTL *pos, BOOL flPattern );
+
+/* Version / initialisation API (from AsuaCtl's asuactl module) */
+
+/* XpmControlsInit -- register every AsuaCtl-derived window class.
+ * Returns 0 on success, or XpmERR_* if any registration failed; the
+ * remaining classes are still attempted.
+ * (AsuaCtl name: AsuCtlInitialize) */
+LONG EXPENTRY XpmControlsInit( HAB hab );
+
+/* XpmGetVersion -- return the library version as (major << 16) | minor.
+ * (AsuaCtl name: AsuGetVersion) */
+LONG EXPENTRY XpmGetVersion( VOID );
+
+/* XpmGetComponentVersion -- return the version of the control class
+ * pszClass as (major << 16) | minor, or 0 if the class is not
+ * registered.  (AsuaCtl name: AsuGetComponentVersion) */
+LONG EXPENTRY XpmGetComponentVersion( PSZ pszClass );
+
+/* Status control (from AsuaCtl's status module) */
+
+/* XpmStatusInit -- register the XpmStatusClass window class.  Called by
+ * XpmControlsInit; call it directly only when the status control is
+ * used on its own.  Returns 0 on success or XpmERR_PNL_CLASSREG.
+ * (AsuaCtl name: CtlStatusInitialize) */
+LONG EXPENTRY XpmStatusInit( HAB hab );
 
 
 #ifdef __cplusplus

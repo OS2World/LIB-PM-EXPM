@@ -1,0 +1,135 @@
+EXPM - Owner-Draw Listbox module
+===============================
+
+The Owner-Draw Listbox module adds two helpers that let an
+LS_OWNERDRAW listbox align its text in fixed columns even when a
+proportional-spaced font is in use.  A listbox with the LS_OWNERDRAW
+style draws nothing itself: it sends WM_MEASUREITEM once per item and
+WM_DRAWITEM each time an item must be painted, and the application (the
+listbox owner) must answer both.  These two helpers do exactly that.
+
+Merged from DEV-SAMPLES-C-LIB-PM-Owner_Drawn_Listbox, which is
+distributed under the BSD 3-Clause License (original by ASH Software,
+Inc., 1992; updates by Martin Iturbide / OS2World, 2026).  The upstream
+entry points were renamed to the EXPM Xpm* style:
+
+    ODInitLBWidthHeight  ->  XpmInitLBWidthHeight
+    ODDrawLBItems        ->  XpmDrawLBItems
+
+The constants keep their upstream names (AVERAGE_WIDTH, MAXIMUM_WIDTH,
+MAX_TEXT_CHARS).
+
+Public API
+----------
+
+    MRESULT EXPENTRY XpmInitLBWidthHeight( HWND   hListBox,
+                                           SHORT  sfCharWidth,
+                                           SHORT  sMaxNumberOfChars,
+                                           LONG  *lCharWidth );
+
+        Call from the WM_MEASUREITEM handler and return its result
+        directly from that handler.  It queries the current font metrics
+        from the listbox presentation space and computes the row height
+        and total item width that PM must allocate per item.
+
+        hListBox           handle to the owner-draw listbox window.
+        sfCharWidth        AVERAGE_WIDTH  - use lAveCharWidth (tighter
+                           packing); MAXIMUM_WIDTH - use lMaxCharInc
+                           (guaranteed no overlap).
+        sMaxNumberOfChars  longest item string, in characters.
+        lCharWidth         OUT: receives the per-character pixel width
+                           chosen by sfCharWidth.  Store it and pass it
+                           to every XpmDrawLBItems call.
+
+        Returns MRESULT: HIUSHORT = row height (lMaxBaselineExt),
+                         LOUSHORT = total item width in pixels
+                         (sMaxNumberOfChars * charWidth).
+
+    MRESULT EXPENTRY XpmDrawLBItems( POWNERITEM pOwnerItem,
+                                     LONG       lCharWidth,
+                                     SHORT     *psTabStops );
+
+        Call from the WM_DRAWITEM handler and return its result directly
+        from that handler.  It fetches the item text, expands embedded
+        tab characters into spaces, and draws each column segment at its
+        pixel offset.
+
+        pOwnerItem  pointer to the OWNERITEM structure passed in mp2.
+        lCharWidth  per-character pixel width from XpmInitLBWidthHeight.
+        psTabStops  array of 1-based character-column numbers defining
+                    each column boundary; the array must be terminated
+                    with 0.  Column 1 is the leftmost character position;
+                    the last entry before the 0 marks the start of the
+                    final column, which is drawn to the end of the string.
+
+        Returns (MRESULT)TRUE; the system then applies the default
+        selection highlight.
+
+        Notes:
+          - The item is only redrawn when pOwnerItem->fsState equals
+            pOwnerItem->fsStateOld, i.e. when the item content (not just
+            the selection highlight) changed.  Highlight transitions are
+            handled by the system.
+          - The tab-stop array and lCharWidth must remain valid for the
+            lifetime of the listbox; declare them static or at file
+            scope.
+          - Item strings longer than MAX_TEXT_CHARS (255) characters are
+            truncated.
+
+How it works
+------------
+
+At measure time XpmInitLBWidthHeight takes a presentation space for the
+listbox, reads a FONTMETRICS structure, and picks either the average
+character width or the maximum character increment.  It returns the
+baseline extent as the row height and the maximum character count times
+the chosen width as the item width.
+
+At draw time XpmDrawLBItems reads the item string with LM_QUERYITEMTEXT
+and walks it once, replacing each '\t' with enough spaces to reach the
+next tab stop.  It then walks the tab-stop array, advancing the item
+rectangle's left edge by the character offset of each column and calling
+WinDrawText for that column's characters (the final column is drawn to
+the end of the string).  Finally it restores the original left edge so
+the system can paint the default highlight.
+
+Usage
+-----
+
+    1. Create the listbox with the LS_OWNERDRAW style.
+    2. In WM_MEASUREITEM call XpmInitLBWidthHeight and return its value.
+    3. In WM_DRAWITEM call XpmDrawLBItems with the stored lCharWidth and
+       your tab-stop array, and return its value.
+    4. Insert items with '\t' between columns (or pre-padded with
+       spaces).
+
+Sample
+------
+
+    sample\owndraw\ownsmpl.exe (source in sample\owndraw\ownsmpl.c).
+
+A window holding an LS_OWNERDRAW listbox of "Name / Size / Date" rows
+(tab-separated), with the tab stops { 24, 36, 0 }.
+
+Runtime requirements
+--------------------
+
+    - expm.dll must be reachable on LIBPATH (or next to the executable).
+    - INCL_WIN must be in effect in the caller: the OWNERITEM structure
+      (POWNERITEM) that XpmDrawLBItems takes is declared by PMWIN.H only
+      when INCL_WINMENUS is defined.  h/expm.h forward-declares the
+      struct tag so its own prototype compiles regardless, but a caller
+      that inspects the OWNERITEM fields needs INCL_WIN.
+
+Licence
+-------
+
+The original DEV-SAMPLES-C-LIB-PM-Owner_Drawn_Listbox package is
+distributed under the BSD 3-Clause License:
+
+    Copyright (c) 1992 ASH Software, Inc.
+    Updates (c) 2026 Martin Iturbide / OS2World
+
+EXPM merges the source unchanged apart from the Xpm* renames and this
+documentation.  The BSD 3-Clause notice is retained in
+src/owndraw/owndraw.c; see LICENSE for the EXPM (LGPLv3) terms.

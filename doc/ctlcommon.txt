@@ -1,0 +1,106 @@
+EXPM - AsuaCtl shared helpers module
+====================================
+
+The AsuaCtl shared module (src/ctlcommon/ctlcommon.c) contains the
+general-purpose routines and the version / initialisation API that the
+AsuaCtl-derived controls (currently the status control, XpmStatusClass)
+build on.  It is a clean-room reimplementation for the EXPM project
+(2026) of the general-purpose parts of AsuaCtl 1.0 (asuactl.dll:
+asuactl.c, pparams.c and graphics.c).  It was written in C from the
+published AsuaCtl headers and the IPF manual
+(doc/src/common/doc/commfunc.inc); no AsuaCtl source was consulted.
+AsuaCtl is GPLv2, EXPM is LGPLv3.
+
+The upstream entry points were renamed to the EXPM Xpm* style; the
+structure XpmPPTemplate replaces AsuaCtl's presentation-parameter
+template:
+
+    AsuCtlInitialize         ->  XpmControlsInit
+    AsuGetVersion            ->  XpmGetVersion
+    AsuGetComponentVersion   ->  XpmGetComponentVersion
+    PpmQueryPresColors       ->  XpmQueryPresColors
+    PpmStorePresParams       ->  XpmStorePresParams
+    GrfDrawBitmap            ->  XpmDrawBitmap
+
+
+Version / initialisation API
+----------------------------
+
+    LONG EXPENTRY XpmControlsInit( HAB hab );
+
+        Register every AsuaCtl-derived window class.  Returns 0 on
+        success, or XpmERR_PNL_CLASSREG (0x0001) if any class failed to
+        register; the remaining classes are still attempted.  Must be
+        called before creating any EXPM control.
+
+    LONG EXPENTRY XpmGetVersion( VOID );
+
+        Return the library version as (major << 16) | minor; the current
+        release is 1.0 (return value 0x00010000).
+
+    LONG EXPENTRY XpmGetComponentVersion( PSZ pszClass );
+
+        Return the version of the control class pszClass as
+        (major << 16) | minor, or 0 if the class is not registered.
+
+
+Presentation-parameter helpers
+------------------------------
+
+    typedef struct
+    {
+        ULONG ulPresParam;   /* PP_* parameter to read            */
+        ULONG ulPresFlags;   /* QPF_* flags for WinQueryPresParam */
+        ULONG ulSysColor;    /* SYSCLR_* fallback (0 = none)      */
+        ULONG ulRgbColor;    /* RGB fallback when ulSysColor == 0 */
+    } XpmPPTemplate, *PXpmPPTemplate;
+
+    LONG EXPENTRY XpmQueryPresColors( HWND hwnd, LONG nColors,
+                                      XpmPPTemplate *ppt,
+                                      LONG *lColTable );
+
+        Build a colour table from a window's presentation parameters.
+        For each of the nColors entries the function first tries
+        WinQueryPresParam (using the entry's QPF_* flags); if that fails
+        it falls back to the SYSCLR_* system colour; if no system colour
+        is given it uses the hard-coded RGB value.  The result is written
+        to lColTable.  Returns 0.
+
+    LONG EXPENTRY XpmStorePresParams( HWND hwnd,
+                                      struct _PRESPARAMS *ppm,
+                                      XpmPPTemplate *ppt, LONG nColors );
+
+        Copy presentation parameters from a PRESPARAMS list (for example
+        CREATESTRUCT.pPresParams) into a window.  Font-name parameters
+        (PP_FONTNAMESIZE) are always copied.  Colour parameters are
+        copied unconditionally when ppt is NULL, or only when their id
+        appears in the ppt filter table otherwise.  Returns 0.
+
+
+Graphics helper
+---------------
+
+    LONG EXPENTRY XpmDrawBitmap( HPS hps, HBITMAP hbmColor,
+                                 HBITMAP hbmMono, POINTL *pos,
+                                 BOOL flPattern );
+
+        Draw a colour bitmap with an optional monochrome transparency
+        mask.  When hbmMono is given its black bits set the background
+        and the colour bitmap is overlaid with BM_LEAVEALONE, which
+        leaves the background untouched and so yields a transparent
+        bitmap.  pos is the destination point (NULL = current position).
+        flPattern selects BM_OVERPAINT (TRUE) or BM_LEAVEALONE (FALSE)
+        for the mask draw.  Returns 0.
+
+        NOTE: this helper uses the CLR_BLACK / CLR_WHITE colour indices,
+        i.e. it expects the caller's PS to be in colour index mode (the
+        default for WinGetPS / WinBeginPaint).
+
+
+Building and sample
+-------------------
+
+    compile_wat.cmd
+
+Outputs: dll\expm.dll, lib\expm.lib.  See doc\status.txt for the status
+control that uses these helpers.
