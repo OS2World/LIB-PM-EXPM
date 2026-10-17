@@ -1,9 +1,12 @@
 # EXPM - Extended Presentation Manager library
 
 Extended Presentation Manager library for OS/2 (ArcaOS / Warp 4.52).
-Extends PM GUI elements with helper routines that follow the natural
-naming style of Presentation Manager (see
-https://www.edm2.com/index.php/Presentation_Manager_Functions).
+Extends PM GUI elements with helper routines whose entry points use
+EXPM's own `Xpm` prefix.  PM reserves the `Win*`, `Gpi*` and `Dos*`
+prefixes for the system APIs, so a third-party library must not claim
+them; the helpers otherwise follow PM calling conventions (`EXPENTRY`,
+`MPARAM` / `MRESULT`, untyped handles).  See
+https://www.edm2.com/index.php/Presentation_Manager_Functions.
 
 - License: LGPLv3
 - Language: C
@@ -24,7 +27,7 @@ https://www.edm2.com/index.php/Presentation_Manager_Functions).
 ### ComboSup (merged from LIB-PM-ComboBoxSupport 1.1)
 
 The public-domain ComboSup 1.1 library (Dave Briccetti, 1990) was merged
-into EXPM. Its functions were renamed to the PM style:
+into EXPM. Its functions were renamed to EXPM's `Xpm` prefix:
 
 | Original (16-bit)         | EXPM name                  |
 |---------------------------|----------------------------|
@@ -43,8 +46,8 @@ used untyped per the PM ABI (see doc/c-guide notes in the toolkit).
 The Cell Toolkit 0.7b (Sergey I. Yevtushenko, 1998-2000, BSD-2) was
 merged into EXPM. It provides split views (recursively splittable frame
 panels with a draggable split bar) and toolbars (bitmap-button bars with
-bubble help). Its functions were renamed to the PM style; constants and
-structures keep their upstream names:
+bubble help). Its functions were renamed to EXPM's `Xpm` prefix;
+constants and structures keep their upstream names:
 
 | Original (Cell Toolkit) | EXPM name                  |
 |--------------------------|----------------------------|
@@ -89,7 +92,7 @@ original color wheel concept by Paul Ratcliffe) was merged into EXPM. It
 provides a ready-to-use modal "Edit Color" dialog wrapping the
 undocumented OS/2 `ColorSelectClass` color wheel control from
 `WPCONFIG.DLL`, with R/G/B spin buttons and OK / Undo / Cancel. The
-single entry point keeps its PM-style name:
+single entry point is already in EXPM's `Xpm` style:
 
 | Original (ColorWheel) | EXPM name          |
 |-----------------------|--------------------|
@@ -110,7 +113,7 @@ another while pressed) that can show a help string in a status field
 while the pointer is over it, while still sending `WM_COMMAND` /
 `BN_CLICKED` like a normal button. It was written in C from the published
 header and manual only; no third-party source is used. The two entry
-points were renamed to the PM style:
+points were renamed to EXPM's `Xpm` prefix:
 
 | Original (AniButtn) | EXPM name            |
 |---------------------|----------------------|
@@ -130,7 +133,7 @@ gradient and can additionally draw check boxes, radio buttons and
 three-state buttons, rounded or open sides, vertical orientation and
 icon / mini-icon / bitmap content. The window class name, style bits,
 message and parameter codes keep their upstream names; only the two
-entry points were renamed to the PM style:
+entry points were renamed to EXPM's `Xpm` prefix:
 
 | Original (Shaded Buttons) | EXPM name                 |
 |---------------------------|---------------------------|
@@ -153,7 +156,7 @@ single helper, `XpmDrawArrowHead`, that draws a two-line arrowhead at
 the tip of a line in a GPI presentation space, optionally filled, using
 the current GPI attributes. It was written from the published header and
 readme only; no third-party source is used. There is no window class and
-no resource; only the entry point was renamed to the PM style:
+no resource; only the entry point was renamed to EXPM's `Xpm` prefix:
 
 | Original (ArrowHead) | EXPM name          |
 |----------------------|--------------------|
