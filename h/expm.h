@@ -587,7 +587,8 @@ MRESULT EXPENTRY XpmDrawLBItems( struct _OWNERITEM *pOwnerItem,
 /* asuactl.dll.  See doc\ctlcommon.txt and doc\status.txt.             */
 /*                                                                     */
 /* This release covers the shared helpers, the version/initialisation  */
-/* API and the status control (WC_STATUS).                             */
+/* API, the status control (WC_STATUS) and the progress bar            */
+/* (WC_PROGRESSBAR).                                                   */
 /* ------------------------------------------------------------------ */
 
 /* Window class names */
@@ -741,6 +742,138 @@ LONG EXPENTRY XpmGetComponentVersion( PSZ pszClass );
  * used on its own.  Returns 0 on success or XpmERR_PNL_CLASSREG.
  * (AsuaCtl name: CtlStatusInitialize) */
 LONG EXPENTRY XpmStatusInit( HAB hab );
+
+/* ------------------------------------------------------------------ */
+/* Progress bar control (clean-room reimplementation of the AsuaCtl     */
+/* progress bar).  AsuaCtl is GPLv2, EXPM is LGPLv3; every public name  */
+/* carries the Xpm prefix.  See doc\progbar.txt.                       */
+/* ------------------------------------------------------------------ */
+
+/* Window class name */
+#define XpmProgressBarClass     "XpmProgressBar"
+
+/* Message range.  AsuaCtl used WM_USER+15..+24; the numeric range is
+ * kept, every macro is renamed with the Xpm prefix. */
+#define XpmPROG_FIRST_MSG       (WM_USER+15)
+#define XpmPROG_LAST_MSG        (XpmPROG_FIRST_MSG+9)
+
+#define XpmPBM_SETRANGE         (XpmPROG_FIRST_MSG+0)  /* mp1=low, mp2=high  */
+#define XpmPBM_SETPOS           (XpmPROG_FIRST_MSG+1)  /* mp1=position       */
+#define XpmPBM_DELTAPOS         (XpmPROG_FIRST_MSG+2)  /* mp1=delta          */
+#define XpmPBM_SETSTEP          (XpmPROG_FIRST_MSG+3)  /* mp1=step           */
+#define XpmPBM_STEPIT           (XpmPROG_FIRST_MSG+4)  /* advance by step    */
+#define XpmPBM_GETRANGE         (XpmPROG_FIRST_MSG+5)  /* mp1=PXpmPBRange    */
+#define XpmPBM_GETPOS           (XpmPROG_FIRST_MSG+6)  /* return position    */
+#define XpmPBM_SETBARCOLOR      (XpmPROG_FIRST_MSG+7)  /* mp1=RGB bar colour */
+#define XpmPBM_SETBKCOLOR       (XpmPROG_FIRST_MSG+8)  /* mp1=RGB background */
+
+/* Styles */
+#define XpmPBS_SMOOTH           0x0001  /* continuous indicator           */
+#define XpmPBS_TEXT             0x0002  /* draw the percentage as text    */
+#define XpmPBS_VERTICAL         0x0004  /* vertical indicator             */
+#define XpmPBS_RAISED           0x0008  /* raised  (out) border           */
+#define XpmPBS_DEPRESSED        0x0010  /* sunken  (in)  border           */
+
+/* Range structure used by XpmPBM_SETRANGE / XpmPBM_GETRANGE */
+#pragma pack(1)
+typedef struct _XPMPBRANGE
+{
+    SHORT sLow;
+    SHORT sHigh;
+} XpmPBRange, *PXpmPBRange;
+#pragma pack()
+
+/* XpmProgressBarInit -- register the XpmProgressBarClass window class.
+ * Called by XpmControlsInit; call it directly only when the progress
+ * bar is used on its own.  Returns 0 on success or XpmERR_PNL_CLASSREG.
+ * (AsuaCtl name: ProgbarRegister) */
+LONG EXPENTRY XpmProgressBarInit( HAB hab );
+
+/* ------------------------------------------------------------------ */
+/* Window button control (clean-room reimplementation of the AsuaCtl    */
+/* window button, WC_WINBUTTON).  AsuaCtl is GPLv2, EXPM is LGPLv3;     */
+/* every public name carries the Xpm prefix.  See doc\winbutt.txt.      */
+/* ------------------------------------------------------------------ */
+
+/* Window class name */
+#define XpmWinButtonClass       "XpmWinButton"
+
+/* Styles.  AsuaCtl reused the WC_BUTTON style bit-space with its own
+ * meaning, so these values intentionally overlap PM's BS_* bits; they
+ * are only meaningful to XpmWinButtonClass.  The AsuaCtl numeric
+ * values are kept, except XpmBS_DEFAULT which AsuaCtl left colliding
+ * with XpmBS_AUTOTEXT and which EXPM renumbers (see doc\winbutt.txt). */
+#define XpmBS_FLATBUTTON        0x0001  /* flat: frames on mouse-over only  */
+#define XpmBS_OWNERDRAW         0x0008  /* owner paints the background      */
+#define XpmBS_ALIGNLEFT         0x0000  /* text placement (see note below)  */
+#define XpmBS_ALIGNRIGHT        0x0010
+#define XpmBS_ALIGNTOP          0x0020
+#define XpmBS_ALIGNBOTTOM       0x0030
+#define XpmBS_ALIGNMASK         0x0030
+#define XpmBS_THINFRAME         0x0080  /* one-pixel frame                  */
+#define XpmBS_AUTOTEXT          0x0400  /* ellipsis when text does not fit  */
+#define XpmBS_BITMAP            0x0040  /* a bitmap is used for the face    */
+#define XpmBS_HELP              0x0100  /* notify with WM_HELP              */
+#define XpmBS_SYSCOMMAND        0x0200  /* notify with WM_SYSCOMMAND        */
+#define XpmBS_DEFAULT           0x1000  /* thick default-button frame       */
+#define XpmBS_AUTOSIZE          0x4000  /* resize to fit text and/or bitmap */
+
+/* The alignment field (XpmBS_ALIGNMASK) selects where the text sits:
+ * XpmBS_ALIGNLEFT (left, vertically centred), XpmBS_ALIGNRIGHT (right,
+ * vertically centred), XpmBS_ALIGNTOP (top, horizontally centred) or
+ * XpmBS_ALIGNBOTTOM (bottom, horizontally centred). */
+
+/* Notification codes sent to the owner.  Clicks (and the other buttons)
+ * arrive as WM_COMMAND, the mouse/presentation events as WM_CONTROL. */
+#define XpmBN_CLICKED           1
+#define XpmBN_DBLCLICKED        2
+#define XpmBN_PAINT             3
+#define XpmBN_MOUSEENTER        4
+#define XpmBN_MOUSELEAVE        5
+#define XpmBN_MOUSECHANGE       6
+#define XpmBN_PRESPARAMCHANGED  7
+#define XpmBN_BUTTON2CLICKED    8
+
+/* Control messages */
+#define XpmBM_QUERYHEIGHT       (WM_USER+25)  /* return minimum height */
+#define XpmBM_QUERYWIDTH        (WM_USER+26)  /* return minimum width  */
+
+/* Identifiers of the bitmaps AsuaCtl embedded in its DLL resources.
+ * EXPM does not ship those images; the identifiers are defined so that
+ * existing code compiles, but XpmWinButtonInit does not load them
+ * (pass the bitmaps through XpmWBTNCDATA instead). */
+#define XpmBBMP_OK              1
+#define XpmBBMP_CANCEL          2
+#define XpmBBMP_HELP            3
+
+/* XpmWBTNCDATA -- control data (CTLDATA) accepted at creation, and the
+ * layout of the per-window data used by WM_DRAWITEM notifications.
+ * Only the bitmap handles are honoured by EXPM; idStdBitmap is ignored
+ * (the embedded images are not shipped) and fsHiliteState requests an
+ * initially pressed appearance. */
+#pragma pack(1)
+typedef struct _XPMWBTNCDATA
+{
+    USHORT  cb;                 /* sizeof(XpmWBTNCDATA)                 */
+    USHORT  idStdBitmap;        /* embedded bitmap id (EXPM: ignored)   */
+    USHORT  fsHiliteState;      /* TRUE: start pressed                  */
+    USHORT  usPad;
+    LHANDLE hColorImage;        /* normal    colour bitmap, or NULL     */
+    LHANDLE hColorDisImage;     /* disabled  colour bitmap, or NULL     */
+    LHANDLE hColorPressImage;   /* pressed   colour bitmap, or NULL     */
+    LHANDLE hColorHiliteImage;  /* mouse-over colour bitmap, or NULL    */
+    LHANDLE hImage;             /* normal    monochrome mask, or NULL   */
+    LHANDLE hImageDis;          /* disabled  monochrome mask, or NULL   */
+    LHANDLE hImagePress;        /* pressed   monochrome mask, or NULL   */
+    LHANDLE hImageHilite;       /* mouse-over monochrome mask, or NULL  */
+} XpmWBTNCDATA, *PXpmWBTNCDATA;
+#pragma pack()
+
+/* XpmWinButtonInit -- register the XpmWinButtonClass window class.
+ * Called by XpmControlsInit; call it directly only when the window
+ * button is used on its own.  Returns 0 on success or
+ * XpmERR_PNL_CLASSREG.  (AsuaCtl name: BtnRegister) */
+LONG EXPENTRY XpmWinButtonInit( HAB hab );
 
 
 #ifdef __cplusplus

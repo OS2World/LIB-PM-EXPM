@@ -188,6 +188,12 @@ LONG EXPENTRY XpmControlsInit( HAB hab )
     if( XpmStatusInit( hab ) != 0 )
         rc = XpmERR_PNL_CLASSREG;
 
+    if( XpmProgressBarInit( hab ) != 0 )
+        rc = XpmERR_PNL_CLASSREG;
+
+    if( XpmWinButtonInit( hab ) != 0 )
+        rc = XpmERR_PNL_CLASSREG;
+
     return rc;
 }
 
@@ -207,6 +213,12 @@ LONG EXPENTRY XpmGetComponentVersion( PSZ pszClass )
         return 0L;
 
     if( strcmp( pszClass, XpmStatusClass ) == 0 )
+        return ((LONG)XPM_CONTROLS_MAJOR << 16) | (LONG)XPM_CONTROLS_MINOR;
+
+    if( strcmp( pszClass, XpmProgressBarClass ) == 0 )
+        return ((LONG)XPM_CONTROLS_MAJOR << 16) | (LONG)XPM_CONTROLS_MINOR;
+
+    if( strcmp( pszClass, XpmWinButtonClass ) == 0 )
         return ((LONG)XPM_CONTROLS_MAJOR << 16) | (LONG)XPM_CONTROLS_MINOR;
 
     return 0L;

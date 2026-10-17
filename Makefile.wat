@@ -12,6 +12,8 @@
 #   sample\arrowhead\arsmp.exe -- ArrowHead drawing sample application
 #   sample\owndraw\ownsmpl.exe -- Owner-Draw Listbox sample application
 #   sample\status\stsmp.exe    -- AsuaCtl status control sample application
+#   sample\progbar\pgbsmp.exe  -- AsuaCtl progress bar sample application
+#   sample\winbutt\wbsmp.exe   -- AsuaCtl window button sample application
 #
 # Usage (run from the project root, where this file lives):
 #   wmake -f Makefile.wat           # build all
@@ -35,7 +37,7 @@ DLL = dll
     -mkdir $(OBJ) 2>NUL
     -mkdir $(DLL) 2>NUL
 
-all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe sample\owndraw\ownsmpl.exe sample\status\stsmp.exe .SYMBOLIC
+all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe sample\owndraw\ownsmpl.exe sample\status\stsmp.exe sample\progbar\pgbsmp.exe sample\winbutt\wbsmp.exe .SYMBOLIC
 
 # -----------------------------------------------------------------------
 # Library DLL: dll\expm.dll (also produces lib\expm.lib via OPTION IMPLIB)
@@ -76,7 +78,13 @@ $(OBJ)\ctlcommon.obj: src\ctlcommon\ctlcommon.c h\expm.h
 $(OBJ)\status.obj: src\status\status.c h\expm.h
     $(CC) $(CFLAGS_DLL) -fo=$@ src\status\status.c
 
-$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\arrowhead.obj $(OBJ)\owndraw.obj $(OBJ)\ctlcommon.obj $(OBJ)\status.obj $(OBJ)\expm.res
+$(OBJ)\progbar.obj: src\progbar\progbar.c h\expm.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\progbar\progbar.c
+
+$(OBJ)\winbutt.obj: src\winbutt\winbutt.c h\expm.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\winbutt\winbutt.c
+
+$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\arrowhead.obj $(OBJ)\owndraw.obj $(OBJ)\ctlcommon.obj $(OBJ)\status.obj $(OBJ)\progbar.obj $(OBJ)\winbutt.obj $(OBJ)\expm.res
     wlink &
         system os2v2 dll initinstance terminstance &
         name $(DLL)\expm.dll &
@@ -90,6 +98,8 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         file $(OBJ)\owndraw.obj &
         file $(OBJ)\ctlcommon.obj &
         file $(OBJ)\status.obj &
+        file $(OBJ)\progbar.obj &
+        file $(OBJ)\winbutt.obj &
         export XpmInitComboBox &
         export XpmInitComboBoxFromRes &
         export XpmCellInit &
@@ -121,6 +131,8 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         export XpmGetVersion &
         export XpmGetComponentVersion &
         export XpmStatusInit &
+        export XpmProgressBarInit &
+        export XpmWinButtonInit &
         option implib=lib\expm.lib &
         option map=$(DLL)\expm.map
     wrc -q -bt=os2 $(OBJ)\expm.res $(DLL)\expm.dll
@@ -303,6 +315,40 @@ sample\status\stsmp.exe: $(OBJ)\stsmp.obj $(DLL)\expm.dll
         option map=sample\status\stsmp.map
 
 # -----------------------------------------------------------------------
+# Sample: PROGBAR (AsuaCtl progress bar)
+# -----------------------------------------------------------------------
+
+$(OBJ)\pgbsmp.obj: sample\progbar\pgbsmp.c h\expm.h
+    $(CC) $(CFLAGS_EXE) -fo=$@ sample\progbar\pgbsmp.c
+
+sample\progbar\pgbsmp.exe: $(OBJ)\pgbsmp.obj $(DLL)\expm.dll
+    wlink &
+        system os2v2_pm &
+        name sample\progbar\pgbsmp.exe &
+        file $(OBJ)\pgbsmp.obj &
+        option stack=8192 &
+        option heap=8192 &
+        library lib\expm.lib &
+        option map=sample\progbar\pgbsmp.map
+
+# -----------------------------------------------------------------------
+# Sample: WINBUTT (AsuaCtl window button)
+# -----------------------------------------------------------------------
+
+$(OBJ)\wbsmp.obj: sample\winbutt\wbsmp.c h\expm.h
+    $(CC) $(CFLAGS_EXE) -fo=$@ sample\winbutt\wbsmp.c
+
+sample\winbutt\wbsmp.exe: $(OBJ)\wbsmp.obj $(DLL)\expm.dll
+    wlink &
+        system os2v2_pm &
+        name sample\winbutt\wbsmp.exe &
+        file $(OBJ)\wbsmp.obj &
+        option stack=8192 &
+        option heap=8192 &
+        library lib\expm.lib &
+        option map=sample\winbutt\wbsmp.map
+
+# -----------------------------------------------------------------------
 # Clean
 # -----------------------------------------------------------------------
 
@@ -319,3 +365,5 @@ clean: .SYMBOLIC
     -rm -f sample\arrowhead\arsmp.exe sample\arrowhead\arsmp.map sample\arrowhead\arsmp.sym
     -rm -f sample\owndraw\ownsmpl.exe sample\owndraw\ownsmpl.map sample\owndraw\ownsmpl.sym
     -rm -f sample\status\stsmp.exe sample\status\stsmp.map sample\status\stsmp.sym
+    -rm -f sample\progbar\pgbsmp.exe sample\progbar\pgbsmp.map sample\progbar\pgbsmp.sym
+    -rm -f sample\winbutt\wbsmp.exe sample\winbutt\wbsmp.map sample\winbutt\wbsmp.sym

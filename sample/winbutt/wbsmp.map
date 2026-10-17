@@ -1,0 +1,244 @@
+** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
+Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
+Created on:       26/10/17 14:37:46
+Executable Image: sample\winbutt\wbsmp.exe
+creating an OS/2 32-bit Presentation Manager executable
+
+
+                        +------------+
+                        |   Groups   |
+                        +------------+
+
+Group                           Address              Size
+=====                           =======              ====
+
+DGROUP                          0002:00000000        00002450
+
+
+
+                        +--------------+
+                        |   Segments   |
+                        +--------------+
+
+Segment                Class          Group          Address         Size
+=======                =====          =====          =======         ====
+
+BEGTEXT                CODE           AUTO           0001:00000000   00000007
+_TEXT                  CODE           AUTO           0001:00000010   00001bb2
+_NULL                  BEGDATA        DGROUP         0002:00000000   00000004
+_AFTERNULL             BEGDATA        DGROUP         0002:00000004   00000000
+CONST                  DATA           DGROUP         0002:00000004   00000158
+CONST2                 DATA           DGROUP         0002:0000015c   00000000
+_DATA                  DATA           DGROUP         0002:0000015c   000000bc
+XIB                    DATA           DGROUP         0002:00000218   00000000
+XI                     DATA           DGROUP         0002:00000218   0000000c
+XIE                    DATA           DGROUP         0002:00000224   00000000
+YIB                    DATA           DGROUP         0002:00000224   00000000
+YI                     DATA           DGROUP         0002:00000224   00000000
+YIE                    DATA           DGROUP         0002:00000224   00000000
+TIB                    DATA           DGROUP         0002:00000224   00000000
+TI                     DATA           DGROUP         0002:00000224   00000000
+TIE                    DATA           DGROUP         0002:00000224   00000000
+DATA                   DATA           DGROUP         0002:00000224   00000000
+_BSS                   BSS            DGROUP         0002:00000224   00000220
+STACK                  STACK          DGROUP         0002:00000450   00002000
+
+
+                        +----------------+
+                        |   Memory Map   |
+                        +----------------+
+
+* = unreferenced symbol
++ = symbol only referenced locally
+
+Address        Symbol
+=======        ======
+
+Module: obj\wbsmp.obj(D:\Projects\LIBs\LIB-PM-EXPM\sample\winbutt\wbsmp.c)
+0001:00000440  main_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(stk)
+0001:00000599* __STK
+0001:00000589  __CHK
+0001:000005c8* __GRO
+0001:000005b8* __STKOVERFLOW_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(sprintf.c)
+0001:000005f0  sprintf_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(cstart)
+0001:00000612  _cstart_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(xmsgo32.c)
+0001:00000670+ __exit_with_msg_
+0001:000006c0  __fatal_runtime_error_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(maino32.c)
+0002:0000016c+ ___FirstThreadData
+0002:00000170  ___GetThreadPtr
+0002:00000174* __AccessFileH
+0002:00000178* __ReleaseFileH
+0002:0000017c* __AccessIOB
+0002:00000180* __ReleaseIOB
+0002:00000184* __AccessNHeap
+0002:00000188* __AccessFHeap
+0002:0000018c* __ReleaseNHeap
+0002:00000190* __ReleaseFHeap
+0001:000006e6  __threadstack_
+0001:000006ed* __threadid_
+0001:000006f4  __OS2MainInit_
+0001:00000763+ __OS2Init_
+0001:000007a1* __OS2Fini_
+0001:000007a9* __shutdown_stack_checking_
+0001:000007be  __exit_
+0002:00000194* __AccessTDList
+0002:00000198* __ReleaseTDList
+0002:0000019c+ ___sig_init_rtn
+0002:000001a0* ___sig_fini_rtn
+0002:000001a4* __threadstksize
+0002:000001a8  ___process_fini
+0002:0000022c  ___Is_DLL
+0002:00000230+ ___saved_CS
+Module: C:\WATCOM/lib386/os2\clib3r.lib(vsprintf.c)
+0001:00000830  vsprintf_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(main2o32.c)
+0001:00000850  __OS2Main
+Module: C:\WATCOM/lib386/os2\clib3r.lib(segdefns)
+0001:00000003  ___begtext
+0002:00000000* __nullarea
+0002:00000218  __Start_XI
+0002:00000224  __End_XI
+0002:00000224  __Start_YI
+0002:00000224  __End_YI
+Module: C:\WATCOM/lib386/os2\clib3r.lib(enterdb.c)
+0001:000008c0  __EnterWVIDEO_
+0002:000001ac+ ___WD_Present
+Module: C:\WATCOM/lib386/os2\clib3r.lib(crwdata)
+0002:000001f2  __osmajor
+0002:000001f3  __osminor
+0002:000001c0* __LpDllName
+0002:000001c4* __LpwCmdLine
+0002:000001c8* __LpwPgmName
+0002:000001cc* __LpwDllName
+0002:000001b8  __LpCmdLine
+0002:000001bc  __LpPgmName
+0002:000001b0* __dynend
+0002:000001b4* __curbrk
+0002:000001d0* __STACKLOW
+0002:000001d4* __STACKTOP
+0002:000001d8  __ASTACKSIZ
+0002:000001dc  __ASTACKPTR
+0002:000001e0* __cbyte
+0002:000001e4* __cbyte2
+0002:000001e8* __child
+0002:000001ee  __Envptr
+0002:000001ec* __no87
+0002:000001f4* ___FPE_handler
+Module: C:\WATCOM/lib386/os2\clib3r.lib(cinit.c)
+0001:000008f0  __CommonInit_
+0002:00000334  ___hmodule
+Module: C:\WATCOM/lib386/os2\clib3r.lib(initrtns.c)
+0001:00000910  __InitRtns
+0001:00000960  __FiniRtns
+Module: C:\WATCOM/lib386/os2\clib3r.lib(prtf.c)
+0001:000009c0  __prtf_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(mthrdini.c)
+0001:00001690  __InitThreadData_
+0002:000001f8  ___ThreadDataSize
+Module: C:\WATCOM/lib386/os2\clib3r.lib(memset.c)
+0001:000016b0  memset_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(cmain386.c)
+0001:000016d0  __CMain
+Module: C:\WATCOM/lib386/os2\clib3r.lib(dosseg)
+0000:00001234  __DOSseg__
+Module: C:\WATCOM/lib386/os2\clib3r.lib(amblksiz.c)
+0002:000001fc  __amblksiz
+Module: C:\WATCOM/lib386/os2\clib3r.lib(wctomb.c)
+0001:00001710  wctomb_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(itoa.c)
+0001:00001740+ utoa_
+0001:00001790  itoa_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(strupr.c)
+0001:000017c0  strupr_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(noefgfmt.c)
+0002:00000200  ___EFG_printf
+0002:00000204* ___EFG_scanf
+Module: C:\WATCOM/lib386/os2\clib3r.lib(lltoa.c)
+0001:00001830  ulltoa_
+0001:000018a0* lltoa_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(ltoa.c)
+0001:000018d0  ultoa_
+0001:00001920* ltoa_
+Module: C:\WATCOM/lib386/os2\clib3r.lib(mbisdbcs.c)
+0002:00000208  ___IsDBCS
+Module: C:\WATCOM/lib386/os2\clib3r.lib(mbislead.c)
+0001:00001950* _ismbblead_
+0002:00000338  ___MBCSIsTable
+Module: C:\WATCOM/lib386/os2\clib3r.lib(__stos)
+0001:00001970  __STOSB
+0001:000019a7* __STOSD
+Module: C:\WATCOM/lib386/os2\clib3r.lib(___argc.c)
+0002:0000043c  ____Argc
+0002:00000440  ____Argv
+Module: C:\WATCOM/lib386/os2\clib3r.lib(exit.c)
+0001:00001a20+ __null_int23_exit_
+0001:00001a21  exit_
+0001:00001a71* _exit_
+0002:0000020c+ ___int23_exit
+0002:00000210+ ___FPE_handler_exit
+Module: C:\WATCOM/lib386/os2\clib3r.lib(alphabet.c)
+0002:00000134  ___Alphabet
+Module: C:\WATCOM/lib386/os2\clib3r.lib(mbinit.c)
+0001:00001aca  __mbinit_
+0002:00000214+ ___MBCodePage
+
+
+                        +----------------------+
+                        |   Imported Symbols   |
+                        +----------------------+
+
+Symbol                              Module
+======                              ======
+
+WinCreateWindow                     PMWIN
+WinSetWindowText                    PMWIN
+GpiCreateLogColorTable              PMGPI
+WinFillRect                         PMWIN
+WinWindowFromID                     PMWIN
+WinEnableWindow                     PMWIN
+WinBeginPaint                       PMWIN
+WinQueryWindowRect                  PMWIN
+WinEndPaint                         PMWIN
+WinPostMsg                          PMWIN
+WinDefWindowProc                    PMWIN
+WinInitialize                       PMWIN
+WinCreateMsgQueue                   PMWIN
+XpmControlsInit                     expm.dll
+WinMessageBox                       PMWIN
+WinDestroyMsgQueue                  PMWIN
+WinTerminate                        PMWIN
+WinRegisterClass                    PMWIN
+WinCreateStdWindow                  PMWIN
+WinSetWindowPos                     PMWIN
+WinGetMsg                           PMWIN
+WinDispatchMsg                      PMWIN
+WinDestroyWindow                    PMWIN
+DosWrite                            DOSCALLS
+DosQuerySysInfo                     DOSCALLS
+DosExit                             DOSCALLS
+DosQueryDBCSEnv                     NLS
+DosQueryCp                          DOSCALLS
+
+
+                        +--------------------+
+                        |   Libraries Used   |
+                        +--------------------+
+
+lib\expm.lib
+C:\WATCOM/lib386/os2\clib3r.lib
+C:\WATCOM/lib386/os2\os2386.lib
+
+
+                        +-----------------------+
+                        |   Linker Statistics   |
+                        +-----------------------+
+
+Stack size:  2000 (8192.)
+Memory size:  4012 (16402.)
+Entry point address: 0001:00000612
+Link time: 00:00.41

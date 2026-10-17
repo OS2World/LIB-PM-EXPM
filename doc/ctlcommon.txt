@@ -3,8 +3,10 @@ EXPM - AsuaCtl shared helpers module
 
 The AsuaCtl shared module (src/ctlcommon/ctlcommon.c) contains the
 general-purpose routines and the version / initialisation API that the
-AsuaCtl-derived controls (currently the status control, XpmStatusClass)
-build on.  It is a clean-room reimplementation for the EXPM project
+AsuaCtl-derived controls (the status control XpmStatusClass, the
+progress bar XpmProgressBarClass and the window button
+XpmWinButtonClass) build on.  It is a clean-room
+reimplementation for the EXPM project
 (2026) of the general-purpose parts of AsuaCtl 1.0 (asuactl.dll:
 asuactl.c, pparams.c and graphics.c).  It was written in C from the
 published AsuaCtl headers and the IPF manual

@@ -44,3 +44,5 @@ EXPORTS
     XpmGetVersion
     XpmGetComponentVersion
     XpmStatusInit
+    XpmProgressBarInit
+    XpmWinButtonInit

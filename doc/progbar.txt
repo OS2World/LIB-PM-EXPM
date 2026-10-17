@@ -1,0 +1,136 @@
+EXPM - Progress bar module (XpmProgressBarClass)
+================================================
+
+The progress bar module provides the window class XpmProgressBarClass, a
+control that shows the progress of a task as a proportional (or
+segmented) indicator, optionally with the percentage drawn as text.  It
+is a clean-room reimplementation for the EXPM project (2026) of the
+AsuaCtl 1.0 progress bar (WC_PROGRESSBAR).  It was written in C from the
+published AsuaCtl header (include/progbar.h) only; no AsuaCtl source was
+consulted (the AsuaCtl package ships no IPF documentation for this
+control), so the behaviour below is EXPM's own interpretation of that
+published API.  AsuaCtl is GPLv2, EXPM is LGPLv3.
+
+The API mirrors the Windows progress-bar API (range, position, step and
+PBM_* messages).  Every public name carries the EXPM "Xpm" prefix:
+
+    WC_PROGRESSBAR           ->  XpmProgressBarClass ("XpmProgressBar")
+    ProgbarRegister          ->  XpmProgressBarInit
+    PROG_FIRST_MSG/LAST_MSG  ->  XpmPROG_FIRST_MSG/XpmPROG_LAST_MSG
+    PBM_*                    ->  XpmPBM_*
+    PBS_*                    ->  XpmPBS_*
+    PBRANGE / PPBRANGE       ->  XpmPBRange / PXpmPBRange
+
+
+Creating the control
+--------------------
+
+    #define INCL_WIN
+    #include <os2.h>
+    #include "expm.h"
+
+    XpmControlsInit( hab );                       /* register classes */
+
+    WinCreateWindow( hwndParent, XpmProgressBarClass, NULL,
+                     WS_VISIBLE | XpmPBS_SMOOTH | XpmPBS_RAISED,
+                     x, y, cx, cy,
+                     hwndParent, HWND_TOP, id, NULL, NULL );
+
+XpmControlsInit must have been called first (it calls
+XpmProgressBarInit).  XpmProgressBarInit may be called on its own when
+only the progress bar is used.  The creation text is not used; the
+indicator is driven with the messages below.
+
+Default state: range 0..100, position 0, step 10, blue indicator on the
+entry-field background.
+
+
+Styles
+------
+
+    XpmPBS_SMOOTH      0x0001  continuous indicator (default is segmented)
+    XpmPBS_TEXT        0x0002  draw the percentage as text
+    XpmPBS_VERTICAL    0x0004  vertical indicator (fills bottom-up)
+    XpmPBS_RAISED      0x0008  raised (out) 2-pixel frame
+    XpmPBS_DEPRESSED   0x0010  sunken (in) 2-pixel frame
+
+Without XpmPBS_RAISED / XpmPBS_DEPRESSED a 1-pixel neutral frame is
+drawn.  In the segmented style the indicator is drawn as square blocks
+whose size follows the bar thickness; in the smooth style it is a single
+proportional rectangle.
+
+
+Messages
+--------
+
+    XpmPROG_FIRST_MSG   (WM_USER+15)
+    XpmPROG_LAST_MSG    (XpmPROG_FIRST_MSG+9)
+
+    XpmPBM_SETRANGE      mp1 = low  (SHORT1FROMMP)
+                         mp2 = high (SHORT2FROMMP)
+                         Sets the range; if high < low they are swapped and
+                         the position is clamped.  Returns 0.
+
+    XpmPBM_SETPOS        mp1 = new position (SHORT1FROMMP)
+                         Position is clamped to the range.
+                         Returns the previous position.
+
+    XpmPBM_DELTAPOS      mp1 = signed delta (SHORT1FROMMP)
+                         Returns the previous position.
+
+    XpmPBM_SETSTEP       mp1 = step (SHORT1FROMMP)
+                         Returns the previous step.
+
+    XpmPBM_STEPIT        Advances the position by the step (clamped).
+                         Returns the new position.
+
+    XpmPBM_GETRANGE      mp1 = PXpmPBRange to fill in.  Returns 0.
+
+    XpmPBM_GETPOS        Returns the current position.
+
+    XpmPBM_SETBARCOLOR   mp1 = RGB indicator colour (LONGFROMMP)
+                         Returns the previous colour (0 = default).
+
+    XpmPBM_SETBKCOLOR    mp1 = RGB background colour (LONGFROMMP)
+                         Returns the previous colour (0 = default).
+
+Positions, ranges and steps are 16-bit (SHORT), as in AsuaCtl.
+
+
+Colours
+-------
+
+    typedef struct _XPMPBRANGE { SHORT sLow; SHORT sHigh; } XpmPBRange;
+
+An RGB colour is a GPI value in the form 0x00RRGGBB (for example
+0x00FF0000 is red, 0x000000FF is blue, 0x0000B000 is green).  The
+indicator colour can be set with XpmPBM_SETBARCOLOR or left at the
+default (medium blue, 0x000080C0).  The background can be set with
+XpmPBM_SETBKCOLOR; when unset it comes from the PP_BACKGROUNDCOLOR
+presentation parameter, or from SYSCLR_ENTRYFIELD.
+
+
+Interpretation notes
+--------------------
+
+AsuaCtl's header labels the smooth style as "Windows style (steps)" and
+states that the step only applies to the smooth style.  Because the
+likely meaning is ambiguous and no documentation survives, EXPM
+implements the modern, useful behaviour: XpmPBS_SMOOTH draws a
+continuous proportional indicator and the segmented style draws square
+blocks; the step mechanism (XpmPBM_SETSTEP / XpmPBM_STEPIT) works in
+both styles and simply advances the position.
+
+
+Building and sample
+-------------------
+
+    compile_wat.cmd
+
+Outputs: dll\expm.dll, lib\expm.lib, sample\progbar\pgbsmp.exe.
+
+sample\progbar\pgbsmp.exe shows a smooth (raised) bar, a segmented
+(depressed) bar, a smooth bar with the percentage text and a vertical
+bar, with buttons to step all bars, reset them, set the range to 0..50,
+recolour the bars and animate them with a timer.  It expects expm.dll on
+LIBPATH (or next to the EXE).
