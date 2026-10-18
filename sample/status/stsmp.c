@@ -131,24 +131,24 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
     {
         case WM_CREATE:
             CreateStatus( hwnd, ID_STATUS_LEFT, "Left aligned text",
-                          XpmSS_BORDER | XpmSS_LEFT, 10, 240, 460, 24 );
+                          XpmSS_BORDER | XpmSS_LEFT, 15, 250, 580, 26 );
             CreateStatus( hwnd, ID_STATUS_CENTER, "Centered text",
-                          XpmSS_BORDER | XpmSS_CENTER, 10, 210, 460, 24 );
+                          XpmSS_BORDER | XpmSS_CENTER, 15, 218, 580, 26 );
             CreateStatus( hwnd, ID_STATUS_RIGHT, "Right aligned text",
                           XpmSS_BORDER | XpmSS_RIGHT | XpmSS_THINFRAME,
-                          10, 180, 460, 24 );
+                          15, 186, 580, 26 );
             CreateStatus( hwnd, ID_STATUS_OWNER,
                           "Owner-drawn background (XpmSS_OWNERDRAW)",
                           XpmSS_BORDER | XpmSS_LEFT | XpmSS_OWNERDRAW,
-                          10, 150, 460, 24 );
+                          15, 154, 580, 26 );
             CreateStatus( hwnd, ID_STATUS_AUTO, "Auto-shift text",
-                          XpmSS_BORDER | XpmSS_AUTOSHIFT, 10, 120, 460, 24 );
+                          XpmSS_BORDER | XpmSS_AUTOSHIFT, 15, 122, 580, 26 );
 
             CreateButton( hwnd, ID_BTN_TOGGLE, "Enable / Disable",
-                          10, 20, 140, 28 );
-            CreateButton( hwnd, ID_BTN_LONG, "Long text", 160, 20, 140, 28 );
+                          15, 15, 170, 34 );
+            CreateButton( hwnd, ID_BTN_LONG, "Long text", 195, 15, 170, 34 );
             CreateButton( hwnd, ID_BTN_QUERY, "Query sizes",
-                          310, 20, 140, 28 );
+                          375, 15, 170, 34 );
             return (MRESULT)FALSE;
 
         case WM_COMMAND:
@@ -235,7 +235,7 @@ int main( VOID )
                                     "EXPM status control sample",
                                     0, NULLHANDLE, 0, &hwndClient );
 
-    WinSetWindowPos( hwndFrame, HWND_TOP, 60, 120, 520, 330,
+    WinSetWindowPos( hwndFrame, HWND_TOP, 60, 110, 620, 370,
                      SWP_MOVE | SWP_SIZE | SWP_ACTIVATE | SWP_SHOW );
 
     while( WinGetMsg( hab, &qmsg, NULLHANDLE, 0, 0 ) )

@@ -22,3 +22,6 @@
 
 /* Shaded Buttons: check / radio / three-state pointer graphics. */
 #include "shadebtn\shadebtn.rc"
+
+/* Directory dialog: the "choose directory" dialog templates. */
+#include "dirdlg\dirdlg.rc"

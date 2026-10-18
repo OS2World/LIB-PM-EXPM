@@ -14,6 +14,9 @@
 #   sample\status\stsmp.exe    -- AsuaCtl status control sample application
 #   sample\progbar\pgbsmp.exe  -- AsuaCtl progress bar sample application
 #   sample\winbutt\wbsmp.exe   -- AsuaCtl window button sample application
+#   sample\toolbar\tbsmp.exe   -- AsuaCtl toolbar sample application
+#   sample\dirdlg\ddsmp.exe    -- AsuaCtl directory dialog sample application
+#   sample\fonts\fntsmp.exe    -- AsuaCtl raster font helper sample application
 #
 # Usage (run from the project root, where this file lives):
 #   wmake -f Makefile.wat           # build all
@@ -37,7 +40,7 @@ DLL = dll
     -mkdir $(OBJ) 2>NUL
     -mkdir $(DLL) 2>NUL
 
-all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe sample\owndraw\ownsmpl.exe sample\status\stsmp.exe sample\progbar\pgbsmp.exe sample\winbutt\wbsmp.exe .SYMBOLIC
+all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe sample\owndraw\ownsmpl.exe sample\status\stsmp.exe sample\progbar\pgbsmp.exe sample\winbutt\wbsmp.exe sample\toolbar\tbsmp.exe sample\dirdlg\ddsmp.exe sample\fonts\fntsmp.exe .SYMBOLIC
 
 # -----------------------------------------------------------------------
 # Library DLL: dll\expm.dll (also produces lib\expm.lib via OPTION IMPLIB)
@@ -57,8 +60,8 @@ $(OBJ)\colorwheel.obj: src\colorwheel\colorwheel.c h\expm.h h\colorwheel.h
 
 # The DLL's resources are assembled from the module resource scripts in
 # src\expm.rc; wrc can bind only a single resource file to the DLL.
-$(OBJ)\expm.res: src\expm.rc src\colorwheel\colorwheel.rc src\shadebtn\shadebtn.rc h\colorwheel.h src\shadebtn\shaderes.h
-    wrc -q -r -bt=os2 -i=h -i=src\colorwheel -i=src\shadebtn -fo=$@ src\expm.rc
+$(OBJ)\expm.res: src\expm.rc src\colorwheel\colorwheel.rc src\shadebtn\shadebtn.rc src\dirdlg\dirdlg.rc h\colorwheel.h src\shadebtn\shaderes.h
+    wrc -q -r -bt=os2 -i=h -i=src\colorwheel -i=src\shadebtn -i=src\dirdlg -fo=$@ src\expm.rc
 
 $(OBJ)\anibtn.obj: src\anibtn\anibtn.c h\expm.h
     $(CC) $(CFLAGS_DLL) -fo=$@ src\anibtn\anibtn.c
@@ -84,7 +87,16 @@ $(OBJ)\progbar.obj: src\progbar\progbar.c h\expm.h
 $(OBJ)\winbutt.obj: src\winbutt\winbutt.c h\expm.h
     $(CC) $(CFLAGS_DLL) -fo=$@ src\winbutt\winbutt.c
 
-$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\arrowhead.obj $(OBJ)\owndraw.obj $(OBJ)\ctlcommon.obj $(OBJ)\status.obj $(OBJ)\progbar.obj $(OBJ)\winbutt.obj $(OBJ)\expm.res
+$(OBJ)\toolbar.obj: src\toolbar\toolbar.c h\expm.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\toolbar\toolbar.c
+
+$(OBJ)\dirdlg.obj: src\dirdlg\dirdlg.c h\expm.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\dirdlg\dirdlg.c
+
+$(OBJ)\fonts.obj: src\fonts\fonts.c h\expm.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\fonts\fonts.c
+
+$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\arrowhead.obj $(OBJ)\owndraw.obj $(OBJ)\ctlcommon.obj $(OBJ)\status.obj $(OBJ)\progbar.obj $(OBJ)\winbutt.obj $(OBJ)\toolbar.obj $(OBJ)\dirdlg.obj $(OBJ)\fonts.obj $(OBJ)\expm.res
     wlink &
         system os2v2 dll initinstance terminstance &
         name $(DLL)\expm.dll &
@@ -100,6 +112,9 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         file $(OBJ)\status.obj &
         file $(OBJ)\progbar.obj &
         file $(OBJ)\winbutt.obj &
+        file $(OBJ)\toolbar.obj &
+        file $(OBJ)\dirdlg.obj &
+        file $(OBJ)\fonts.obj &
         export XpmInitComboBox &
         export XpmInitComboBoxFromRes &
         export XpmCellInit &
@@ -127,12 +142,15 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         export XpmQueryPresColors &
         export XpmStorePresParams &
         export XpmDrawBitmap &
+        export XpmCreateRasterFont &
         export XpmControlsInit &
         export XpmGetVersion &
         export XpmGetComponentVersion &
         export XpmStatusInit &
         export XpmProgressBarInit &
         export XpmWinButtonInit &
+        export XpmToolBarInit &
+        export XpmDirDlg &
         option implib=lib\expm.lib &
         option map=$(DLL)\expm.map
     wrc -q -bt=os2 $(OBJ)\expm.res $(DLL)\expm.dll
@@ -349,6 +367,57 @@ sample\winbutt\wbsmp.exe: $(OBJ)\wbsmp.obj $(DLL)\expm.dll
         option map=sample\winbutt\wbsmp.map
 
 # -----------------------------------------------------------------------
+# Sample: TOOLBAR (AsuaCtl toolbar)
+# -----------------------------------------------------------------------
+
+$(OBJ)\tbsmp.obj: sample\toolbar\tbsmp.c h\expm.h
+    $(CC) $(CFLAGS_EXE) -fo=$@ sample\toolbar\tbsmp.c
+
+sample\toolbar\tbsmp.exe: $(OBJ)\tbsmp.obj $(DLL)\expm.dll
+    wlink &
+        system os2v2_pm &
+        name sample\toolbar\tbsmp.exe &
+        file $(OBJ)\tbsmp.obj &
+        option stack=32768 &
+        option heap=8192 &
+        library lib\expm.lib &
+        option map=sample\toolbar\tbsmp.map
+
+# -----------------------------------------------------------------------
+# Sample: DIRDLG (AsuaCtl directory dialog)
+# -----------------------------------------------------------------------
+
+$(OBJ)\ddsmp.obj: sample\dirdlg\ddsmp.c h\expm.h
+    $(CC) $(CFLAGS_EXE) -fo=$@ sample\dirdlg\ddsmp.c
+
+sample\dirdlg\ddsmp.exe: $(OBJ)\ddsmp.obj $(DLL)\expm.dll
+    wlink &
+        system os2v2_pm &
+        name sample\dirdlg\ddsmp.exe &
+        file $(OBJ)\ddsmp.obj &
+        option stack=32768 &
+        option heap=8192 &
+        library lib\expm.lib &
+        option map=sample\dirdlg\ddsmp.map
+
+# -----------------------------------------------------------------------
+# Sample: FONTS (AsuaCtl raster font helper)
+# -----------------------------------------------------------------------
+
+$(OBJ)\fntsmp.obj: sample\fonts\fntsmp.c h\expm.h
+    $(CC) $(CFLAGS_EXE) -fo=$@ sample\fonts\fntsmp.c
+
+sample\fonts\fntsmp.exe: $(OBJ)\fntsmp.obj $(DLL)\expm.dll
+    wlink &
+        system os2v2_pm &
+        name sample\fonts\fntsmp.exe &
+        file $(OBJ)\fntsmp.obj &
+        option stack=32768 &
+        option heap=8192 &
+        library lib\expm.lib &
+        option map=sample\fonts\fntsmp.map
+
+# -----------------------------------------------------------------------
 # Clean
 # -----------------------------------------------------------------------
 
@@ -367,3 +436,6 @@ clean: .SYMBOLIC
     -rm -f sample\status\stsmp.exe sample\status\stsmp.map sample\status\stsmp.sym
     -rm -f sample\progbar\pgbsmp.exe sample\progbar\pgbsmp.map sample\progbar\pgbsmp.sym
     -rm -f sample\winbutt\wbsmp.exe sample\winbutt\wbsmp.map sample\winbutt\wbsmp.sym
+    -rm -f sample\toolbar\tbsmp.exe sample\toolbar\tbsmp.map sample\toolbar\tbsmp.sym
+    -rm -f sample\dirdlg\ddsmp.exe sample\dirdlg\ddsmp.map sample\dirdlg\ddsmp.sym
+    -rm -f sample\fonts\fntsmp.exe sample\fonts\fntsmp.map sample\fonts\fntsmp.sym

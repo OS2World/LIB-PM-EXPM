@@ -85,44 +85,44 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
     {
         case WM_CREATE:
             CreateButton( hwnd, IDB_OK, "OK", 0,
-                          10, 250, 90, 30 );
+                          15, 330, 110, 32 );
             CreateButton( hwnd, IDB_CANCEL, "Cancel", 0,
-                          110, 250, 90, 30 );
+                          135, 330, 110, 32 );
             CreateButton( hwnd, IDB_DEFAULT, "Default",
-                          XpmBS_DEFAULT, 210, 250, 90, 30 );
+                          XpmBS_DEFAULT, 255, 330, 110, 32 );
             CreateButton( hwnd, IDB_THIN, "Thin",
-                          XpmBS_THINFRAME, 310, 250, 90, 30 );
+                          XpmBS_THINFRAME, 375, 330, 110, 32 );
             CreateButton( hwnd, IDB_DISABLED, "Disabled", 0,
-                          410, 250, 90, 30 );
+                          495, 330, 110, 32 );
             WinEnableWindow( WinWindowFromID( hwnd, IDB_DISABLED ), FALSE );
 
             CreateButton( hwnd, IDB_LEFT, "Left",
-                          XpmBS_ALIGNLEFT, 10, 210, 110, 28 );
+                          XpmBS_ALIGNLEFT, 15, 280, 120, 30 );
             CreateButton( hwnd, IDB_RIGHT, "Right",
-                          XpmBS_ALIGNRIGHT, 130, 210, 110, 28 );
+                          XpmBS_ALIGNRIGHT, 145, 280, 120, 30 );
             CreateButton( hwnd, IDB_TOP, "Top",
-                          XpmBS_ALIGNTOP, 250, 210, 110, 28 );
+                          XpmBS_ALIGNTOP, 275, 280, 120, 30 );
             CreateButton( hwnd, IDB_BOTTOM, "Bottom",
-                          XpmBS_ALIGNBOTTOM, 370, 210, 110, 28 );
+                          XpmBS_ALIGNBOTTOM, 405, 280, 120, 30 );
 
             CreateButton( hwnd, IDB_FLAT, "Flat",
-                          XpmBS_FLATBUTTON, 10, 160, 150, 30 );
+                          XpmBS_FLATBUTTON, 15, 225, 150, 32 );
             CreateButton( hwnd, IDB_FLAT2, "Flat button",
-                          XpmBS_FLATBUTTON, 170, 160, 150, 30 );
+                          XpmBS_FLATBUTTON, 175, 225, 150, 32 );
 
             CreateButton( hwnd, IDB_AUTOTEXT,
                           "A very long button label",
-                          XpmBS_AUTOTEXT, 10, 110, 130, 30 );
+                          XpmBS_AUTOTEXT, 15, 170, 200, 32 );
             CreateButton( hwnd, IDB_AUTOSIZE, "Autosize",
-                          XpmBS_AUTOSIZE, 10, 60, 10, 10 );
+                          XpmBS_AUTOSIZE, 15, 115, 10, 10 );
 
             CreateButton( hwnd, IDB_OWNDRAW, "OwnerDraw",
-                          XpmBS_OWNERDRAW, 330, 160, 130, 30 );
+                          XpmBS_OWNERDRAW, 335, 225, 150, 32 );
 
             hwndStatus = WinCreateWindow( hwnd, WC_STATIC,
                                           "Ready.",
                                           WS_VISIBLE,
-                                          10, 10, 490, 24,
+                                          15, 45, 580, 28,
                                           hwnd, HWND_TOP, ID_STATUS,
                                           NULL, NULL );
             return (MRESULT)FALSE;
@@ -215,7 +215,7 @@ int main( VOID )
                                     "EXPM window button sample",
                                     0, NULLHANDLE, 0, &hwndClient );
 
-    WinSetWindowPos( hwndFrame, HWND_TOP, 60, 120, 520, 340,
+    WinSetWindowPos( hwndFrame, HWND_TOP, 60, 100, 620, 420,
                      SWP_MOVE | SWP_SIZE | SWP_ACTIVATE | SWP_SHOW );
 
     while( WinGetMsg( hab, &qmsg, NULLHANDLE, 0, 0 ) )

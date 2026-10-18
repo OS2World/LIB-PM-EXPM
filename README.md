@@ -28,6 +28,9 @@ https://www.edm2.com/index.php/Presentation_Manager_Functions.
 | Status     | src/status/status.c        | Status text control (clone of AsuaCtl)   |
 | ProgressBar | src/progbar/progbar.c     | Progress bar control (clone of AsuaCtl)  |
 | WinButton  | src/winbutt/winbutt.c      | Window button control (clone of AsuaCtl) |
+| ToolBar    | src/toolbar/toolbar.c      | Toolbar control (clone of AsuaCtl)       |
+| DirDlg     | src/dirdlg/dirdlg.c        | Modal "choose directory" dialog (AsuaCtl)|
+| Fonts      | src/fonts/fonts.c          | Raster font helper (clone of AsuaCtl)    |
 
 ### ComboSup (merged from LIB-PM-ComboBoxSupport 1.1)
 
@@ -198,8 +201,13 @@ EXPM provides a clean-room reimplementation of AsuaCtl 1.0 (asuactl.dll,
 GPLv2) split across `src/ctlcommon/ctlcommon.c` (shared helpers and the
 version / initialisation API), `src/status/status.c` (the status text
 control, `WC_STATUS`), `src/progbar/progbar.c` (the progress bar,
-`WC_PROGRESSBAR`) and `src/winbutt/winbutt.c` (the window button,
-`WC_WINBUTTON`). It was written in C from the published AsuaCtl
+`WC_PROGRESSBAR`), `src/winbutt/winbutt.c` (the window button,
+`WC_WINBUTTON`) and `src/toolbar/toolbar.c` (the toolbar,
+`WC_TOOLBAR`); the directory dialog, `AsuDirDlg`, is a standalone entry
+point in `src/dirdlg/dirdlg.c`, and the raster-font helper
+`FntCreateRasterFont` is a standalone entry point in `src/fonts/fonts.c`.
+It was written in C from the published
+AsuaCtl
 headers and IPF manuals only; no AsuaCtl source is used, which keeps EXPM
 LGPLv3. Every public name - window classes, styles, messages,
 notifications and structures - carries the EXPM `Xpm` prefix so it never
@@ -216,23 +224,44 @@ clashes with the original:
 | `CtlStatusInitialize`  | `XpmStatusInit`          |
 | `ProgbarRegister`      | `XpmProgressBarInit`     |
 | `BtnRegister`          | `XpmWinButtonInit`       |
-| `WC_STATUS` / `WC_PROGRESSBAR` / `WC_WINBUTTON` | `XpmStatusClass` / `XpmProgressBarClass` / `XpmWinButtonClass` |
+| `ToolBarRegister`      | `XpmToolBarInit`         |
+| `AsuDirDlg`            | `XpmDirDlg`              |
+| `FntCreateRasterFont`  | `XpmCreateRasterFont`    |
+| `ERR_FNT_*`            | `XpmERR_FNT_*`           |
+| `WC_STATUS` / `WC_PROGRESSBAR` / `WC_WINBUTTON` / `WC_TOOLBAR` | `XpmStatusClass` / `XpmProgressBarClass` / `XpmWinButtonClass` / `XpmToolBarClass` |
 | `SS_*` / `SM_*`        | `XpmSS_*` / `XpmSM_*`    |
 | `PBS_*` / `PBM_*`      | `XpmPBS_*` / `XpmPBM_*`  |
 | `BS_*` / `BM_*` / `BN_*` | `XpmBS_*` / `XpmBM_*` / `XpmBN_*` |
+| `TBS_*` / `TM_*` / `TN_*` | `XpmTBS_*` / `XpmTM_*` / `XpmTN_*` |
+| `TBA_*` / `TBO_*` / `TST_*` | `XpmTBA_*` / `XpmTBO_*` / `XpmTST_*` |
+| `SPS_*` / `TDQ_*` / `TBR_*` / `TSO_*` | `XpmSPS_*` / `XpmTDQ_*` / `XpmTBR_*` / `XpmTSO_*` |
 
 `XpmControlsInit` registers the AsuaCtl-derived classes; the status
 control is created with the class `XpmStatusClass` and styled with the
 `XpmSS_*` bits (borders, alignment, automatic scaling, owner-drawn
 background, sizing grip), the progress bar with `XpmProgressBarClass`
 and the `XpmPBS_*` bits (smooth/segmented, text, vertical, raised/
-depressed), and the window button with `XpmWinButtonClass` and the
+depressed), the window button with `XpmWinButtonClass` and the
 `XpmBS_*` bits (flat, thin frame, text placement, autotext, autosize,
-owner-drawn background, default). This release covers the shared helpers,
-the version / initialisation API, the status control, the progress bar
-and the window button; further AsuaCtl controls are planned. See
-`doc/ctlcommon.txt`, `doc/status.txt`, `doc/progbar.txt` and
-`doc/winbutt.txt`.
+owner-drawn background, default), and the toolbar with `XpmToolBarClass`
+and the `XpmTBA_*` attributes (frame, docking edge, orientation), holding
+objects added with `XpmTM_INSERTOBJECT` and styled with the `XpmTBO_*` /
+`XpmSPS_*` bits. The toolbar implements the full floating behaviour of
+the original: a title bar that moves / docks the toolbar and a rotate
+button, minimise / restore and drag tracking (with the `XpmTN_BEGINTRACK`
+/ `TRACKING` / `ENDTRACK` / `FIXTOOL` / `MINIMIZE` / `RESTORE` / `ROTATE`
+notifications), plus per-object tool-tips. The directory dialog is opened
+with `XpmDirDlg`, which
+returns the chosen directory in an `XpmDIRDLG` structure, and
+`XpmCreateRasterFont` creates a logical font bound to a local id, pinned to
+an image (bit-map) font of a requested face and size, and reports that
+font's metrics. This release
+covers the shared helpers, the version / initialisation API, the status
+control, the progress bar, the window button, the toolbar, the
+directory dialog and the raster font helper; further AsuaCtl controls are
+planned. See
+`doc/ctlcommon.txt`, `doc/status.txt`, `doc/progbar.txt`,
+`doc/winbutt.txt`, `doc/toolbar.txt`, `doc/dirdlg.txt` and `doc/fonts.txt`.
 
 
 ## Directory layout
@@ -276,6 +305,9 @@ Outputs:
 | `sample\status\stsmp.exe`     | Status control sample         |
 | `sample\progbar\pgbsmp.exe`   | Progress bar sample           |
 | `sample\winbutt\wbsmp.exe`    | Window button sample          |
+| `sample\toolbar\tbsmp.exe`    | Toolbar sample                |
+| `sample\dirdlg\ddsmp.exe`     | Directory dialog sample       |
+| `sample\fonts\fntsmp.exe`     | Raster font helper sample     |
 
 API reference: `doc\cell.txt` (Cell module), `doc\expm.txt` (ComboSup
 module), `doc\ctlplus.txt` (Control Plus module), `doc\colorwheel.txt`
@@ -284,7 +316,9 @@ module), `doc\ctlplus.txt` (Control Plus module), `doc\colorwheel.txt`
 (ArrowHead module), `doc\owndraw.txt` (Owner-Draw Listbox module),
 `doc\ctlcommon.txt` (AsuaCtl shared helpers), `doc\status.txt`
 (Status control), `doc\progbar.txt` (Progress bar) and
-`doc\winbutt.txt` (Window button).
+`doc\winbutt.txt` (Window button) and `doc\toolbar.txt` (Toolbar) and
+`doc\dirdlg.txt` (Directory dialog) and `doc\fonts.txt` (Raster font
+helper).
 
 ## Runtime
 
@@ -303,7 +337,7 @@ All components listed in `Idea.txt` have been merged or cloned:
 - Shaded Buttons (gradient-shaded button window class)
 - ArrowHead (GPI arrowhead drawing helper)
 - Owner-Draw Listbox (column alignment for LS_OWNERDRAW listboxes)
-- AsuaCtl (shared helpers, version API, status control, progress bar and window button; more controls planned)
+- AsuaCtl (shared helpers, version API, status control, progress bar, window button, toolbar, directory dialog and raster font helper; more controls planned)
 
 ## Licences of merged modules
 
@@ -323,8 +357,11 @@ and carries no third-party source. The Owner-Draw Listbox module is used
 under its BSD 3-Clause licence (original by ASH Software, Inc., 1992;
 updates by Martin Iturbide / OS2World); its copyright notice is retained
 in `src/owndraw/owndraw.c`. The AsuaCtl module (shared helpers, version
-API, status control, progress bar and window button) is a clean-room
-reimplementation of the AsuaCtl 1.0 API and manuals, written without
-consulting the GPLv2 AsuaCtl source, and carries no third-party source;
-see `doc/ctlcommon.txt`, `doc/status.txt`, `doc/progbar.txt` and
-`doc/winbutt.txt`. EXPM itself is LGPLv3 (see `LICENSE`).
+API, status control, progress bar, window button, toolbar, directory
+dialog and raster font helper) is a
+clean-room reimplementation of the AsuaCtl 1.0 API and manuals, written
+without consulting the GPLv2 AsuaCtl source, and carries no third-party
+source; see `doc/ctlcommon.txt`, `doc/status.txt`, `doc/progbar.txt`,
+`doc/winbutt.txt`, `doc/toolbar.txt`, `doc/dirdlg.txt` and
+`doc/fonts.txt`. EXPM itself is LGPLv3 (see
+`LICENSE`).

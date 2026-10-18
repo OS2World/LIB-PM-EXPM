@@ -1,0 +1,93 @@
+/* EXPM - Extended Presentation Manager library
+ *
+ * src/dirdlg/dirdlg.rc -- "Choose directory" dialog templates.
+ *
+ * These templates are bound into EXPM.DLL and loaded by XpmDirDlg
+ * (src/dirdlg/dirdlg.c).  Four variants are provided: with or without a
+ * Cancel button, and with an ordinary WC_BUTTON or an EXPM
+ * XpmWinButtonClass as the OK / Cancel button.  The AsuaCtl control ids
+ * are kept (DLG_DIRDLG_* -> XpmDIRDLG_*, CNR_TREE -> XpmCNR_TREE) so the
+ * C source and the resource script agree.
+ *
+ * The container object is a WC_CONTAINER in which XpmDirDlg lists the
+ * drives (at the root) or the subdirectories of the directory on show.
+ * Note that the control style must include WS_VISIBLE: a CONTROL
+ * statement does not add it (unlike the PUSHBUTTON statements), and a
+ * container that is not visible never paints its records.
+ *
+ * Copyright (C) 2026 The EXPM Project Authors
+ *
+ * This library is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ */
+
+#include <os2.h>
+#include "expm.h"
+
+
+DLGTEMPLATE XpmDIRDLG_OKCANCEL LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG "Choose directory:", XpmDIRDLG_OKCANCEL, 0, 0, 193, 166,
+        FS_NOBYTEALIGN | WS_CLIPSIBLINGS | WS_SAVEBITS | WS_VISIBLE,
+        FCF_TITLEBAR | FCF_SYSMENU | FCF_CLOSEBUTTON
+    BEGIN
+        CONTROL "~OK", DID_OK, 50, 2, 45, 14, WC_BUTTON,
+            BS_PUSHBUTTON | BS_DEFAULT | WS_GROUP | WS_TABSTOP | WS_VISIBLE
+
+        CONTROL "Cancel", DID_CANCEL, 100, 2, 45, 14, WC_BUTTON,
+            BS_PUSHBUTTON | WS_GROUP | WS_TABSTOP | WS_VISIBLE
+
+        CONTROL "", XpmCNR_TREE, 10, 21, 174, 137, WC_CONTAINER,
+            CCS_SINGLESEL | CCS_AUTOPOSITION | WS_TABSTOP | WS_VISIBLE
+    END
+END
+
+
+DLGTEMPLATE XpmDIRDLG_OKCANCEL_W LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG "Choose directory:", XpmDIRDLG_OKCANCEL_W, 0, 0, 193, 166,
+        FS_NOBYTEALIGN | WS_CLIPSIBLINGS | WS_SAVEBITS | WS_VISIBLE,
+        FCF_TITLEBAR | FCF_SYSMENU | FCF_CLOSEBUTTON
+    BEGIN
+        CONTROL "~OK", DID_OK, 50, 2, 45, 14, XpmWinButtonClass,
+            XpmBS_DEFAULT | WS_GROUP | WS_TABSTOP | WS_VISIBLE
+
+        CONTROL "Cancel", DID_CANCEL, 100, 2, 45, 14, XpmWinButtonClass,
+            WS_GROUP | WS_TABSTOP | WS_VISIBLE
+
+        CONTROL "", XpmCNR_TREE, 10, 21, 174, 137, WC_CONTAINER,
+            CCS_SINGLESEL | CCS_AUTOPOSITION | WS_TABSTOP | WS_VISIBLE
+    END
+END
+
+
+DLGTEMPLATE XpmDIRDLG_OK LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG "Choose directory:", XpmDIRDLG_OK, 0, 0, 193, 166,
+        FS_NOBYTEALIGN | WS_CLIPSIBLINGS | WS_SAVEBITS | WS_VISIBLE,
+        FCF_TITLEBAR | FCF_SYSMENU | FCF_CLOSEBUTTON
+    BEGIN
+        CONTROL "~OK", DID_OK, 76, 2, 45, 14, WC_BUTTON,
+            BS_PUSHBUTTON | BS_DEFAULT | WS_GROUP | WS_TABSTOP | WS_VISIBLE
+
+        CONTROL "", XpmCNR_TREE, 10, 21, 174, 137, WC_CONTAINER,
+            CCS_SINGLESEL | CCS_AUTOPOSITION | WS_TABSTOP | WS_VISIBLE
+    END
+END
+
+
+DLGTEMPLATE XpmDIRDLG_OK_W LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG "Choose directory:", XpmDIRDLG_OK_W, 0, 0, 193, 166,
+        FS_NOBYTEALIGN | WS_CLIPSIBLINGS | WS_SAVEBITS | WS_VISIBLE,
+        FCF_TITLEBAR | FCF_SYSMENU | FCF_CLOSEBUTTON
+    BEGIN
+        CONTROL "~OK", DID_OK, 76, 2, 45, 14, XpmWinButtonClass,
+            XpmBS_DEFAULT | WS_GROUP | WS_TABSTOP | WS_VISIBLE
+
+        CONTROL "", XpmCNR_TREE, 10, 21, 174, 137, WC_CONTAINER,
+            CCS_SINGLESEL | CCS_AUTOPOSITION | WS_TABSTOP | WS_VISIBLE
+    END
+END

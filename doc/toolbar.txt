@@ -1,0 +1,318 @@
+EXPM - Toolbar module (XpmToolBarClass)
+========================================
+
+The toolbar module provides the window class XpmToolBarClass, a docked
+toolbar that holds a row (or column) of child control windows - the
+"objects" - plus painted separators.  Objects are laid out from the
+beginning, the centre or the end of the toolbar along its horizontal or
+vertical axis.  It is a clean-room reimplementation for the EXPM project
+(2026) of the AsuaCtl 1.0 toolbar (WC_TOOLBAR).  It was written in C from
+the published AsuaCtl header (include/toolbar.h) and the published IPF
+help text only; no AsuaCtl source was consulted, so the behaviour below
+is EXPM's own interpretation of that published API.  AsuaCtl is GPLv2,
+EXPM is LGPLv3.
+
+Every public name carries the EXPM "Xpm" prefix:
+
+    WC_TOOLBAR          ->  XpmToolBarClass ("XpmToolBar")
+    ToolBarRegister     ->  XpmToolBarInit
+    TOOLINFO            ->  XpmTOOLINFO
+    TOOLADJ             ->  XpmTOOLADJ
+    TOOLOBJ             ->  XpmTOOLOBJ
+    TOOLWIN             ->  XpmTOOLWIN
+    TOOLTRACK           ->  XpmTOOLTRACK
+    TOOL_FIRST_MSG/LAST ->  XpmTOOL_FIRST_MSG / XpmTOOL_LAST_MSG
+    TM_*                ->  XpmTM_*
+    TN_*                ->  XpmTN_*
+    TBS_*               ->  XpmTBS_*
+    TBA_*               ->  XpmTBA_*
+    TST_*               ->  XpmTST_*
+    TBO_*               ->  XpmTBO_*
+    SPS_*               ->  XpmSPS_*
+    TDQ_*               ->  XpmTDQ_*
+    TBR_*               ->  XpmTBR_*
+    TSO_*               ->  XpmTSO_*
+    TB_END              ->  XpmTB_END
+    TCID_*              ->  XpmTCID_*
+    PP_TOOLTIP*         ->  XpmPP_TOOLTIP*
+
+
+Creating the control
+--------------------
+
+    #define INCL_WIN
+    #include <os2.h>
+    #include "expm.h"
+
+    XpmTOOLINFO ti = { sizeof(XpmTOOLINFO),
+                       XpmTBA_FRAME | XpmTBA_FIXEDTOP, 0 };
+    HWND hwndToolBar;
+
+    XpmControlsInit( hab );                  /* register classes */
+
+    hwndToolBar = WinCreateWindow( hwndParent, XpmToolBarClass, "",
+                                   WS_VISIBLE,
+                                   x, y, cx, cy,
+                                   hwndParent, HWND_TOP, id, &ti, NULL );
+
+XpmControlsInit must have been called first (it calls XpmToolBarInit).
+XpmToolBarInit may be called on its own when only the toolbar is used.
+The creation pCtlData is an XpmTOOLINFO structure; flToolAttrs holds the
+XpmTBA_* attributes and usMaxLength limits the floating length (see
+"Attributes and state").  The toolbar is an ordinary WS_ window.
+
+The toolbar's owner (the hwndOwner passed to WinCreateWindow, normally
+the window that will handle the objects) receives the objects'
+WM_COMMAND notifications and the toolbar's WM_CONTROL notifications; in
+the example above both are hwndParent.
+
+
+Objects
+-------
+
+An object is added with XpmTM_INSERTOBJECT (see "Messages").  The
+XpmTOOLOBJ describes the object (position, group, attributes, size, id)
+and the XpmTOOLWIN names the window class and style used to create the
+object's window, or is NULL for a separator.  Any PM control class may be
+used (WC_BUTTON, WC_STATIC, WC_ENTRYFIELD, ...) as may XpmWinButtonClass.
+Object windows are created as children of the toolbar itself and are laid
+out and resized by the toolbar.
+
+The object type is the low nibble of XpmTOOLOBJ.flAttribute
+(XpmTBO_BASICTYPES):
+
+    XpmTBO_STDWINDOW    0x0000  an ordinary control window; the size
+                                given in cx/cy is used
+    XpmTBO_BUTTON       0x0001  an auto-sized button; the toolbar asks the
+                                window for XpmBM_QUERYWIDTH/HEIGHT (use
+                                XpmWinButtonClass)
+    XpmTBO_STDBUTTON    0x0002  a button whose cx/cy are taken as given
+    XpmTBO_SEPARATOR    0x0003  a separator; no window is created
+
+Alignment is the XpmTBO_JUSTTYPES field:
+
+    XpmTBO_BEGINALIGN   0x0000  packed from the start of the toolbar
+    XpmTBO_ENDALIGN     0x0010  packed from the end
+    XpmTBO_CENTERALIGN  0x0020  centred
+
+The remaining XpmTBO_* bits (PUSHBUTTON / CHECKBOX / RADIOBUTTON / HIDE /
+DISABLE) are honoured: HIDE creates the window hidden and DISABLE creates
+it disabled.  A separator uses one of the XpmSPS_* styles in the same
+field:
+
+    XpmSPS_FLAT         0x0000  nothing is drawn
+    XpmSPS_LINE         0x2000  single line
+    XpmSPS_CONCAVE      0x4000  two-line sunken separator
+    XpmSPS_CONVEX       0x6000  two-line raised separator
+    XpmSPS_SEPARATORS   0xE000  mask
+
+
+Attributes and state
+--------------------
+
+The XpmTOOLINFO flToolAttrs (XpmTBA_*) select the frame and docking:
+
+    XpmTBA_FRAME        0x000F  complete 3-D frame
+    XpmTBA_LEFTFRAME    0x0001
+    XpmTBA_BOTTOMFRAME  0x0002
+    XpmTBA_RIGHTFRAME   0x0004
+    XpmTBA_TOPFRAME     0x0008
+    XpmTBA_FIXEDTOP     0x0000  horizontal: dock at the top edge
+    XpmTBA_FIXEDBOTTOM  0x0010  horizontal: dock at the bottom edge
+    XpmTBA_FIXEDLEFT    0x0000  vertical:   dock at the left edge
+    XpmTBA_FIXEDRIGHT   0x0020  vertical:   dock at the right edge
+    XpmTBA_HORIZONTAL   0x0000
+    XpmTBA_VERTICAL     0x0040  vertical orientation
+
+The state (result of XpmTM_QUERYSTATE, and XpmTOOLADJ.flState):
+
+    XpmTST_FIXED        0x0001  docked to the parent
+    XpmTST_MINIMIZED    0x0002  minimized
+    XpmTST_ROTATED      0x0004  vertical orientation
+
+A toolbar is created in the docked (XpmTST_FIXED) state.  From there it
+can be minimised (XpmTST_MINIMIZED, so that only its title bar remains) or
+undocked into the floating state (XpmTST_FIXED cleared, the toolbar is
+re-parented to the desktop and can be moved with the mouse) and docked
+again.  Give a vertical toolbar XpmTBA_VERTICAL or dock it to a left/right
+edge.
+
+Docking, un-docking, minimising and restoring are driven by a title bar
+created when the toolbar has any of the XpmTBS_MOVEBUTTON,
+XpmTBS_ENABLEMINIMIZE or XpmTBS_FIXBUTTON styles:
+
+  * dragging the title bar moves a floating toolbar; press-and-hold on a
+    docked toolbar un-docks it (the standard "drag rectangle" is shown)
+  * clicking the title bar toggles minimise / restore
+    (XpmTBS_ENABLEMINIMIZE)
+  * clicking the small triangle at the title bar's dock corner docks a
+    floating toolbar back to its saved parent or un-docks a docked one
+    (XpmTBS_FIXBUTTON)
+  * a rotate button (XpmTBS_ROTATEBUTTON, or XpmTM_ENABLEROTATE(TRUE))
+    toggles the orientation and resizes the toolbar
+
+These actions can also be requested through the window manager:
+WinSetWindowPos with SWP_MINIMIZE minimises, SWP_MAXIMIZE docks and
+SWP_RESTORE un-minimises a minimised toolbar or un-docks a docked one.
+
+
+Messages
+--------
+
+    XpmTM_AUTOSIZE       (mp1 = ulMaxLength, 0 = fit)  Sizes and positions
+                         the toolbar for its current state and returns
+                         TRUE if it changed.  A docked toolbar is
+                         stretched across the parent and, for a horizontal
+                         toolbar, placed at the top (or bottom) edge; a
+                         vertical one is placed at the left (or right)
+                         edge.  The owner is notified with XpmTN_AUTOSIZE
+                         before the toolbar moves.  (mp1 is passed in
+                         MPFROMLONG.)
+    XpmTM_CALCNEWRECT    (mp1 = PXpmTOOLADJ)  Fills the structure with the
+                         suggested rectangle for the flAttrs/flState given
+                         on input.
+    XpmTM_QUERYHEIGHT    (mp2 = optional limit)  Suggests the height.
+    XpmTM_QUERYWIDTH     (mp2 = optional limit)  Suggests the width.
+    XpmTM_QUERYSTATE     Returns the XpmTST_* state.
+    XpmTM_ROTATE         (mp1 = XpmTBR_ROTATE / HORIZONTAL / VERTICAL)
+                         Changes the orientation.  XpmTBR_ROTATE toggles.
+    XpmTM_INSERTOBJECT   (mp1 = PXpmTOOLOBJ, mp2 = PXpmTOOLWIN or NULL)
+                         Adds an object.
+    XpmTM_DELETEOBJECT   (mp1 = id)  Removes an object.
+    XpmTM_MOVEOBJECT     (mp1 = MPFROM2SHORT(id, newPosition),
+                          mp2 = new XpmTBO_* justification)  Moves and/or
+                         realigns an object.
+    XpmTM_QUERYOBJECT    (mp1 = id, mp2 = PXpmTOOLOBJ)  Fills the structure.
+    XpmTM_QUERYOBJECTCOUNT  Returns the number of objects.
+    XpmTM_QUERYHANDLE    (mp1 = id)  Returns the object's HWND, or
+                         NULLHANDLE.
+    XpmTM_IDFROMPOSITION (mp1 = position, XpmTB_END = last)  Returns the id.
+    XpmTM_POSITIONFROMID (mp1 = id)  Returns the position, or -1.
+    XpmTM_SETOBJECT      (mp1 = MPFROM2SHORT(id, XpmTSO_* options),
+                          mp2 = PXpmTOOLOBJ)  Updates group / size / user
+                         data.
+    XpmTM_SHOWOBJECT     (mp1 = id, mp2 = visible)  Shows or hides an object.
+    XpmTM_ENABLEROTATE   (mp1 = enable)  Turns the rotate button on or
+                         off.  Same effect as XpmTBS_ROTATEBUTTON.
+    XpmTM_INSERTTOOLTIP  (mp1 = id, mp2 = PSZ text or NULL)  Sets an
+                         object's tool-tip text; NULL or "" clears it.
+    XpmTM_QUERYTIP       (mp1 = MPFROM2SHORT(id, buffer size),
+                          mp2 = PSZ buffer)  Copies the object's tool-tip,
+                         NUL-terminated, truncated to (size - 1) bytes,
+                         and returns the full tip length.  A NULL buffer
+                         or zero size returns only the length.
+    XpmTM_OBJECTCONTROL  Reserved; returns 0.
+
+Tool-tips are stored per object and shown as a small pop-up window when the
+pointer rests over an object (a 200 ms poll, so no pointer hook is
+needed).  The appearance comes from the XpmPP_TOOLTIP* presentation
+parameters (background, text and frame colours, and a minimum delay in
+milliseconds); the defaults are the system colours and a zero delay.
+
+Ids are passed in MPFROMLONG and read with LONGFROMMP; parameters that
+pack two 16-bit values use MPFROM2SHORT and SHORT1FROMMP/SHORT2FROMMP.
+
+The standard messages WM_QUERYWINDOWPARAMS and WM_SETWINDOWPARAMS read and
+write the XpmTOOLINFO through WPM_CTLDATA / WPM_CBCTLDATA.
+
+
+Notifications
+-------------
+
+The owner receives WM_CONTROL with mp1 = MPFROM2SHORT(toolbarId, code):
+
+    XpmTN_AUTOSIZE   1  sent during XpmTM_AUTOSIZE; mp2 is a PXpmTOOLADJ
+                        holding the suggested rectangle for the owner to
+                        adjust
+    XpmTN_BEGINTRACK 2  a title-bar drag has started; mp2 is a PXpmTOOLTRACK
+                        with the toolbar's rectangle and the boundary it
+                        may be moved within
+    XpmTN_TRACKING   3  the drag moved; mp2 is a PPOINTL with the new
+                        position the toolbar is about to take
+    XpmTN_ENDTRACK   4  the drag finished (mouse released); mp2 is a
+                        PXpmTOOLTRACK with the final rectangle
+    XpmTN_FIXTOOL    5  the toolbar was docked back to its parent
+    XpmTN_MINIMIZE   6  the toolbar was minimised
+    XpmTN_RESTORE    7  the toolbar was restored from minimised
+    XpmTN_ROTATE     8  the orientation was changed; mp2 is the new
+                        XpmTST_* state
+
+Clicks on a button object arrive as the object's own notification (for
+XpmWinButtonClass, XpmBN_CLICKED = 1), addressed to the toolbar's owner.
+
+
+Colours
+-------
+
+The toolbar reads its colours from presentation parameters, falling back
+to the system colours and finally to hard-coded defaults:
+
+    background  PP_BACKGROUNDCOLOR   SYSCLR_BUTTONMIDDLE  0x00C0C0C0
+    light edge  PP_BORDERLIGHTCOLOR  SYSCLR_BUTTONLIGHT   0x00FFFFFF
+    dark edge   PP_BORDERDARKCOLOR   SYSCLR_BUTTONDARK    0x00808080
+
+An RGB colour is a GPI value in the form 0x00RRGGBB.  The toolbar selects
+RGB colour mode before drawing (a presentation space from WinBeginPaint
+is in colour index mode by default).
+
+
+Limitations and deviations
+--------------------------
+
+This release implements the floating, docking, minimising and rotating
+behaviour of the original control, including the title bar, the rotate
+button and tool-tips.  The following AsuaCtl features are documented but
+not implemented, and their constants are defined for source compatibility
+only:
+
+  * scrolling (XpmTBS_SCROLLABLE) and multi-line layout
+    (XpmTBS_MULTILINE); objects that do not fit are clipped
+  * XpmTBS_MOVEWITHOWNER (a floating toolbar stays put when its owner
+    moves)
+
+EXPM's own deviations:
+
+  * objects are parented directly to the toolbar window; AsuaCtl parented
+    them to an internal "object pad" child.  Separators are painted by the
+    toolbar rather than being windows, and no XpmTCID_OBJECTPAD child is
+    created.
+  * the internal window ids are XpmTCID_TITLEBAR (0xFFFF), XpmTCID_ROTATE
+    (0xFFFC) and XpmTCID_TOOLTIP (0xFFFE), matching the published values.
+    The title bar is named "XpmToolBarTitle" and the rotate button
+    "XpmToolBarRotate"; both are children of the toolbar.  The tool-tip is
+    a desktop-parented pop-up owned by the toolbar.
+  * the centre group is centred in the free space between the begin and
+    end groups, so it never overlaps them while there is room; AsuaCtl
+    centred it on the whole toolbar.
+  * a minimised toolbar is a square of the title-bar size (XpmTBM_TITLE)
+    kept at its dock corner.
+  * XpmTM_QUERYHEIGHT / XpmTM_QUERYWIDTH read XpmTDQ_* as an enum
+    selector (equal to one value), not as a bit set; XpmTDQ_CURRENT is
+    state-aware, and XpmTDQ_RESTORED / MINIMIZED / FIXED return the
+    corresponding fixed sizes.
+  * the rotate button uses an EXPM-drawn triangle glyph rather than the
+    AsuaCtl bitmaps.
+
+When docking several toolbars to different edges the application must
+keep them from overlapping at the corners; the toolbar docks across the
+full length of its parent edge.
+
+Note: a WC_STATIC object needs the SS_TEXT style to display its label,
+and draws in the system colours - set PP_FOREGROUNDCOLOR /
+PP_BACKGROUNDCOLOR on it to blend it into the toolbar.
+
+
+Building and sample
+-------------------
+
+    compile_wat.cmd
+
+Outputs: dll\expm.dll, lib\expm.lib, sample\toolbar\tbsmp.exe.
+
+sample\toolbar\tbsmp.exe shows a docked horizontal toolbar with
+auto-sized window buttons, a standard push button, a centred label and
+separators using begin / centre / end alignment.  It has the title bar
+(drag it to float the toolbar, click the triangle to minimise or dock),
+a rotate button and tool-tips on the buttons.  Clicking "Rotate" switches
+it to a vertical toolbar; the toolbar's notifications (XpmTN_*) are shown
+in a status field.  It expects expm.dll on LIBPATH (or next to the EXE).

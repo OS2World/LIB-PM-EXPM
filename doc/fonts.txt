@@ -1,0 +1,149 @@
+EXPM - Raster font helper (XpmCreateRasterFont)
+===============================================
+
+The fonts module provides XpmCreateRasterFont(), a helper that creates a
+logical font bound to a local id, pinned to one specific image (bit-map)
+font, and reports that font's metrics.  It is a clean-room reimplementation
+for the EXPM project (2026) of the AsuaCtl 1.0 font helper.  It was written
+in C from the published AsuaCtl header (include/fonts.h) and the OS/2 GPI
+font API only; no AsuaCtl source was consulted, so the behaviour below is
+EXPM's own interpretation of that published API.  AsuaCtl is GPLv2, EXPM is
+LGPLv3.
+
+The public name and the error codes carry the EXPM "Xpm" prefix:
+
+    FntCreateRasterFont  ->  XpmCreateRasterFont
+    ERR_FNT_INVPARAM     ->  XpmERR_FNT_INVPARAM
+    ERR_FNT_OUTMEM       ->  XpmERR_FNT_OUTMEM
+    ERR_FNT_HDC          ->  XpmERR_FNT_HDC
+    ERR_FNT_CREATE       ->  XpmERR_FNT_CREATE
+
+
+Prototype
+---------
+
+    LONG XpmCreateRasterFont( HPS hps, PSZ pszNameSize,
+                              LONG lLcid, FONTMETRICS *pfm );
+
+    hps          presentation space whose device supplies the fonts
+    pszNameSize  "[pointsize.]facename", e.g. "12.Helv" or
+                 "10.System Monospaced"; the point size may be omitted
+    lLcid        local id (1..254) the logical font is bound to
+    pfm          receives the FONTMETRICS of the font that was pinned
+
+Returns 0 on success, otherwise one of:
+
+    XpmERR_FNT_INVPARAM  1   a pointer was NULL, the name string empty,
+                             or lLcid outside 1..254
+    XpmERR_FNT_OUTMEM    2   the font-metrics array could not be allocated
+    XpmERR_FNT_HDC       3   the presentation space's device could not be
+                             read (GpiQueryDevice failed)
+    XpmERR_FNT_CREATE    4   no usable image font was found for the face,
+                             or GpiCreateLogFont failed
+
+
+Calling the helper
+------------------
+
+    #define INCL_WIN
+    #include <os2.h>
+    #include "expm.h"
+
+    HPS         hps;
+    FONTMETRICS fm;
+    POINTL      pt;
+    LONG        rc;
+
+    hps = WinGetPS( hwnd );
+    rc  = XpmCreateRasterFont( hps, "10.System Monospaced", 1, &fm );
+    if( rc == 0 )
+    {
+        GpiSetCharSet( hps, 1 );
+        pt.x = 8;  pt.y = 24;
+        GpiMove( hps, &pt );
+        GpiCharString( hps, strlen(szText), szText );
+        GpiSetCharSet( hps, 0 );        /* back to the default font */
+        GpiDeleteSetId( hps, 1 );       /* release the local id     */
+    }
+    WinReleasePS( hps );
+
+The logical font is created but NOT selected: select it with
+GpiSetCharSet(hps, lLcid) when you want to draw with it, and release the
+local id with GpiDeleteSetId(hps, lLcid) when finished.  A setid belongs to
+one presentation space, so call the helper once per PS that needs the font
+(cache the request, not the lcid).
+
+
+Behaviour
+---------
+
+Only raster (image) fonts are used.  The helper:
+
+  1. splits pszNameSize into an optional point size and a face name.  The
+     point size is an optional run of decimal digits followed by a period
+     ("12.Helv"); when it is absent the first image font of the face is
+     used.
+  2. reads the device behind hps with GpiQueryDevice; failure is
+     XpmERR_FNT_HDC.
+  3. enumerates the public fonts of that face with GpiQueryFonts and
+     allocates a FONTMETRICS array for them.
+  4. ignores outline fonts (fsDefn & FM_DEFN_OUTLINE) and picks the image
+     font whose sNominalPointSize (decipoints) is closest to the requested
+     size (the first image font when no size was given).
+  5. pins the chosen physical font by copying its lMatch (and face name,
+     registry, code page, lMaxBaselineExt and lAveCharWidth) into a FATTRS
+     with fsFontUse 0, and creates the logical font with GpiCreateLogFont.
+  6. copies the chosen font's FONTMETRICS to *pfm.
+
+Because the font is pinned by lMatch, *pfm describes the physical font that
+was actually selected.  Its sNominalPointSize is the real image size, which
+may differ from the requested one when that exact size does not exist; the
+caller can compare the two if it needs to know.
+
+If the requested face has no image font (for example an outline-only face
+such as "Helv" with no matching bit-map size, or a misspelled name), the
+call fails with XpmERR_FNT_CREATE rather than silently substituting an
+outline font.  This is deliberate: GpiCreateLogFont's return value cannot
+distinguish an exact match from a substitution, so silently describing a
+font is a trap this helper avoids.
+
+
+Notes on GpiQueryFonts
+---------------------
+
+The helper uses the two-call idiom: the first call passes an empty buffer
+(*plReqFonts = 0, NULL array) and returns the number of matching fonts; the
+second call fills an array of that size.  The value returned by the second
+call is the number of fonts left to enumerate (0 when they all fitted), NOT
+the number written - the number written is *plReqFonts on return.  The
+implementation reads the count back from *plReqFonts.  (Beware: an earlier
+EXPM draft used the return value as the count, which is always 0 on success
+and made the helper report XpmERR_FNT_CREATE for every font.)
+
+
+EXPM's own deviations from AsuaCtl
+----------------------------------
+
+  * the return value is 0 on success and an error code otherwise.  AsuaCtl's
+    exact return convention is not published; a "font handle" return would
+    collide with the valid local ids 1..254, so EXPM returns a status code
+    and delivers the font through lLcid.
+  * only image fonts are considered; the module name is "raster font"
+  * the point size is matched against sNominalPointSize (decipoints), not
+    against the pel height, because an image font exists only at the sizes
+    it was drawn at and its baseline extent is not monotonic in point size
+
+
+Building and sample
+-------------------
+
+    compile_wat.cmd
+
+Outputs: dll\expm.dll, lib\expm.lib, sample\fonts\fntsmp.exe.
+
+sample\fonts\fntsmp.exe (client class "expfonts") tries a list of
+"[pointsize.]facename" specifications, uses the first that yields an image
+font, draws a line of text in that font - so the raster font is visibly in
+use - and prints the returned metrics.  It also attempts a bogus face name
+to show the honest-failure path (XpmERR_FNT_CREATE).  It expects expm.dll on
+LIBPATH (or next to the EXE).

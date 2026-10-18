@@ -718,6 +718,45 @@ LONG EXPENTRY XpmStorePresParams( HWND hwnd, struct _PRESPARAMS *ppm,
 LONG EXPENTRY XpmDrawBitmap( HPS hps, HBITMAP hbmColor, HBITMAP hbmMono,
                              POINTL *pos, BOOL flPattern );
 
+/* ================================================================== */
+/* Font helper (from AsuaCtl's fonts module)                          */
+/* ================================================================== */
+
+/* XpmCreateRasterFont error codes (AsuaCtl ERR_FNT_* values, renamed
+ * to the Xpm namespace).  The function returns 0 on success. */
+#define XpmERR_FNT_INVPARAM     1       /* bad argument                */
+#define XpmERR_FNT_OUTMEM       2       /* out of memory               */
+#define XpmERR_FNT_HDC          3       /* device context read error   */
+#define XpmERR_FNT_CREATE       4       /* font could not be created   */
+
+/* XpmCreateRasterFont -- create a logical font bound to a local id and
+ * report the metrics of the image (raster) font it was pinned to.
+ * (AsuaCtl name: FntCreateRasterFont)
+ *
+ *   hps          presentation space whose device supplies the fonts
+ *   pszNameSize  "[pointsize.]facename", for example "12.Helv" or
+ *                "10.System Monospaced"; when the point size is omitted
+ *                the first available image font of that face is used
+ *   lLcid        local id (1..254) the logical font is bound to
+ *   pfm          receives the metrics of the physical font selected
+ *
+ * Only raster (image) fonts are used: the face's image fonts are
+ * enumerated with GpiQueryFonts and the one whose nominal point size is
+ * closest to the requested size is pinned (FATTRS.lMatch) and created
+ * with GpiCreateLogFont.  If the face has no image font, the
+ * presentation space or its device cannot be read, or the font cannot
+ * be created, the call fails rather than silently substituting an
+ * outline font.
+ *
+ * Returns 0 on success or one of the XpmERR_FNT_* codes.  On success
+ * *pfm describes the physical font that was pinned (its
+ * sNominalPointSize is the real image size, which may differ from the
+ * requested one).  The logical font is created but NOT selected into
+ * hps; select it with GpiSetCharSet(hps, lLcid) and release it with
+ * GpiDeleteSetId(hps, lLcid). */
+LONG EXPENTRY XpmCreateRasterFont( HPS hps, PSZ pszNameSize,
+                                   LONG lLcid, FONTMETRICS *pfm );
+
 /* Version / initialisation API (from AsuaCtl's asuactl module) */
 
 /* XpmControlsInit -- register every AsuaCtl-derived window class.
@@ -874,6 +913,262 @@ typedef struct _XPMWBTNCDATA
  * button is used on its own.  Returns 0 on success or
  * XpmERR_PNL_CLASSREG.  (AsuaCtl name: BtnRegister) */
 LONG EXPENTRY XpmWinButtonInit( HAB hab );
+
+/* ------------------------------------------------------------------ */
+/* Toolbar control (clean-room reimplementation of the AsuaCtl toolbar, */
+/* WC_TOOLBAR).  AsuaCtl is GPLv2, EXPM is LGPLv3; every public name    */
+/* carries the Xpm prefix.  See doc\toolbar.txt.                       */
+/*                                                                     */
+/* This release implements the full toolbar: a toolbar holding control  */
+/* windows and separators, with begin / centre / end alignment,         */
+/* horizontal or vertical orientation, object insert / delete / move /  */
+/* query, the state and size queries, the automatic sizing message and  */
+/* its TN_AUTOSIZE notification, the 3-D frame, floating / docking /    */
+/* minimising with drag tracking (the title bar and rotate button), and */
+/* per-object tool-tips.  Scrolling and multi-line layout are the only   */
+/* original features left out (see doc\toolbar.txt).                    */
+/* ------------------------------------------------------------------ */
+
+/* Window class name */
+#define XpmToolBarClass         "XpmToolBar"
+
+/* Reserved internal child-window identifiers.  EXPM parents objects
+ * directly to the toolbar window and paints separators itself, so no
+ * XpmTCID_OBJECTPAD window is created; the title bar, rotate button and
+ * tool-tip windows use the other identifiers. */
+#define XpmTCID_TITLEBAR        0xFFFF
+#define XpmTCID_TOOLTIP         0xFFFE
+#define XpmTCID_ROTATE          0xFFFC
+#define XpmTCID_OBJECTPAD       0xFFF9
+
+/* Message range.  AsuaCtl used WM_USER+60..+79; the numeric range is
+ * kept, every macro is renamed with the Xpm prefix.  A caller may
+ * define XpmTOOL_FIRST_MSG before including this header to relocate the
+ * range (it must stay relative to WM_USER). */
+#ifndef XpmTOOL_FIRST_MSG
+#define XpmTOOL_FIRST_MSG       (WM_USER+60)
+#endif
+#define XpmTOOL_LAST_MSG        (XpmTOOL_FIRST_MSG+19)
+
+/* Toolbar control messages (details in doc\toolbar.txt) */
+#define XpmTM_AUTOSIZE          (XpmTOOL_FIRST_MSG+0)
+#define XpmTM_CALCNEWRECT       (XpmTOOL_FIRST_MSG+1)
+#define XpmTM_ENABLEROTATE      (XpmTOOL_FIRST_MSG+2)
+#define XpmTM_QUERYHEIGHT       (XpmTOOL_FIRST_MSG+3)
+#define XpmTM_QUERYWIDTH        (XpmTOOL_FIRST_MSG+4)
+#define XpmTM_QUERYSTATE        (XpmTOOL_FIRST_MSG+5)
+#define XpmTM_ROTATE            (XpmTOOL_FIRST_MSG+6)
+#define XpmTM_DELETEOBJECT      (XpmTOOL_FIRST_MSG+7)
+#define XpmTM_IDFROMPOSITION    (XpmTOOL_FIRST_MSG+8)
+#define XpmTM_INSERTOBJECT      (XpmTOOL_FIRST_MSG+9)
+#define XpmTM_INSERTTOOLTIP     (XpmTOOL_FIRST_MSG+10)
+#define XpmTM_MOVEOBJECT        (XpmTOOL_FIRST_MSG+11)
+#define XpmTM_OBJECTCONTROL     (XpmTOOL_FIRST_MSG+12)
+#define XpmTM_POSITIONFROMID    (XpmTOOL_FIRST_MSG+13)
+#define XpmTM_QUERYHANDLE       (XpmTOOL_FIRST_MSG+14)
+#define XpmTM_QUERYOBJECT       (XpmTOOL_FIRST_MSG+15)
+#define XpmTM_QUERYOBJECTCOUNT  (XpmTOOL_FIRST_MSG+16)
+#define XpmTM_QUERYTIP          (XpmTOOL_FIRST_MSG+17)
+#define XpmTM_SETOBJECT         (XpmTOOL_FIRST_MSG+18)
+#define XpmTM_SHOWOBJECT        (XpmTOOL_FIRST_MSG+19)
+
+/* Window styles */
+#define XpmTBS_STANDARD         0x0000  /* clip objects that do not fit   */
+#define XpmTBS_SCROLLABLE       0x0001  /* scroll buttons (not impl.)     */
+#define XpmTBS_MULTILINE        0x0002  /* wrap objects (not impl.)       */
+#define XpmTBS_CUTTYPES         0x0007
+#define XpmTBS_MOVEWITHOWNER    0x0800  /* track owner moves (not impl.)  */
+#define XpmTBS_ENABLEMINIMIZE   0x1000  /* click title to minimise        */
+#define XpmTBS_MOVEBUTTON       0x2000  /* title bar moves / floats       */
+#define XpmTBS_FIXBUTTON        0x4000  /* title bar dock toggle          */
+#define XpmTBS_ROTATEBUTTON     0x8000  /* rotate button                  */
+
+/* Toolbar states (XpmTM_QUERYSTATE result, XpmTOOLADJ.flState) */
+#define XpmTST_FIXED            0x0001  /* docked to the parent           */
+#define XpmTST_MINIMIZED        0x0002  /* minimized                      */
+#define XpmTST_ROTATED          0x0004  /* vertical orientation           */
+
+/* Toolbar attributes (XpmTOOLINFO.flToolAttrs, XpmTOOLADJ.flAttrs) */
+#define XpmTBA_FRAME            0x000F  /* complete 3-D frame             */
+#define XpmTBA_LEFTFRAME        0x0001
+#define XpmTBA_BOTTOMFRAME      0x0002
+#define XpmTBA_RIGHTFRAME       0x0004
+#define XpmTBA_TOPFRAME         0x0008
+#define XpmTBA_FIXEDTOP         0x0000  /* horizontal: dock at top        */
+#define XpmTBA_FIXEDBOTTOM      0x0010  /* horizontal: dock at bottom     */
+#define XpmTBA_FIXEDLEFT        0x0000  /* vertical:   dock at left       */
+#define XpmTBA_FIXEDRIGHT       0x0020  /* vertical:   dock at right      */
+#define XpmTBA_HORIZONTAL       0x0000
+#define XpmTBA_VERTICAL         0x0040
+
+/* XpmTM_QUERYHEIGHT / XpmTM_QUERYWIDTH options */
+#define XpmTDQ_RESTORED         0x0000  /* floating size                  */
+#define XpmTDQ_MINIMIZED        0x0001  /* minimized size                 */
+#define XpmTDQ_FIXED            0x0002  /* docked size                    */
+#define XpmTDQ_CURRENT          0x0003  /* current size                   */
+
+/* XpmTM_ROTATE options */
+#define XpmTBR_ROTATE           0
+#define XpmTBR_HORIZONTAL       1
+#define XpmTBR_VERTICAL         2
+
+/* XpmTM_SETOBJECT options */
+#define XpmTSO_GROUP            0x0001
+#define XpmTSO_SIZE             0x0002
+#define XpmTSO_USER             0x0004
+
+/* Object attributes (XpmTOOLOBJ.flAttribute) */
+#define XpmTBO_STDWINDOW        0x0000  /* ordinary control window        */
+#define XpmTBO_BUTTON           0x0001  /* auto-sized button              */
+#define XpmTBO_STDBUTTON        0x0002  /* supported, not auto-sized      */
+#define XpmTBO_SEPARATOR        0x0003  /* separator (not a window)       */
+#define XpmTBO_BASICTYPES       0x000F
+#define XpmTBO_BEGINALIGN       0x0000
+#define XpmTBO_ENDALIGN         0x0010
+#define XpmTBO_CENTERALIGN      0x0020
+#define XpmTBO_JUSTTYPES        0x0030
+#define XpmTBO_PUSHBUTTON       0x0040
+#define XpmTBO_CHECKBOX         0x0080
+#define XpmTBO_RADIOBUTTON      0x00C0
+#define XpmTBO_HIDE             0x0100  /* object is hidden               */
+#define XpmTBO_DISABLE          0x0200  /* object is disabled             */
+
+/* Separator styles (bits of XpmTOOLOBJ.flAttribute) */
+#define XpmSPS_FLAT             0x0000
+#define XpmSPS_LINE             0x2000
+#define XpmSPS_CONCAVE          0x4000
+#define XpmSPS_CONVEX           0x6000
+#define XpmSPS_SEPARATORS       0xE000
+
+/* Position that appends an object to the toolbar */
+#define XpmTB_END               0xFFFFFFFFL
+
+/* Notification codes delivered in WM_CONTROL */
+#define XpmTN_AUTOSIZE          1
+#define XpmTN_BEGINTRACK        2
+#define XpmTN_TRACKING          3
+#define XpmTN_ENDTRACK          4
+#define XpmTN_FIXTOOL           5
+#define XpmTN_MINIMIZE          6
+#define XpmTN_RESTORE           7
+#define XpmTN_ROTATE            8
+
+/* Tool-tip presentation parameters.  XpmPP_TOOLTIPBACKGROUND etc. may
+ * be defined by the caller before including this header. */
+#ifndef XpmTOOL_FIRST_PP
+#define XpmTOOL_FIRST_PP        (PP_USER+0)
+#endif
+#define XpmPP_TOOLTIPBACKGROUND (XpmTOOL_FIRST_PP+0)
+#define XpmPP_TOOLTIPTEXT       (XpmTOOL_FIRST_PP+1)
+#define XpmPP_TOOLTIPFRAME      (XpmTOOL_FIRST_PP+2)
+#define XpmPP_TOOLTIPFONT       (XpmTOOL_FIRST_PP+3)
+#define XpmPP_TOOLTIPDELAY      (XpmTOOL_FIRST_PP+4)
+
+/* XpmTOOLINFO -- toolbar control data (WinCreateWindow pCtlData, and
+ * WM_SETWINDOWPARAMS).  Packed to 2 bytes like the AsuaCtl original. */
+#pragma pack(2)
+typedef struct _XPMTOOLINFO
+{
+    USHORT cb;            /* total size of the structure in bytes        */
+    USHORT flToolAttrs;   /* XpmTBA_* attributes                         */
+    USHORT usMaxLength;   /* maximum floating length in pixels (0 = none) */
+} XpmTOOLINFO, *PXpmTOOLINFO;
+#pragma pack()
+
+/* XpmTOOLADJ -- passed with the XpmTN_AUTOSIZE notification.  Packed
+ * to 4 bytes like the AsuaCtl original. */
+#pragma pack(4)
+typedef struct _XPMTOOLADJ
+{
+    HWND  hwndToolBar;    /* toolbar window handle                       */
+    HWND  hwndParent;     /* suggested parent window handle              */
+    RECTL rclSizePos;     /* suggested position and size (parent coords) */
+    ULONG flAttrs;        /* suggested XpmTBA_* attributes               */
+    ULONG flState;        /* state (XpmTST_*); input for CALCNEWRECT    */
+} XpmTOOLADJ, *PXpmTOOLADJ;
+
+/* XpmTOOLOBJ -- object information (insert / query / set). */
+typedef struct _XPMTOOLOBJ
+{
+    ULONG iPosition;      /* ordinal position from the toolbar start     */
+    ULONG ulGroup;        /* button group (buttons only)                 */
+    ULONG flAttribute;    /* XpmTBO_* / XpmSPS_* attributes              */
+    ULONG cx;             /* initial object width                        */
+    ULONG cy;             /* initial object height                       */
+    ULONG id;             /* object identifier                           */
+    ULONG ulUser;         /* available for the application               */
+} XpmTOOLOBJ, *PXpmTOOLOBJ;
+
+/* XpmTOOLWIN -- supplementary data used to create the object window. */
+typedef struct _XPMTOOLWIN
+{
+    PSZ   pszClass;       /* window class of the object                  */
+    PSZ   pszName;        /* window text                                 */
+    ULONG flStyle;        /* window style flags                          */
+    PVOID pCtlData;       /* class-specific data                         */
+    PVOID pPresParams;    /* presentation parameters                     */
+} XpmTOOLWIN, *PXpmTOOLWIN;
+
+/* XpmTOOLTRACK -- passed with the drag-tracking notifications
+ * (XpmTN_BEGINTRACK / XpmTN_TRACKING / XpmTN_ENDTRACK). */
+typedef struct _XPMTOOLTRACK
+{
+    HWND  hwndToolBar;
+    HWND  hwndParent;
+    RECTL rclSizePos;
+    RECTL rclBoundary;
+    ULONG flAttrs;
+    ULONG flState;
+} XpmTOOLTRACK, *PXpmTOOLTRACK;
+#pragma pack()
+
+/* XpmToolBarInit -- register the XpmToolBarClass window class.  Called
+ * by XpmControlsInit; call it directly only when the toolbar is used on
+ * its own.  Returns 0 on success or XpmERR_PNL_CLASSREG.
+ * (AsuaCtl name: CtlToolbarInitialize) */
+LONG EXPENTRY XpmToolBarInit( HAB hab );
+
+
+/* ------------------------------------------------------------------ */
+/* Directory dialog (AsuaCtl AsuDirDlg)                               */
+/* ------------------------------------------------------------------ */
+
+/* Dialog template identifiers.  The templates live in EXPM.DLL
+ * (src/dirdlg/dirdlg.rc) and are loaded by XpmDirDlg; the caller only
+ * chooses a variant through XpmDIRDLG.flDialogType.  The "_W" variants
+ * use XpmWinButtonClass for the OK / Cancel buttons. */
+#define XpmDIRDLG_OKCANCEL      2000    /* OK + Cancel buttons         */
+#define XpmDIRDLG_OK            2001    /* OK button only              */
+#define XpmDIRDLG_OKCANCEL_W    2100    /* OK + Cancel, XpmWinButton   */
+#define XpmDIRDLG_OK_W          2101    /* OK only, XpmWinButton       */
+
+/* Container (directory list) identifier inside the dialog. */
+#define XpmCNR_TREE             257
+
+/* XpmDIRDLG -- describes a directory dialog and receives its result.
+ * Fill in the fields before calling XpmDirDlg; lReturn and
+ * szFullDirectoryName are set on return.  The AsuaCtl layout is kept
+ * so existing source maps across unchanged. */
+typedef struct _XpmDIRDLG
+{
+    PSZ  pszTitle;                          /* title (NULL = default)      */
+    PSZ  pszOKButton;                       /* OK text (NULL = default)    */
+    PSZ  pszCancelButton;                   /* Cancel text (NULL = default)*/
+    PSZ  pszInitialDir;                     /* directory to start in       */
+    CHAR szFullDirectoryName[CCHMAXPATH];   /* chosen directory (output)   */
+    LONG lReturn;                           /* DID_OK or DID_CANCEL        */
+    LONG flDialogType;                      /* XpmDIRDLG_* variant         */
+    BOOL flUseWinButton;                    /* use XpmWinButtonClass       */
+} XpmDIRDLG, *PXpmDIRDLG;
+
+/* XpmDirDlg -- display a modal "choose directory" dialog and return the
+ * chosen directory in pdd->szFullDirectoryName.  Returns TRUE when the
+ * user pressed OK (pdd->lReturn == DID_OK), FALSE on Cancel / Close.
+ * The user navigates the directory tree (double-click to open a drive
+ * or folder, ".." to go up); OK returns the highlighted entry, or the
+ * directory currently on display when nothing is highlighted.
+ * (AsuaCtl name: AsuDirDlg) */
+BOOL EXPENTRY XpmDirDlg( HWND hwndParent, HWND hwndOwner, PXpmDIRDLG pdd );
 
 
 #ifdef __cplusplus

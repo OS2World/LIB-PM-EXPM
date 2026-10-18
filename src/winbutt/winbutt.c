@@ -41,8 +41,8 @@
 
 /* Metrics */
 #define WBTN_MAXTEXT    256     /* maximum stored text length         */
-#define WBTN_MARGIN     6       /* horizontal text margin, each side  */
-#define WBTN_VMARGIN    4       /* vertical   text margin, each side  */
+#define WBTN_MARGIN     9       /* horizontal text margin, each side  */
+#define WBTN_VMARGIN    5       /* vertical   text margin, each side  */
 
 static BOOL g_bBtnRegistered = FALSE;
 

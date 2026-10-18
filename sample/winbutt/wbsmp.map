@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/17 14:37:46
+Created on:       26/10/18 18:20:22
 Executable Image: sample\winbutt\wbsmp.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -55,12 +55,12 @@ Address        Symbol
 =======        ======
 
 Module: obj\wbsmp.obj(D:\Projects\LIBs\LIB-PM-EXPM\sample\winbutt\wbsmp.c)
-0001:00000440  main_
+0001:00000446  main_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(stk)
-0001:00000599* __STK
-0001:00000589  __CHK
-0001:000005c8* __GRO
-0001:000005b8* __STKOVERFLOW_
+0001:000005a1* __STK
+0001:00000591  __CHK
+0001:000005d0* __GRO
+0001:000005c0* __STKOVERFLOW_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(sprintf.c)
 0001:000005f0  sprintf_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(cstart)
@@ -241,4 +241,4 @@ C:\WATCOM/lib386/os2\os2386.lib
 Stack size:  2000 (8192.)
 Memory size:  4012 (16402.)
 Entry point address: 0001:00000612
-Link time: 00:00.41
+Link time: 00:00.59

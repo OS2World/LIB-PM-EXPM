@@ -40,9 +40,12 @@ EXPORTS
     XpmQueryPresColors
     XpmStorePresParams
     XpmDrawBitmap
+    XpmCreateRasterFont
     XpmControlsInit
     XpmGetVersion
     XpmGetComponentVersion
     XpmStatusInit
     XpmProgressBarInit
     XpmWinButtonInit
+    XpmToolBarInit
+    XpmDirDlg

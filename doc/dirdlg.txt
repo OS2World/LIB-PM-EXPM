@@ -1,0 +1,144 @@
+EXPM - Directory dialog (XpmDirDlg)
+===================================
+
+The directory-dialog module provides XpmDirDlg(), a ready-to-use modal
+"choose a directory" dialog.  It is a clean-room reimplementation for the
+EXPM project (2026) of the AsuaCtl 1.0 directory dialog (AsuDirDlg).  It
+was written in C from the published AsuaCtl header (include/asuactl.h, the
+XpmDIRDLG structure and the AsuDirDlg prototype) and the published dialog
+resource layout only; no AsuaCtl source was consulted, so the behaviour
+below is EXPM's own interpretation of that published API.  AsuaCtl is
+GPLv2, EXPM is LGPLv3.
+
+The public name carries the EXPM "Xpm" prefix:
+
+    AsuDirDlg           ->  XpmDirDlg
+    DIRDLG              ->  XpmDIRDLG
+
+
+Calling the dialog
+------------------
+
+    #define INCL_WIN
+    #include <os2.h>
+    #include "expm.h"
+
+    XpmDIRDLG dd;
+    BOOL      fOK;
+
+    memset( &dd, 0, sizeof(dd) );
+    dd.pszTitle        = "Choose a directory";
+    dd.pszOKButton     = NULL;                  /* default labels */
+    dd.pszCancelButton = NULL;
+    dd.pszInitialDir   = "C:\\";
+    dd.flDialogType    = XpmDIRDLG_OKCANCEL;
+    dd.flUseWinButton  = FALSE;
+
+    fOK = XpmDirDlg( HWND_DESKTOP, hwndFrame, &dd );
+    if( fOK )
+        /* dd.szFullDirectoryName holds the chosen directory */;
+
+XpmDIRDLG is:
+
+    PSZ  pszTitle;                       caption, or NULL for the default
+    PSZ  pszOKButton;                    OK label, or NULL for "OK"
+    PSZ  pszCancelButton;                Cancel label, or NULL for "Cancel"
+    PSZ  pszInitialDir;                  directory to start in, or NULL
+    CHAR szFullDirectoryName[CCHMAXPATH]; result (full path)
+    LONG lReturn;                        DID_OK / DID_CANCEL
+    LONG flDialogType;                   XpmDIRDLG_* template selector
+    BOOL flUseWinButton;                 use XpmWinButtonClass for OK/Cancel
+
+XpmDirDlg returns TRUE when the user pressed OK and FALSE otherwise.  The
+chosen directory is returned both in szFullDirectoryName and implicitly in
+the return value; lReturn holds DID_OK (1) or DID_CANCEL (2).
+
+hwndParent is the window the dialog is centred over (usually
+HWND_DESKTOP), hwndOwner is the window that owns the dialog (its frame is
+disabled while the dialog is up).
+
+XpmControlsInit need not be called first: for the "_W" templates XpmDirDlg
+calls XpmWinButtonInit() itself.  XpmDirDlg locates its own dialog
+templates through the module handle of EXPM.DLL, so the DLL must be loaded
+by name (it always is when the application links against expm.lib).
+
+
+Dialog templates
+----------------
+
+flDialogType selects one of four dialog templates (their resource ids are
+the XpmDIRDLG_* constants):
+
+    XpmDIRDLG_OKCANCEL   2000  OK and Cancel, standard buttons
+    XpmDIRDLG_OK         2001  OK only, standard button
+    XpmDIRDLG_OKCANCEL_W 2100  OK and Cancel, XpmWinButtonClass
+    XpmDIRDLG_OK_W       2101  OK only, XpmWinButtonClass
+
+flUseWinButton selects the "_W" pair regardless of flDialogType: when it
+is TRUE the dialog uses the template whose id ends in 2100/2101.  Any
+other flDialogType value is treated as XpmDIRDLG_OKCANCEL.
+
+
+Behaviour
+---------
+
+The dialog shows a container in the CV_NAME view; there are no icons (the
+AsuaCtl drive / folder bitmaps are not part of the EXPM resources), so
+entries are plain names.
+
+  * At the drive list (the root) the container holds one entry per
+    available drive, shown as "X:".  A drive is considered present when
+    DosQueryFSInfo(FSIL_VOLSER) succeeds for it.
+  * Inside a directory the container holds ".." followed by the
+    subdirectories of the directory on show (directories whose name starts
+    with "." are skipped).
+  * Double-clicking an entry, or pressing Enter on it, opens it: a drive
+    becomes "X:\", a folder is entered and ".." goes up one level.
+  * OK returns the highlighted entry: a highlighted folder gives the full
+    path, a highlighted drive gives "X:\", and ".." gives the parent
+    directory (".." at a drive root gives that root).  When nothing is
+    highlighted, OK returns the directory on show, or the current drive
+    root at the drive list.
+  * Cancel returns DID_CANCEL and leaves szFullDirectoryName empty.
+  * Closing the dialog with the system menu also returns DID_CANCEL.
+
+The caller-supplied pszInitialDir is normalised to end with a backslash
+and is used only if DosQueryPathInfo accepts it; otherwise the dialog
+opens at the drive list.
+
+
+EXPM's own deviations from AsuaCtl
+----------------------------------
+
+  * entries are drawn without icons; AsuaCtl shipped ready-made drive and
+    folder bitmaps
+  * the container is fixed to the CV_NAME view (one name per line) and is
+    never re-sorted or given a title
+  * ".." is offered at every directory (including a drive root, where it
+    is a no-op that returns the root); AsuaCtl's exact rules for ".." are
+    not known
+
+
+Stack requirements
+------------------
+
+The dialog runs inside WinDlgBox and drives a container control, which PM
+uses a fair amount of stack for.  An application that calls XpmDirDlg
+should provide an adequate thread stack - 32 KB or more is recommended.
+The bundled sample links with "option stack=32768"; the same sample built
+with an 8 KB stack aborts with the Open Watcom runtime's "Stack Overflow!"
+message as the dialog is dismissed.
+
+
+Building and sample
+-------------------
+
+    compile_wat.cmd
+
+Outputs: dll\expm.dll, lib\expm.lib, sample\dirdlg\ddsmp.exe.
+
+sample\dirdlg\ddsmp.exe (client class "XpmDdClient") has three buttons
+that open the dialog in each of its forms: a plain OK/Cancel dialog, the
+XpmWinButton dialog, and the OK-only dialog.  The resulting directory (or
+the fact that the user cancelled) is shown in a status field.  It expects
+expm.dll on LIBPATH (or next to the EXE).

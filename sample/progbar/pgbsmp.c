@@ -118,21 +118,21 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
     {
         case WM_CREATE:
             CreateBar( hwnd, ID_BAR_SMOOTH,
-                       XpmPBS_SMOOTH | XpmPBS_RAISED, 10, 285, 460, 24 );
+                       XpmPBS_SMOOTH | XpmPBS_RAISED, 75, 330, 495, 26 );
             CreateBar( hwnd, ID_BAR_SEGMENT,
-                       XpmPBS_DEPRESSED, 10, 255, 460, 24 );
+                       XpmPBS_DEPRESSED, 75, 290, 495, 26 );
             CreateBar( hwnd, ID_BAR_TEXT,
-                       XpmPBS_SMOOTH | XpmPBS_TEXT, 10, 225, 460, 24 );
+                       XpmPBS_SMOOTH | XpmPBS_TEXT, 75, 250, 495, 26 );
             CreateBar( hwnd, ID_BAR_VERT,
                        XpmPBS_SMOOTH | XpmPBS_VERTICAL | XpmPBS_RAISED,
-                       10, 60, 40, 150 );
+                       15, 80, 44, 150 );
 
-            CreateButton( hwnd, ID_BTN_STEP,    "Step",     10, 20, 110, 28 );
-            CreateButton( hwnd, ID_BTN_RESET,   "Reset",   130, 20, 110, 28 );
+            CreateButton( hwnd, ID_BTN_STEP,    "Step",        15, 15,  95, 34 );
+            CreateButton( hwnd, ID_BTN_RESET,   "Reset",      120, 15,  95, 34 );
             CreateButton( hwnd, ID_BTN_RANGE,   "Range 0-50",
-                          250, 20, 110, 28 );
-            CreateButton( hwnd, ID_BTN_COLORS,  "Colours", 370, 20, 100, 28 );
-            CreateButton( hwnd, ID_BTN_ANIMATE, "Animate",  10, 175, 100, 28 );
+                          225, 15, 130, 34 );
+            CreateButton( hwnd, ID_BTN_COLORS,  "Colours",    365, 15,  95, 34 );
+            CreateButton( hwnd, ID_BTN_ANIMATE, "Animate",    470, 15,  95, 34 );
 
             aBars[0] = WinWindowFromID( hwnd, ID_BAR_SMOOTH );
             aBars[1] = WinWindowFromID( hwnd, ID_BAR_SEGMENT );
@@ -229,7 +229,7 @@ int main( VOID )
                                     "EXPM progress bar sample",
                                     0, NULLHANDLE, 0, &hwndClient );
 
-    WinSetWindowPos( hwndFrame, HWND_TOP, 60, 120, 520, 330,
+    WinSetWindowPos( hwndFrame, HWND_TOP, 60, 110, 590, 440,
                      SWP_MOVE | SWP_SIZE | SWP_ACTIVATE | SWP_SHOW );
 
     while( WinGetMsg( hab, &qmsg, NULLHANDLE, 0, 0 ) )
