@@ -51,8 +51,8 @@ extern "C" {
  * the third-party library each module tracks (the AsuaCtl controls, for
  * example, report their own baseline through XpmGetVersion). */
 #define XPM_VERSION_MAJOR   0
-#define XPM_VERSION_MINOR   2
-#define XPM_VERSION_STRING  "0.2"
+#define XPM_VERSION_MINOR   3
+#define XPM_VERSION_STRING  "0.3"
 
 
 /* ------------------------------------------------------------------ */
@@ -1182,6 +1182,238 @@ typedef struct _XpmDIRDLG
  * directory currently on display when nothing is highlighted.
  * (AsuaCtl name: AsuDirDlg) */
 BOOL EXPENTRY XpmDirDlg( HWND hwndParent, HWND hwndOwner, PXpmDIRDLG pdd );
+
+
+/* ------------------------------------------------------------------ */
+/* Modern controls (Material / smartphone-style)                       */
+/*                                                                     */
+/* A set of flat, rounded, animated controls in the visual style of    */
+/* Android Material and iOS.  This is original EXPM code (no           */
+/* third-party source), so EXPM stays LGPLv3.  PM has no per-pixel     */
+/* alpha, no anti-aliasing and no gradient primitive, so the look is   */
+/* achieved with hand-drawn GPI shapes (GpiPolyFillet, GpiBox,         */
+/* GpiPartialArc), flat and hand-blended fills, and timer-driven       */
+/* animation - the same techniques anibtn and shadebtn already use.    */
+/* Every control reads its colours, corner radius and spacing from the */
+/* shared theme (see XpmTheme) and repaints when the theme changes.    */
+/*                                                                     */
+/* This release (EXPM 0.3) covers the theme engine and five controls:  */
+/* a toggle switch, a segmented control, a ring progress / spinner, a  */
+/* chip and an icon button.  See doc\modern.txt.                       */
+/*                                                                     */
+/* The controls are ordinary child windows: the window hosting them    */
+/* must carry WS_CLIPCHILDREN, or a repaint of that window will paint  */
+/* over the controls.  A WinCreateStdWindow client needs the bit set   */
+/* explicitly (WinSetWindowBits(hwndClient, QWL_STYLE, WS_CLIPCHILDREN,*/
+/* WS_CLIPCHILDREN)); see doc\modern.txt.                              */
+/* ------------------------------------------------------------------ */
+
+/* Window class names */
+#define XpmToggleSwitchClass    "XpmToggleSwitch"
+#define XpmSegmentedClass       "XpmSegmented"
+#define XpmRingProgressClass    "XpmRingProgress"
+#define XpmChipClass            "XpmChip"
+#define XpmIconButtonClass      "XpmIconButton"
+
+/* Message range shared by the modern controls.  The class name
+ * disambiguates.  Defined relative to WM_USER so an application can
+ * relocate the whole range (like XpmTOOL_FIRST_MSG) by defining
+ * XpmMODERN_FIRST_MSG before including this header. */
+#ifndef XpmMODERN_FIRST_MSG
+#define XpmMODERN_FIRST_MSG     (WM_USER+81)
+#endif
+#define XpmMODERN_LAST_MSG      (XpmMODERN_FIRST_MSG+31)
+
+/* XpmWM_THEMECHANGED -- posted by XpmSetTheme to the desktop and all its
+ * descendants when the process theme changes.  Every modern control
+ * repaints itself; an application window may repaint its own background
+ * in the new canvas colour.  mp1/mp2 reserved (0). */
+#define XpmWM_THEMECHANGED      (WM_USER+80)
+
+/* Notification codes delivered to the owner in WM_CONTROL.  As
+ * everywhere else in EXPM, mp1 is MPFROM2SHORT(control-id, notification)
+ * (SHORT1FROMMP(mp1) = control id, SHORT2FROMMP(mp1) = code); mp2
+ * carries any payload noted with the code. */
+#define XpmMCN_FIRST            0x0500
+#define XpmTOGN_CHANGED         (XpmMCN_FIRST+1)  /* mp2 = new check state   */
+#define XpmSEGN_SELECT          (XpmMCN_FIRST+2)  /* mp2 = selected index    */
+#define XpmCHIPN_SEL            (XpmMCN_FIRST+3)  /* mp2 = new selected state*/
+#define XpmCHIPN_CLOSE          (XpmMCN_FIRST+4)  /* close glyph clicked     */
+#define XpmIBN_CLICK            (XpmMCN_FIRST+5)  /* mp2 = check state       */
+
+/* Generic messages handled by every modern control. */
+#define XpmMCM_QUERYMINWIDTH    (XpmMODERN_FIRST_MSG+30)  /* return width  */
+#define XpmMCM_QUERYMINHEIGHT   (XpmMODERN_FIRST_MSG+31)  /* return height */
+
+
+/* ---- Theme engine ------------------------------------------------ */
+
+/* Theme flavour */
+#define XpmTH_LIGHT             0x0000
+#define XpmTH_DARK              0x0001
+
+/* Length of XpmTheme.szFace (a UI face name). */
+#define XpmTHEME_FACE_LEN       64
+
+/* XpmTheme -- the palette and metrics shared by every modern control.
+ * Colours are direct 0x00RRGGBB values (the convention XpmEditColorDlg
+ * and the progress bar already use).  A control copies the theme when it
+ * is created and re-reads it on XpmWM_THEMECHANGED, so one XpmSetTheme
+ * restyles the whole application.  Fill a structure with XpmThemeDefault
+ * or XpmThemeDark, change what you need and pass it to XpmSetTheme. */
+#pragma pack(1)
+typedef struct _XPMTHEME
+{
+    ULONG cbSize;          /* sizeof(XpmTheme); set by XpmThemeDefault   */
+
+    ULONG ulStyle;         /* XpmTH_LIGHT or XpmTH_DARK                  */
+
+    /* Palette (0x00RRGGBB) */
+    ULONG clrCanvas;       /* window / dialog background                 */
+    ULONG clrSurface;      /* card, chip, track and button surface       */
+    ULONG clrSurfaceDim;   /* track (off) / pressed surface              */
+    ULONG clrText;         /* primary text on canvas / surface           */
+    ULONG clrTextDim;      /* secondary / disabled text                  */
+    ULONG clrPrimary;      /* accent: selected fill, switch-on, indicator*/
+    ULONG clrOnPrimary;    /* text / glyph drawn over clrPrimary         */
+    ULONG clrSecondary;    /* secondary accent                           */
+    ULONG clrOutline;      /* borders, dividers, control edges           */
+    ULONG clrHover;        /* hover tint blended over the surface        */
+    ULONG clrPressed;      /* pressed tint blended over the surface      */
+    ULONG clrShadow;       /* elevation shadow under raised surfaces     */
+
+    /* Metrics (pels) */
+    LONG  lRadius;         /* default corner radius                      */
+    LONG  lRadiusSmall;    /* chip / small corner radius                 */
+    LONG  lBorder;         /* frame / outline width                      */
+    LONG  lPadX;           /* horizontal content padding                 */
+    LONG  lPadY;           /* vertical content padding                   */
+    LONG  lRowHeight;      /* default control height                     */
+    LONG  lGap;            /* spacing between segments / chips           */
+    LONG  lElevation;      /* shadow offset for raised surfaces (0 none) */
+
+    /* Animation */
+    LONG  lAnimStep;       /* milliseconds per animation frame           */
+    LONG  lAnimFrames;     /* frames per animation (e.g. knob slide)     */
+
+    /* Typography */
+    CHAR  szFace[XpmTHEME_FACE_LEN]; /* UI face; "" = current system font*/
+    LONG  lPtBody;         /* body text point size (informational)       */
+    LONG  lPtLabel;        /* label text point size (informational)      */
+} XpmTheme, *PXpmTheme;
+#pragma pack()
+
+/* XpmThemeDefault -- fill pt with the built-in light ("Material")
+ * defaults and set cbSize / ulStyle.  Returns 0. */
+LONG EXPENTRY XpmThemeDefault( PXpmTheme pt );
+
+/* XpmThemeDark -- fill pt with the built-in dark defaults.  Returns 0. */
+LONG EXPENTRY XpmThemeDark( PXpmTheme pt );
+
+/* XpmSetTheme -- install pt as the process theme (a copy is kept) and
+ * post XpmWM_THEMECHANGED to the desktop and all its descendants so
+ * every modern control repaints.  Passing NULL restores the built-in
+ * light theme.  Returns TRUE on success. */
+BOOL EXPENTRY XpmSetTheme( PXpmTheme pt );
+
+/* XpmQueryTheme -- return the currently installed theme.  Never NULL:
+ * before the first XpmSetTheme it returns the built-in light theme. */
+PXpmTheme EXPENTRY XpmQueryTheme( VOID );
+
+/* XpmModernInit -- register all five modern window classes.  Returns 0
+ * on success, or XpmERR_PNL_CLASSREG if any registration failed (the
+ * remaining classes are still attempted).  Independent of
+ * XpmControlsInit. */
+LONG EXPENTRY XpmModernInit( HAB hab );
+
+
+/* ---- Toggle switch ----------------------------------------------- */
+
+/* Styles */
+#define XpmTOG_AUTOSIZE         0x0001  /* size to fit the label         */
+#define XpmTOG_CHECKED          0x0002  /* start checked                 */
+#define XpmTOG_LABELRIGHT       0x0004  /* label after the track (default
+                                         * is before the track)          */
+
+/* Messages (mp1 unless noted) */
+#define XpmTOGM_SETCHECK        (XpmMODERN_FIRST_MSG+0)  /* mp1 = 0/1     */
+#define XpmTOGM_QUERYCHECK      (XpmMODERN_FIRST_MSG+1)  /* returns 0/1   */
+#define XpmTOGM_TOGGLE          (XpmMODERN_FIRST_MSG+2)  /* flip + notify */
+
+/* The label is the window text (WM_SETWINDOWTEXT). */
+LONG EXPENTRY XpmToggleSwitchInit( HAB hab );
+
+
+/* ---- Segmented control ------------------------------------------- */
+
+/* Styles */
+#define XpmSEG_AUTOSIZE         0x0001  /* size to fit the segments      */
+#define XpmSEG_EQUALWIDTH       0x0002  /* equal-width segments          */
+#define XpmSEG_VERTICAL         0x0004  /* stack the segments vertically */
+
+/* Messages */
+#define XpmSEGM_SETITEMS        (XpmMODERN_FIRST_MSG+3)  /* mp1 = PCSZ *
+                                                          * 0-term array */
+#define XpmSEGM_SETSELECT       (XpmMODERN_FIRST_MSG+4)  /* mp1 = index   */
+#define XpmSEGM_QUERYSELECT     (XpmMODERN_FIRST_MSG+5)  /* returns index */
+#define XpmSEGM_QUERYCOUNT      (XpmMODERN_FIRST_MSG+6)  /* returns count */
+
+LONG EXPENTRY XpmSegmentedInit( HAB hab );
+
+
+/* ---- Ring progress / spinner ------------------------------------- */
+
+/* Styles */
+#define XpmRNG_INDETERMINATE    0x0001  /* animated spinner              */
+#define XpmRNG_THICK            0x0002  /* thick stroke                  */
+#define XpmRNG_TEXT             0x0004  /* percentage in the centre      */
+
+/* Messages */
+#define XpmRNGM_SETRANGE        (XpmMODERN_FIRST_MSG+7)  /* mp1=low mp2=high */
+#define XpmRNGM_SETPOS          (XpmMODERN_FIRST_MSG+8)  /* mp1=position  */
+#define XpmRNGM_GETPOS          (XpmMODERN_FIRST_MSG+9)  /* returns pos   */
+#define XpmRNGM_START           (XpmMODERN_FIRST_MSG+10) /* start animation */
+#define XpmRNGM_STOP            (XpmMODERN_FIRST_MSG+11) /* stop animation  */
+
+LONG EXPENTRY XpmRingProgressInit( HAB hab );
+
+
+/* ---- Chip -------------------------------------------------------- */
+
+/* Styles */
+#define XpmCHIP_AUTOSIZE        0x0001  /* size to fit the label         */
+#define XpmCHIP_SELECTABLE      0x0002  /* toggles on click              */
+#define XpmCHIP_SELECTED        0x0004  /* start selected                */
+#define XpmCHIP_CLOSE           0x0008  /* trailing close glyph          */
+#define XpmCHIP_ICON            0x0010  /* leading bitmap (create mp2)   */
+
+/* Messages */
+#define XpmCHIPM_SETSEL         (XpmMODERN_FIRST_MSG+12) /* mp1 = 0/1     */
+#define XpmCHIPM_QUERYSEL       (XpmMODERN_FIRST_MSG+13) /* returns 0/1   */
+#define XpmCHIPM_SETICON        (XpmMODERN_FIRST_MSG+14) /* mp1 = HBITMAP */
+
+/* The label is the window text (WM_SETWINDOWTEXT). */
+LONG EXPENTRY XpmChipInit( HAB hab );
+
+
+/* ---- Icon button ------------------------------------------------- */
+
+/* Styles */
+#define XpmIB_ROUND             0x0001  /* circular face                 */
+#define XpmIB_FLAT              0x0002  /* frame only while hovered      */
+#define XpmIB_AUTOSIZE          0x0004  /* size to fit the glyph/label   */
+#define XpmIB_ALIGNLEFT         0x0008  /* glyph then text (default is
+                                         * centred)                      */
+#define XpmIB_TOGGLE            0x0010  /* sticky pressed (checked) state*/
+#define XpmIB_ICON              0x0020  /* has a leading bitmap (create) */
+
+/* Messages */
+#define XpmIBM_SETICON          (XpmMODERN_FIRST_MSG+15) /* mp1 = HBITMAP */
+#define XpmIBM_SETCHECK         (XpmMODERN_FIRST_MSG+16) /* mp1 = 0/1     */
+#define XpmIBM_QUERYCHECK       (XpmMODERN_FIRST_MSG+17) /* returns 0/1   */
+
+/* The label is the window text (WM_SETWINDOWTEXT). */
+LONG EXPENTRY XpmIconButtonInit( HAB hab );
 
 
 #ifdef __cplusplus

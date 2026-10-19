@@ -6,6 +6,36 @@ recorded here.  The version refers to the EXPM library as a whole (see
 independent of the version of the third-party library each module
 tracks.
 
+## [0.3] - 2026-10-19
+
+### Added
+
+- **Modern controls** (`src/modern`) - an original EXPM control pack in
+  the "Material" / iOS visual style, drawn with the ordinary PM/GPI
+  primitives.  Five new classes plus a shared theme engine:
+  - `XpmToggleSwitchClass` - animated on/off switch.
+  - `XpmSegmentedClass` - segmented (tab-like) selector.
+  - `XpmRingProgressClass` - circular progress and indeterminate
+    spinner, with an optional centre label.
+  - `XpmChipClass` - compact tag / filter chip with optional close
+    button.
+  - `XpmIconButtonClass` - round or flat icon button with optional
+    toggle state.
+  - Theme API (`XpmThemeDefault`, `XpmThemeDark`, `XpmSetTheme`,
+    `XpmQueryTheme`, `XpmModernInit`) with light and dark palettes;
+    `XpmSetTheme` broadcasts `XpmWM_THEMECHANGED` so live controls
+    restyle themselves.  See `doc/modern.txt`.
+- **Modern sample** (`sample/modern/msmp.c`) - exercises every modern
+  control and the light/dark theme switch.
+
+### Fixed
+
+- **Combo sample** (`sample/combo/combosmp.c`) - choosing an item and
+  then moving focus to the other combo box terminated the process.
+  Forwarding `WM_FOCUSCHANGE` to `WinDefWindowProc` recursed without
+  bound and overflowed the stack; the client window now consumes the
+  message itself.
+
 ## [0.2] - 2026-10-18
 
 First release of EXPM, an LGPLv3 library that extends the OS/2

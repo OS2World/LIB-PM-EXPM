@@ -40,7 +40,7 @@ DLL = dll
     -mkdir $(OBJ) 2>NUL
     -mkdir $(DLL) 2>NUL
 
-all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe sample\owndraw\ownsmpl.exe sample\status\stsmp.exe sample\progbar\pgbsmp.exe sample\winbutt\wbsmp.exe sample\toolbar\tbsmp.exe sample\dirdlg\ddsmp.exe sample\fonts\fntsmp.exe .SYMBOLIC
+all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe sample\owndraw\ownsmpl.exe sample\status\stsmp.exe sample\progbar\pgbsmp.exe sample\winbutt\wbsmp.exe sample\toolbar\tbsmp.exe sample\dirdlg\ddsmp.exe sample\fonts\fntsmp.exe sample\modern\msmp.exe .SYMBOLIC
 
 # -----------------------------------------------------------------------
 # Library DLL: dll\expm.dll (also produces lib\expm.lib via OPTION IMPLIB)
@@ -96,7 +96,10 @@ $(OBJ)\dirdlg.obj: src\dirdlg\dirdlg.c h\expm.h
 $(OBJ)\fonts.obj: src\fonts\fonts.c h\expm.h
     $(CC) $(CFLAGS_DLL) -fo=$@ src\fonts\fonts.c
 
-$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\arrowhead.obj $(OBJ)\owndraw.obj $(OBJ)\ctlcommon.obj $(OBJ)\status.obj $(OBJ)\progbar.obj $(OBJ)\winbutt.obj $(OBJ)\toolbar.obj $(OBJ)\dirdlg.obj $(OBJ)\fonts.obj $(OBJ)\expm.res
+$(OBJ)\modern.obj: src\modern\modern.c h\expm.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\modern\modern.c
+
+$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\arrowhead.obj $(OBJ)\owndraw.obj $(OBJ)\ctlcommon.obj $(OBJ)\status.obj $(OBJ)\progbar.obj $(OBJ)\winbutt.obj $(OBJ)\toolbar.obj $(OBJ)\dirdlg.obj $(OBJ)\fonts.obj $(OBJ)\modern.obj $(OBJ)\expm.res
     wlink &
         system os2v2 dll initinstance terminstance &
         name $(DLL)\expm.dll &
@@ -115,6 +118,7 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         file $(OBJ)\toolbar.obj &
         file $(OBJ)\dirdlg.obj &
         file $(OBJ)\fonts.obj &
+        file $(OBJ)\modern.obj &
         export XpmInitComboBox &
         export XpmInitComboBoxFromRes &
         export XpmCellInit &
@@ -151,6 +155,16 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         export XpmWinButtonInit &
         export XpmToolBarInit &
         export XpmDirDlg &
+        export XpmThemeDefault &
+        export XpmThemeDark &
+        export XpmSetTheme &
+        export XpmQueryTheme &
+        export XpmModernInit &
+        export XpmToggleSwitchInit &
+        export XpmSegmentedInit &
+        export XpmRingProgressInit &
+        export XpmChipInit &
+        export XpmIconButtonInit &
         option implib=lib\expm.lib &
         option map=$(DLL)\expm.map
     wrc -q -bt=os2 $(OBJ)\expm.res $(DLL)\expm.dll
@@ -418,6 +432,23 @@ sample\fonts\fntsmp.exe: $(OBJ)\fntsmp.obj $(DLL)\expm.dll
         option map=sample\fonts\fntsmp.map
 
 # -----------------------------------------------------------------------
+# Sample: MODERN (modern controls)
+# -----------------------------------------------------------------------
+
+$(OBJ)\msmp.obj: sample\modern\msmp.c h\expm.h
+    $(CC) $(CFLAGS_EXE) -fo=$@ sample\modern\msmp.c
+
+sample\modern\msmp.exe: $(OBJ)\msmp.obj $(DLL)\expm.dll
+    wlink &
+        system os2v2_pm &
+        name sample\modern\msmp.exe &
+        file $(OBJ)\msmp.obj &
+        option stack=16384 &
+        option heap=8192 &
+        library lib\expm.lib &
+        option map=sample\modern\msmp.map
+
+# -----------------------------------------------------------------------
 # Clean
 # -----------------------------------------------------------------------
 
@@ -439,3 +470,4 @@ clean: .SYMBOLIC
     -rm -f sample\toolbar\tbsmp.exe sample\toolbar\tbsmp.map sample\toolbar\tbsmp.sym
     -rm -f sample\dirdlg\ddsmp.exe sample\dirdlg\ddsmp.map sample\dirdlg\ddsmp.sym
     -rm -f sample\fonts\fntsmp.exe sample\fonts\fntsmp.map sample\fonts\fntsmp.sym
+    -rm -f sample\modern\msmp.exe sample\modern\msmp.map sample\modern\msmp.sym

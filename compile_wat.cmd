@@ -10,7 +10,7 @@ set INCLUDE=%WATCOM%\h;%WATCOM%\h\os2;%INCLUDE%
 set LIB=%WATCOM%\lib386;%WATCOM%\lib386\os2;%LIB%
 
 echo.
-echo === EXPM 0.2 -- OpenWatcom 32-bit OS/2 build ===
+echo === EXPM 0.3 -- OpenWatcom 32-bit OS/2 build ===
 echo.
 
 wmake -f Makefile.wat clean < NUL
@@ -38,6 +38,7 @@ echo   sample\winbutt\wbsmp.exe    -- Window button sample
 echo   sample\toolbar\tbsmp.exe    -- Toolbar sample
 echo   sample\dirdlg\ddsmp.exe     -- Directory dialog sample
 echo   sample\fonts\fntsmp.exe     -- Raster font helper sample
+echo   sample\modern\msmp.exe      -- Modern controls sample
 goto buildend
 
 :buildfail

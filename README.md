@@ -8,7 +8,7 @@ them; the helpers otherwise follow PM calling conventions (`EXPENTRY`,
 `MPARAM` / `MRESULT`, untyped handles).  See
 https://www.edm2.com/index.php/Presentation_Manager_Functions.
 
-- Version: 0.2 (see `CHANGES.md`)
+- Version: 0.3 (see `CHANGES.md`)
 - License: LGPLv3
 - Language: C
 - Toolchain: Open Watcom 2.0.1 (wcc386 / wlink / wrc / wmake)
@@ -32,6 +32,7 @@ https://www.edm2.com/index.php/Presentation_Manager_Functions.
 | ToolBar    | src/toolbar/toolbar.c      | Toolbar control (clone of AsuaCtl)       |
 | DirDlg     | src/dirdlg/dirdlg.c        | Modal "choose directory" dialog (AsuaCtl)|
 | Fonts      | src/fonts/fonts.c          | Raster font helper (clone of AsuaCtl)    |
+| Modern     | src/modern/modern.c        | Modern controls + theme engine (original) |
 
 ### ComboSup (merged from LIB-PM-ComboBoxSupport 1.1)
 

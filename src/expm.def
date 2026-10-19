@@ -49,3 +49,13 @@ EXPORTS
     XpmWinButtonInit
     XpmToolBarInit
     XpmDirDlg
+    XpmThemeDefault
+    XpmThemeDark
+    XpmSetTheme
+    XpmQueryTheme
+    XpmModernInit
+    XpmToggleSwitchInit
+    XpmSegmentedInit
+    XpmRingProgressInit
+    XpmChipInit
+    XpmIconButtonInit

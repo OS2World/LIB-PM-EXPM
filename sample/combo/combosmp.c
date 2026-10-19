@@ -119,6 +119,9 @@ MRESULT EXPENTRY ComboSampWindowProc( HWND hwnd, ULONG msg,
             break;
         }
 
+        case WM_FOCUSCHANGE:
+            break;
+
         case WM_SIZE:
             WinSetWindowPos( hwndCombo1, 0,
                 COMBOBOXSPACING, COMBOBOXSPACING,

@@ -1,0 +1,565 @@
+EXPM - Modern controls module
+============================
+
+The modern controls module provides a family of window classes drawn in
+the flat, rounded, animated style of Android Material and iOS, to sit
+alongside the classic PM and AsuaCtl-derived controls the rest of EXPM
+provides.  This is original EXPM code: no third-party source is used, so
+EXPM stays LGPLv3.  The controls are purely a presentation layer over
+standard PM windows - they are created, parented, shown and destroyed
+exactly like any other WS_ child window, and they notify their owner
+through WM_CONTROL.
+
+This document specifies release EXPM 0.3, which covers the shared theme
+engine and five controls: a toggle switch, a segmented control, a ring
+progress / spinner, a chip and an icon button.  Later releases add
+sliders, cards, snackbars, text fields and more (see "Roadmap").
+
+
+What "smartphone style" means on PM
+-----------------------------------
+
+PM is a flat, non-composited windowing system.  It has no per-pixel
+alpha blending, no anti-aliasing and no gradient primitive, so the
+Material/iOS look cannot be reproduced literally.  The controls achieve
+it with the primitives PM does provide, using the same techniques the
+anibtn and shadebtn modules already use:
+
+    * rounded shapes     drawn with GpiPolyFillet (or GpiBox for square
+                         corners); strokes with the current GPI line and
+                         fill attributes
+    * circular arcs      GpiPartialArc / GpiFullArc, used for the ring
+                         progress indicator and the spinner
+    * soft colour        hand-blended: an edge pixel is computed as a
+      edges              weighted average of the fill and the surface
+                         colour behind it, so a rounded or shaded edge
+                         reads as smooth without real anti-aliasing
+    * gradients          drawn row by row (as shadebtn does); there is
+                         no GpiGradientFill
+    * elevation /        a 1-to-lElevation pel band of darker pels drawn
+      shadows            beneath a raised surface, in clrShadow, clipped
+                         to the parent's canvas colour (PM has no real
+                         window shadow)
+    * animation          WinStartTimer / a 50 ms tick plus
+                         WinInvalidateRect, then repaint at each frame
+                         (as anibtn does for its two-state buttons)
+    * rounding of the    a top-level frame keeps square corners (the
+      window itself      desktop shows through otherwise); controls are
+                         rounded inside their client area
+
+Colours are direct 0x00RRGGBB values passed to WinFillRect after
+GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL), the convention
+the ColorWheel dialog and the AsuaCtl progress bar already use.
+
+Text is drawn with the presentation space's current character set, so a
+control inherits the system UI font unless the theme names a face (see
+XpmTheme.szFace).  There is no bundled font.
+
+
+Naming
+------
+
+Every public name carries the EXPM "Xpm" prefix.  There is no original
+library to map: this is a new EXPM module, so the names are EXPM's own.
+
+    XpmToggleSwitchClass   "XpmToggleSwitch"
+    XpmSegmentedClass      "XpmSegmented"
+    XpmRingProgressClass   "XpmRingProgress"
+    XpmChipClass           "XpmChip"
+    XpmIconButtonClass     "XpmIconButton"
+
+Common prefixes:
+
+    XpmTOG_ / XpmTOGM_ / XpmTOGN_    toggle switch style / message / notify
+    XpmSEG_ / XpmSEGM_ / XpmSEGN_    segmented control
+    XpmRNG_ / XpmRNGM_               ring progress
+    XpmCHIP_/ XpmCHIPM_/ XpmCHIPN_   chip
+    XpmIB_  / XpmIBM_  / XpmIBN_     icon button
+    XpmMCM_                          messages common to all five
+    XpmMCN_                          notification-code base (0x0500)
+
+
+Initialisation
+--------------
+
+    #define INCL_WIN
+    #include <os2.h>
+    #include "expm.h"
+
+    XpmModernInit( hab );              /* register the five classes */
+
+XpmModernInit registers all five window classes and returns 0 on
+success, or XpmERR_PNL_CLASSREG if any registration failed (the
+remaining classes are still attempted).  It is independent of
+XpmControlsInit, so an application that uses only the modern controls
+need not register the AsuaCtl classes and vice versa.  Each class also
+has its own entry point - XpmToggleSwitchInit, XpmSegmentedInit,
+XpmRingProgressInit, XpmChipInit and XpmIconButtonInit - for a program
+that uses just one.
+
+The message range begins at XpmMODERN_FIRST_MSG (WM_USER+81) and runs
+for 32 messages (XpmMODERN_LAST_MSG).  Define XpmMODERN_FIRST_MSG before
+including expm.h to relocate the whole range if it clashes with your
+own messages.  All five classes share the range; the class name
+disambiguates.
+
+
+The theme engine
+----------------
+
+Every modern control takes its colours, corner radius, spacing and
+animation timing from a single shared theme, so the family stays
+visually consistent and can be restyled or switched to dark mode at
+runtime.
+
+    XpmThemeDefault( pt );     fill pt with the built-in light theme
+    XpmThemeDark( pt );        fill pt with the built-in dark theme
+    XpmSetTheme( pt );         install the process theme and broadcast
+    XpmQueryTheme();           return the installed theme
+
+XpmThemeDefault / XpmThemeDark fill an XpmTheme structure with the
+built-in palette and metrics (and set cbSize and ulStyle).  Change only
+the fields you care about and pass the structure to XpmSetTheme, which
+keeps a copy and posts XpmWM_THEMECHANGED to the desktop and all its
+descendants.  Each control repaints itself on receipt; an application
+window should handle the same message to repaint its own canvas in the
+new clrCanvas colour.  Passing NULL to XpmSetTheme restores the built-in
+light theme.  XpmQueryTheme always returns a valid pointer (the built-in
+light theme before the first XpmSetTheme).
+
+XpmTheme fields:
+
+    /* palette, 0x00RRGGBB */
+    clrCanvas       window / dialog background
+    clrSurface      card, chip, track and button surface
+    clrSurfaceDim   track (off) / pressed surface
+    clrText         primary text on canvas / surface
+    clrTextDim      secondary / disabled text
+    clrPrimary      accent: selected fill, switch-on, indicator
+    clrOnPrimary    text / glyph drawn over clrPrimary
+    clrSecondary    secondary accent
+    clrOutline      borders, dividers, control edges
+    clrHover        1/8 hover tint blended over the surface
+    clrPressed      1/8 pressed tint blended over the surface
+    clrShadow       elevation shadow under raised surfaces
+
+    /* metrics, pels */
+    lRadius         default corner radius
+    lRadiusSmall    chip / small corner radius
+    lBorder         frame / outline width
+    lPadX, lPadY    content padding
+    lRowHeight      default control height
+    lGap            spacing between segments / chips
+    lElevation      shadow offset for raised surfaces (0 = none)
+
+    /* animation */
+    lAnimStep       milliseconds per animation frame
+    lAnimFrames     frames per animation (e.g. a switch knob slide)
+
+    /* typography */
+    szFace          UI face name; "" = the current system font
+    lPtBody         body point size (informational)
+    lPtLabel        label point size (informational)
+
+A control copies the theme when it is created, so a window created
+before the first XpmSetTheme uses the current theme at creation time and
+picks up later changes through XpmWM_THEMECHANGED.
+
+
+Sizing
+------
+
+Each control answers two messages common to the family:
+
+    XpmMCM_QUERYMINWIDTH     returns the preferred width  in pels
+    XpmMCM_QUERYMINHEIGHT    returns the preferred height in pels
+
+The _AUTOSIZE style (where present) makes the control resize itself to
+these values when it is created.  Otherwise the application sizes it,
+typically to XpmMCM_QUERYMINHEIGHT (or the theme's lRowHeight).
+
+
+Toggle switch (XpmToggleSwitchClass)
+------------------------------------
+
+A two-state switch: a pill-shaped track with a round knob that slides
+between the off and on positions.  Clicking anywhere on the control
+toggles it and notifies the owner.  It is the modern counterpart of a
+check box (and of the classic XpmSwitch control).
+
+    WinCreateWindow( hwndParent, XpmToggleSwitchClass, "Wi-Fi",
+                     WS_VISIBLE | XpmTOG_AUTOSIZE | XpmTOG_CHECKED,
+                     x, y, cx, cy, hwndParent, HWND_TOP, id, NULL, NULL );
+
+The window text is the label.  By default the label is drawn before
+(the left of) the track.
+
+Styles:
+
+    XpmTOG_AUTOSIZE     0x0001  resize to fit the label and track
+    XpmTOG_CHECKED      0x0002  start in the checked (on) state
+    XpmTOG_LABELRIGHT   0x0004  draw the label after the track
+
+Messages:
+
+    XpmTOGM_SETCHECK    mp1 = 0 (off) or 1 (on); redraws and notifies
+    XpmTOGM_QUERYCHECK  returns 0 or 1
+    XpmTOGM_TOGGLE      flip the state, redraw and notify
+
+Notification (in WM_CONTROL): XpmTOGN_CHANGED with mp2 = new state.
+
+Behaviour: toggling animates the knob from one end of the track to the
+other over lAnimFrames frames at lAnimStep milliseconds each, using a
+timer; the state is committed immediately (the notification is sent when
+the toggle starts, not when the animation ends).  When off the track is
+clrSurfaceDim with the knob in clrSurface; when on the track is
+clrPrimary with the knob in clrOnPrimary.  A disabled switch
+(WinEnableWindow FALSE) uses clrTextDim for the label and a dimmed
+track and does not respond to the mouse.
+
+
+Segmented control (XpmSegmentedClass)
+-------------------------------------
+
+A row (or column) of joined segments in which exactly one is selected,
+like the iOS segmented control or a Material tab strip.
+
+    WinCreateWindow( hwndParent, XpmSegmentedClass, NULL,
+                     WS_VISIBLE | XpmSEG_EQUALWIDTH,
+                     x, y, cx, cy, hwndParent, HWND_TOP, id, NULL, NULL );
+
+    WinSendMsg( hwndSeg, XpmSEGM_SETITEMS,
+                MPFROMP( apszItems ), NULL );     /* PCSZ *, 0-terminated */
+
+Styles:
+
+    XpmSEG_AUTOSIZE     0x0001  resize to fit the segments
+    XpmSEG_EQUALWIDTH   0x0002  every segment the same width
+    XpmSEG_VERTICAL     0x0004  stack the segments vertically
+
+Messages:
+
+    XpmSEGM_SETITEMS    mp1 = PCSZ * array, empty slot (NULL) terminated;
+                        replaces the current items
+    XpmSEGM_SETSELECT   mp1 = index to select (0-based)
+    XpmSEGM_QUERYSELECT returns the selected index, or -1 if none
+    XpmSEGM_QUERYCOUNT  returns the number of segments
+
+Notification: XpmSEGN_SELECT with mp2 = the newly selected index.
+
+Behaviour: the segments share one rounded container; the selected
+segment is filled with clyPrimary and its text with clrOnPrimary, the
+rest sit on clrSurface with clrText.  Moving the selection animates a
+rounded highlight from the old segment to the new over lAnimFrames.  A
+click only selects; the owner is notified and decides what to do.  The
+application owns the string array and must keep it valid for as long as
+the control uses it (or resend XpmSEGM_SETITEMS).
+
+
+Ring progress / spinner (XpmRingProgressClass)
+----------------------------------------------
+
+A circular progress indicator.  In determinate mode it fills an arc from
+0 to the current position; in indeterminate mode it draws a rotating arc
+for a "busy" spinner.  It complements the linear AsuaCtl progress bar
+(XpmProgressBarClass).
+
+    WinCreateWindow( hwndParent, XpmRingProgressClass, NULL,
+                     WS_VISIBLE | XpmRNG_TEXT,
+                     x, y, cx, cy, hwndParent, HWND_TOP, id, NULL, NULL );
+
+    WinSendMsg( hwndRing, XpmRNGM_SETRANGE, MPFROMSHORT( 0 ),
+                MPFROMSHORT( 100 ) );
+    WinSendMsg( hwndRing, XpmRNGM_SETPOS, MPFROMSHORT( 45 ), NULL );
+
+Styles:
+
+    XpmRNG_INDETERMINATE 0x0001  animated spinner (ignore position)
+    XpmRNG_THICK         0x0002  thick stroke
+    XpmRNG_TEXT          0x0004  draw the percentage in the centre
+                                 (determinate mode only)
+
+Messages:
+
+    XpmRNGM_SETRANGE    mp1 = low, mp2 = high
+    XpmRNGM_SETPOS      mp1 = position
+    XpmRNGM_GETPOS      returns the current position
+    XpmRNGM_START       begin the indeterminate animation
+    XpmRNGM_STOP        stop the animation
+
+Behaviour: the ring has a background track in clrSurfaceDim and a
+foreground arc in clrPrimary.  In determinate mode the arc spans
+(position-low)/(high-low) of the circle, starting at the top and running
+clockwise.  In indeterminate mode a fixed-length arc rotates at
+lAnimStep per frame while START is in effect; START/STOP are ignored in
+determinate mode.  The control's ideal size is square (the client
+height); with XpmRNG_TEXT the percentage is centred using clrText.
+
+
+Chip (XpmChipClass)
+-------------------
+
+A small rounded pill with a label, an optional leading bitmap and an
+optional trailing close glyph.  Chips are used for tags, filters and
+tokens.  A chip can be selectable (it toggles when clicked) and/or
+closable.
+
+    WinCreateWindow( hwndParent, XpmChipClass, "Animals",
+                     WS_VISIBLE | XpmCHIP_AUTOSIZE | XpmCHIP_SELECTABLE |
+                     XpmCHIP_CLOSE,
+                     x, y, cx, cy, hwndParent, HWND_TOP, id, NULL, NULL );
+
+The window text is the label.
+
+Styles:
+
+    XpmCHIP_AUTOSIZE    0x0001  resize to fit the content
+    XpmCHIP_SELECTABLE  0x0002  toggle between selected / not on click
+    XpmCHIP_SELECTED    0x0004  start selected
+    XpmCHIP_CLOSE       0x0008  draw a trailing close glyph
+    XpmCHIP_ICON        0x0010  a leading bitmap is used (create mp2)
+
+Messages:
+
+    XpmCHIPM_SETSEL     mp1 = 0 or 1
+    XpmCHIPM_QUERYSEL   returns 0 or 1
+    XpmCHIPM_SETICON    mp1 = HBITMAP to draw before the label
+
+Notifications: XpmCHIPN_SEL with mp2 = new selected state (selectable
+chips); XpmCHIPN_CLOSE when the close glyph is clicked.  The close glyph
+does not destroy the chip; the owner deletes or hides it.
+
+Behaviour: an unselected chip is clrSurface with a clrOutline border and
+clrText; a selected chip is clrPrimary with clrOnPrimary.  The close
+glyph is a small "x" drawn in clrText (or clrOnPrimary when selected)
+with its own hot area; clicking it sends XpmCHIPN_CLOSE and swallows the
+click (it does not also toggle the selection).
+
+
+Icon button (XpmIconButtonClass)
+--------------------------------
+
+A flat button that draws a bitmap glyph and optional label, with hover
+and press feedback and an optional sticky (checked) state - the Material
+icon button / iOS bar button.  It extends the AsuaCtl-derived
+XpmWinButtonClass with the modern look and a ripple on press.
+
+    WinCreateWindow( hwndParent, XpmIconButtonClass, NULL,
+                     WS_VISIBLE | XpmIB_ROUND | XpmIB_FLAT |
+                     XpmIB_ICON,
+                     x, y, cx, cy, hwndParent, HWND_TOP, id,
+                     (PVOID) hbmIcon, NULL );
+
+Styles:
+
+    XpmIB_ROUND         0x0001  circular face
+    XpmIB_FLAT          0x0002  no frame until hovered
+    XpmIB_AUTOSIZE      0x0004  resize to fit the glyph / label
+    XpmIB_ALIGNLEFT     0x0008  glyph then text; default is centred
+    XpmIB_TOGGLE        0x0010  sticky pressed (checked) state
+    XpmIB_ICON          0x0020  a leading bitmap is used (create mp2)
+
+Messages:
+
+    XpmIBM_SETICON      mp1 = HBITMAP glyph
+    XpmIBM_SETCHECK     mp1 = 0 or 1 (toggle style)
+    XpmIBM_QUERYCHECK   returns 0 or 1
+
+Notification: XpmIBN_CLICK with mp2 = the check state (1 for a toggle
+button that is now on, otherwise 0).
+
+Behaviour: the face is colourless until the pointer is over it (with
+XpmIB_FLAT) or always framed (without); hover blends clrHover over the
+face and, when the glyph is a mask bitmap, over the glyph too.  A press
+blends clrPressed and starts a ripple - a filled circle in clrPrimary at
+reduced weight, centred on the click point - that expands to the face
+and fades over lAnimFrames; because PM has no alpha, "fade" is a small
+set of pre-blended rings.  A toggle button keeps its pressed look while
+checked.
+
+The glyph bitmap follows the XpmWinButton convention: a monochrome mask
+(1 bits paint the glyph in clrText / clrOnPrimary) and/or a colour
+bitmap.  With XpmIB_ROUND a broadcast (non-mask) glyph is clipped to the
+circle.
+
+
+Sample
+------
+
+sample\modern\msmp.c will create one window showing every control: two
+toggle switches (light labels), a three-item segmented control, a
+determinate ring (stepped by a timer) and an indeterminate spinner, a
+row of chips (selectable and closable), and a row of icon buttons
+(flat, round and toggle).  A "Dark" button calls XpmThemeDark and
+XpmSetTheme to demonstrate live re-theming, and a status line shows the
+most recent notification.  See the sample for the exact layout.
+
+
+Limitations
+-----------
+
+- No true alpha or anti-aliasing: blends are hand-computed and rounded
+  edges are approximations.  On a limited colour device (fewer than
+  256 colours) the blends are dithered or flattened.
+- Top-level windows keep square corners; only the client area is
+  rounded.
+- Elevation is a drawn shadow band, not a composited shadow.
+- The application owns any strings passed with XpmSEGM_SETITEMS and any
+  bitmaps passed as icons; EXPM does not copy or free them.
+- lPtBody / lPtLabel are informational for now; text uses the
+  presentation space's current character set (or the theme face when
+  szFace is set).
+- Font glyphs come from the system; there is no bundled UI font.
+
+
+Roadmap
+-------
+
+Deferred to later releases (see the project idea notes):
+
+    XpmSlider       continuous slider with an animated thumb and a value
+                    bubble
+    XpmCard         rounded container with header / body and a shadow
+    XpmSnackbar     transient, auto-dismissing message bar
+    XpmTextField    text field with a floating label and an animated
+                    focus underline
+    XpmStepper      numeric stepper (- value +)
+    XpmBadge        notification count bubble
+    XpmRating       star rating
+    XpmAvatar       circular bitmap
+    XpmExpander     animated expand / collapse container
+    XpmTabs         tab strip with a sliding indicator
+    XpmDrawer       slide-in navigation drawer
+    XpmFAB          floating action button
+I can reach the machine now, but my login key isn’t authorized on it yet: “Permission denied (publickey,password,keyboard-interactive)”. I recorded its host key for later.
+
+On the first PC the key lives in C:\Home\Martin\.ssh\authorized_keys. On ArcaMiix please add this one line to C:\Home\Martin\.ssh\authorized_keys, creating the .ssh folder and the file if they don’t exist:
+
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIQcRXrNgDt7ncGCyVd/YH8U5XfgshfzNB/Wv4ZSrSvV mi@MIPC-01
+
+If the home directory on that PC is not C:\Home\Martin, tell me which path the ssh daemon uses and I’ll adjust.
+
+The easiest way is from a command prompt there:
+
+mkdir C:\Home\Martin\.ssh
+echo ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIQcRXrNgDt7ncGCyVd/YH8U5XfgshfzNB/Wv4ZSrSvV mi@MIPC-01 >> C:\Home\Martin\.ssh\authorized_keys
+
+Tell me when it’s done and I’ll try again.
+
+
+
+---------
+
+==What is SSH==
+SSH is known as Secure Shell or Secure Socket Shell, is a network protocol that provides users and administrators of a system a secure way to access a computer.
+
+= Installing OpenSSH server on ArcaOS =
+You can install the SSH server on ArcaOS with yum like:
+
+ yum install openssh-server
+
+
+= Setting Up OpenSSH Server on ArcaOS & Connecting from Windows =
+
+This guide covers setting up an OpenSSH server on ArcaOS (OS/2), configuring kLIBC user databases, setting up key-based authentication on Windows, and resolving common ArcaOS-specific environment issues.
+
+== 1. Initial ArcaOS Server Setup ==
+
+Open an OS/2 Command Prompt on your ArcaOS machine and generate the server host keys:
+
+ ssh-keygen -A
+
+''Note: This generates the server's identity keys (ED25519, RSA, ECDSA). You do not need to manually copy these keys to your client.''
+
+== 2. Configure the User Account (master.passwd) ==
+
+ArcaOS OpenSSH uses the kLIBC user database rather than native LAN Requester passwords.
+
+# Open <tt>%UNIXROOT%\etc\master.passwd</tt> in an editor:
+#:<pre>e C:\etc\master.passwd</pre>
+# Locate your user line (e.g., <tt>martin</tt>) and check two critical fields:
+#* '''Home Directory:''' Drive letters must replace <tt>:</tt> with <tt>$</tt>. Example: <tt>C$/Home/Martin</tt>.
+#* '''Shell:''' Change <tt>/usr/sbin/nologin</tt> to a valid shell path:
+#** For POSIX <tt>sh.exe</tt>: <tt>/@unixroot/usr/bin/sh.exe</tt>
+#** For native OS/2 <tt>CMD.EXE</tt>: <tt>C$/OS2/CMD.EXE</tt>
+#: ''Example master.passwd line:''
+#:<pre>martin:*:100:513::0:0:User Account:C$/Home/Martin:/@unixroot/usr/bin/sh.exe</pre>
+# Rebuild the binary user database using <tt>pwd_mkdb.exe</tt>:
+#:<pre>C:\usr\bin\pwd_mkdb.exe C:\etc\master.passwd</pre>
+:''Note: The warning "pwd_mkdb.exe: warning, unknown root shell" is safe to ignore.''
+
+== 3. Generate SSH Keys on Windows Client ==
+
+Open '''Windows PowerShell''' on your client machine:
+
+# Generate an ED25519 key pair:
+#:<pre>ssh-keygen -t ed25519</pre>
+#* Press '''Enter''' to accept the default file location (<tt>C:\Users\<Username>\.ssh\id_ed25519</tt>).
+#* Enter a passphrase to secure the key, or press '''Enter''' twice to leave it empty for passwordless login.
+# Display your public key:
+#:<pre>cat $HOME\.ssh\id_ed25519.pub</pre>
+# Copy the entire string output (starts with <tt>ssh-ed25519</tt> and ends with your Windows username/hostname).
+
+== 4. Deploy Public Key & Set Permissions on ArcaOS ==
+# Create the <tt>.ssh</tt> folder in your ArcaOS user home directory:
+#:<pre>mkdir C:\Home\Martin\.ssh</pre>
+# Create the <tt>authorized_keys</tt> file (no file extension):
+#:<pre>e C:\Home\Martin\.ssh\authorized_keys</pre>
+#:Paste your Windows public key string onto a single line, save, and exit.
+# Set strict Unix permissions using '''forward slashes''' (required for kLIBC tools):
+#:<pre>chmod 750 C:/Home/Martin</pre>
+#:<pre>chmod 700 C:/Home/Martin/.ssh</pre>
+#:<pre>chmod 600 C:/Home/Martin/.ssh/authorized_keys</pre>
+
+== 5. Configure sshd_config for ArcaOS ==
+Because ArcaOS filesystems (JFS/HPFS) handle Unix file ownership differently, OpenSSH may reject valid permissions.
+# Edit the SSH server configuration file:
+#:<pre>e C:\etc\ssh\sshd_config</pre>
+# Uncomment or add the following directive:
+#:<pre>StrictModes no</pre>
+:Save the file and exit.
+
+== 6. Fix the Environment & PATH (sh.exe vs cmd.exe) ==
+
+=== Option A: Using POSIX Shell (sh.exe) ===
+If using <tt>sh.exe</tt>, kLIBC requires '''semicolons (;)''' in the <tt>PATH</tt> variable rather than standard Unix colons (<tt>:</tt>).
+# Create a <tt>.profile</tt> file in your home directory:
+#:<pre>e C:\Home\Martin\.profile</pre>
+# Add the kLIBC-compatible PATH export:
+#:<pre>export PATH="C:/usr/bin;C:/usr/sbin;C:/usr/local/bin;C:/OS2;C:/OS2/SYSTEM;$PATH"</pre>
+
+=== Option B: Using Native OS/2 Command Prompt (CMD.EXE) ===
+If you prefer a native OS/2 command line over SSH:
+# Edit <tt>C:\etc\master.passwd</tt> and set the shell field to <tt>C$/OS2/CMD.EXE</tt>.
+# Re-run <tt>C:\usr\bin\pwd_mkdb.exe C:\etc\master.passwd</tt>.
+
+== 7. Start the Server & Connect ==
+# '''Start OpenSSH Server on ArcaOS:'''
+#* For testing/debugging:
+#:<pre>C:\usr\sbin\sshd.exe -d</pre>
+#* For normal execution:
+#:<pre>C:\usr\sbin\sshd.exe</pre>
+# '''Connect from Windows PowerShell:'''
+#:<pre>ssh martin@<ArcaOS_IP_Address></pre>
+
+== Managing Passphrases on Windows (Optional) ==
+To change or remove the passphrase on your Windows private key at any time, run in PowerShell:
+ ssh-keygen -p -f $HOME\.ssh\id_ed25519
+* Enter the current passphrase when prompted (<tt>Enter old passphrase:</tt>).
+* Press '''Enter''' twice without typing anything to remove the passphrase for instant, passwordless logins.
+
+
+==Additional Notes for VirtualBox VM Guest==
+If you are running ArcaOS as a VM guest on VirtualBox you may get problems with the "NAT" network.
+
+On that case keep the NAT network and run this command to forward the ssh port:
+ VBoxManage modifyvm "NAME OF THE VM" --natpf1 "ssh,tcp,127.0.0.1,2222,,22"
+
+Then connect from the Host machine with something like:
+ ssh -p 2222 username@127.0.0.1.
+
+==Links==
+* [https://www.os2world.com/forum/index.php/topic,3175.15.html SSH OS2World Forum thread]
+
+[[Category:Draft]]
+

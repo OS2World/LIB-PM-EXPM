@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/18 20:22:16
+Created on:       26/10/19 14:13:43
 Executable Image: sample\fonts\fntsmp.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -245,4 +245,4 @@ C:\WATCOM/lib386/os2\os2386.lib
 Stack size:  8000 (32768.)
 Memory size:  9fe2 (40930.)
 Entry point address: 0001:00000522
-Link time: 00:00.16
+Link time: 00:00.80
