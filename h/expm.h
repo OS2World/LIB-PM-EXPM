@@ -43,6 +43,19 @@ extern "C" {
 
 
 /* ------------------------------------------------------------------ */
+/* Library version                                                    */
+/* ------------------------------------------------------------------ */
+
+/* EXPM release version, as (major << 16) | minor.  This is the version
+ * of the EXPM library as a whole and is independent of the version of
+ * the third-party library each module tracks (the AsuaCtl controls, for
+ * example, report their own baseline through XpmGetVersion). */
+#define XPM_VERSION_MAJOR   0
+#define XPM_VERSION_MINOR   2
+#define XPM_VERSION_STRING  "0.2"
+
+
+/* ------------------------------------------------------------------ */
 /* Combo box support (merged from LIB-PM-ComboBoxSupport 1.1)         */
 /* ------------------------------------------------------------------ */
 

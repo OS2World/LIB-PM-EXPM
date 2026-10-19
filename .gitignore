@@ -1,0 +1,9 @@
+# EXPM build output that is not part of the source tree.
+
+# Intermediate object files (wmake output directory).
+obj/
+
+# Open Watcom compiler / linker listing and log files.
+*.lst
+*.log
+compile.log

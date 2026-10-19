@@ -8,6 +8,7 @@ them; the helpers otherwise follow PM calling conventions (`EXPENTRY`,
 `MPARAM` / `MRESULT`, untyped handles).  See
 https://www.edm2.com/index.php/Presentation_Manager_Functions.
 
+- Version: 0.2 (see `CHANGES.md`)
 - License: LGPLv3
 - Language: C
 - Toolchain: Open Watcom 2.0.1 (wcc386 / wlink / wrc / wmake)
@@ -270,6 +271,7 @@ planned. See
 Makefile.wat        Open Watcom 2.0 build file (run from project root)
 compile_wat.cmd     Command line script using wmake; generates compile.log
 README.md           This file
+CHANGES.md          Release notes / changelog
 LICENSE             License terms (LGPLv3)
 dll\                Rebuilt library DLL (EXPM.DLL)
 lib\                Import library file (EXPM.LIB)
@@ -309,16 +311,14 @@ Outputs:
 | `sample\dirdlg\ddsmp.exe`     | Directory dialog sample       |
 | `sample\fonts\fntsmp.exe`     | Raster font helper sample     |
 
-API reference: `doc\cell.txt` (Cell module), `doc\expm.txt` (ComboSup
-module), `doc\ctlplus.txt` (Control Plus module), `doc\colorwheel.txt`
-(ColorWheel module), `doc\anibtn.txt` (AniButtn module),
-`doc\shadebtn.txt` (Shaded Buttons module), `doc\arrowhead.txt`
-(ArrowHead module), `doc\owndraw.txt` (Owner-Draw Listbox module),
-`doc\ctlcommon.txt` (AsuaCtl shared helpers), `doc\status.txt`
-(Status control), `doc\progbar.txt` (Progress bar) and
-`doc\winbutt.txt` (Window button) and `doc\toolbar.txt` (Toolbar) and
-`doc\dirdlg.txt` (Directory dialog) and `doc\fonts.txt` (Raster font
-helper).
+API reference (one file per module, under `doc\`): `expm.txt` (ComboSup),
+`cell.txt` (Cell), `ctlplus.txt` (Control Plus), `colorwheel.txt`
+(ColorWheel), `anibtn.txt` (AniButtn), `shadebtn.txt` (Shaded Buttons),
+`arrowhead.txt` (ArrowHead), `owndraw.txt` (Owner-Draw Listbox),
+`ctlcommon.txt` (AsuaCtl shared helpers), `status.txt` (Status control),
+`progbar.txt` (Progress bar), `winbutt.txt` (Window button),
+`toolbar.txt` (Toolbar), `dirdlg.txt` (Directory dialog) and `fonts.txt`
+(Raster font helper).
 
 ## Runtime
 
