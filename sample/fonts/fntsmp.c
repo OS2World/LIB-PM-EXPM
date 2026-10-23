@@ -19,12 +19,21 @@
  */
 
 #define INCL_WINSYS
+#define INCL_WINMENUS
+#define INCL_GPI
 #include "expm.h"
 #include <stdio.h>
 #include <string.h>
 
 #define CLSNAME  "expfonts"
 #define TITLE    "EXPM XpmCreateRasterFont Test"
+
+#define IDM_MENU        400
+#define IDM_VIEW        401
+#define IDM_DARK        402
+
+static BOOL bDark;
+static HWND hwndThemeMenu;
 
 MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
@@ -62,7 +71,7 @@ int main(void)
    ULONG flCreate;
 
    flCreate = FCF_SYSMENU | FCF_TITLEBAR | FCF_SIZEBORDER |
-              FCF_MINMAX  | FCF_SHELLPOSITION | FCF_TASKLIST;
+              FCF_MINMAX  | FCF_SHELLPOSITION | FCF_TASKLIST | FCF_MENU;
 
    hab = WinInitialize(0);
    hmq = WinCreateMsgQueue(hab, 0);
@@ -70,7 +79,7 @@ int main(void)
    WinRegisterClass(hab, CLSNAME, ClientWndProc, CS_SIZEREDRAW, 0);
 
    hFrame = WinCreateStdWindow(HWND_DESKTOP, 0L, &flCreate, CLSNAME,
-                               TITLE, 0L, NULLHANDLE, 0, &hClient);
+                               TITLE, 0L, NULLHANDLE, IDM_MENU, &hClient);
 
    if (hFrame != NULLHANDLE)
    {
@@ -92,6 +101,11 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
    switch (msg)
    {
+      case WM_CREATE:
+         hwndThemeMenu = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+                                         FID_MENU);
+         return (MRESULT)FALSE;
+
       case WM_ERASEBACKGROUND:
       {
          HPS   hps = (HPS)mp1;
@@ -99,8 +113,7 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
          GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
          WinQueryWindowRect(hwnd, &rcl);
-         WinFillRect(hps, &rcl,
-                     (LONG)WinQuerySysColor(HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0));
+         WinFillRect(hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas);
          return (MRESULT)TRUE;
       }
 
@@ -116,13 +129,13 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
          LONG         i;
          int          iUsed = -1;
          char         szBuf[160];
+         LONG         clrFore = (LONG)XpmQueryTheme()->clrText;
 
          hps = WinBeginPaint(hwnd, NULLHANDLE, &rcl);
          WinQueryWindowRect(hwnd, &rcl);
          GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
-         WinFillRect(hps, &rcl,
-                     (LONG)WinQuerySysColor(HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0));
-         GpiSetColor(hps, CLR_BLACK);
+         WinFillRect(hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas);
+         GpiSetColor(hps, clrFore);
 
          lOld = GpiQueryCharSet(hps);
 
@@ -146,7 +159,7 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             sprintf(szBuf, "Using \"%s\": rc=0, bound to lcid 1", apszSpec[iUsed]);
             GpiSetColor(hps, CLR_DARKGREEN);
             DrawText(hps, 8, rcl.yTop - 48, szBuf);
-            GpiSetColor(hps, CLR_BLACK);
+            GpiSetColor(hps, clrFore);
 
             /* Select the new font and draw a sample line in it. */
             GpiSetCharSet(hps, 1);
@@ -175,7 +188,7 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
          /* Show the honest-failure path: a face that does not exist.
           * Bound to lcid 2 so it cannot disturb the font above. */
          lBad = XpmCreateRasterFont(hps, (PSZ)"10.EXPM No Such Font", 2, &fmBad);
-         GpiSetColor(hps, CLR_BLACK);
+         GpiSetColor(hps, clrFore);
          sprintf(szBuf, "Bogus face \"10.EXPM No Such Font\" -> rc=%ld (XpmERR_FNT_CREATE=%ld)",
                  (long)lBad, (long)XpmERR_FNT_CREATE);
          DrawText(hps, 8, rcl.yTop - 170, szBuf);
@@ -183,6 +196,27 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
          WinEndPaint(hps);
          break;
       }
+
+      case WM_COMMAND:
+         if (SHORT1FROMMP(mp1) == IDM_DARK)
+         {
+            XpmTheme th;
+
+            bDark = !bDark;
+            if (bDark)
+               XpmThemeDark(&th);
+            else
+               XpmThemeDefault(&th);
+            XpmSetTheme(&th);
+            WinCheckMenuItem(hwndThemeMenu, IDM_DARK, bDark);
+            WinInvalidateRect(hwnd, NULLHANDLE, TRUE);
+            return (MRESULT)FALSE;
+         }
+         break;
+
+      case XpmWM_THEMECHANGED:
+         WinInvalidateRect(hwnd, NULLHANDLE, TRUE);
+         return (MRESULT)FALSE;
 
       case WM_CLOSE:
          WinPostMsg(hwnd, WM_QUIT, 0L, 0L);

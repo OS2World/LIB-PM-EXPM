@@ -16,11 +16,17 @@
  */
 
 #define INCL_WIN
+#define INCL_WINMENUS
+#define INCL_GPI
 #define INCL_DOS
 
 #include <os2.h>
 #include <string.h>
 #include "expm.h"
+
+#define IDM_MENU        600
+#define IDM_VIEW        601
+#define IDM_DARK        602
 
 #define ID_BAR_SMOOTH   100
 #define ID_BAR_SEGMENT  101
@@ -38,8 +44,51 @@
 static HAB  hab;
 static BOOL bAnimating = FALSE;
 static BOOL bRecolored = FALSE;
+static BOOL bDark = FALSE;
+static HWND hwndThemeMenu = NULLHANDLE;
 
 static HWND aBars[4];
+
+static void SetRgb( HWND hwnd, ULONG idMode, ULONG ulColor )
+{
+    RGB2 rgb;
+
+    rgb.fcOptions = 0;
+    rgb.bBlue  = (BYTE)(ulColor & 0xFF);
+    rgb.bGreen = (BYTE)((ulColor >> 8) & 0xFF);
+    rgb.bRed   = (BYTE)((ulColor >> 16) & 0xFF);
+    WinSetPresParam( hwnd, idMode, sizeof(rgb), &rgb );
+}
+
+static void ApplyPgbTheme( HWND hwnd )
+{
+    static const ULONG aBtn[5] =
+        { ID_BTN_STEP, ID_BTN_RESET, ID_BTN_RANGE, ID_BTN_COLORS,
+          ID_BTN_ANIMATE };
+    static const ULONG aBar[4] =
+        { ID_BAR_SMOOTH, ID_BAR_SEGMENT, ID_BAR_TEXT, ID_BAR_VERT };
+    PXpmTheme pth = XpmQueryTheme();
+    HWND      hCtl;
+    int       i;
+
+    for( i = 0; i < 5; i++ )
+    {
+        hCtl = WinWindowFromID( hwnd, aBtn[i] );
+        if( hCtl == NULLHANDLE )
+            continue;
+        SetRgb( hCtl, PP_BACKGROUNDCOLOR, pth->clrCanvas );
+        SetRgb( hCtl, PP_FOREGROUNDCOLOR, pth->clrText );
+    }
+
+    for( i = 0; i < 4; i++ )
+    {
+        hCtl = WinWindowFromID( hwnd, aBar[i] );
+        if( hCtl == NULLHANDLE )
+            continue;
+        SetRgb( hCtl, PP_BACKGROUNDCOLOR, pth->clrSurface );
+        SetRgb( hCtl, PP_FOREGROUNDCOLOR, pth->clrText );
+    }
+}
 
 /* ------------------------------------------------------------------ */
 
@@ -117,6 +166,8 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
     switch( msg )
     {
         case WM_CREATE:
+            hwndThemeMenu = WinWindowFromID( WinQueryWindow( hwnd, QW_PARENT ),
+                                             FID_MENU);
             CreateBar( hwnd, ID_BAR_SMOOTH,
                        XpmPBS_SMOOTH | XpmPBS_RAISED, 75, 330, 495, 26 );
             CreateBar( hwnd, ID_BAR_SEGMENT,
@@ -143,6 +194,7 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
             WinSendMsg( aBars[1], XpmPBM_SETPOS, MPFROMSHORT( 60 ), NULL );
             WinSendMsg( aBars[2], XpmPBM_SETPOS, MPFROMSHORT( 45 ), NULL );
             WinSendMsg( aBars[3], XpmPBM_SETPOS, MPFROMSHORT( 70 ), NULL );
+            ApplyPgbTheme( hwnd );
             return (MRESULT)FALSE;
 
         case WM_COMMAND:
@@ -171,6 +223,22 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
                     else
                         WinStopTimer( hab, hwnd, TIMER_ANIMATE );
                     return (MRESULT)FALSE;
+
+                case IDM_DARK:
+                {
+                    XpmTheme th;
+
+                    bDark = !bDark;
+                    if( bDark )
+                        XpmThemeDark( &th );
+                    else
+                        XpmThemeDefault( &th );
+                    XpmSetTheme( &th );
+                    WinCheckMenuItem( hwndThemeMenu, IDM_DARK, bDark );
+                    ApplyPgbTheme( hwnd );
+                    WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+                    return (MRESULT)FALSE;
+                }
             }
             break;
 
@@ -178,16 +246,33 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
             StepAll( hwnd );
             return (MRESULT)FALSE;
 
+        case WM_ERASEBACKGROUND:
+        {
+            HPS   hps = (HPS)mp1;
+            RECTL rcl;
+
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
+            WinQueryWindowRect( hwnd, &rcl );
+            WinFillRect( hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas );
+            return (MRESULT)TRUE;
+        }
+
         case WM_PAINT:
         {
             HPS   hps = WinBeginPaint( hwnd, NULLHANDLE, NULL );
             RECTL rcl;
 
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
             WinQueryWindowRect( hwnd, &rcl );
-            WinFillRect( hps, &rcl, CLR_PALEGRAY );
+            WinFillRect( hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas );
             WinEndPaint( hps );
             return (MRESULT)FALSE;
         }
+
+        case XpmWM_THEMECHANGED:
+            ApplyPgbTheme( hwnd );
+            WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+            return (MRESULT)FALSE;
 
         case WM_CLOSE:
             WinPostMsg( hwnd, WM_QUIT, NULL, NULL );
@@ -206,7 +291,7 @@ int main( VOID )
     HWND  hwndClient;
     QMSG  qmsg;
     ULONG flCreate = FCF_SYSMENU | FCF_TITLEBAR | FCF_SIZEBORDER |
-                     FCF_MINMAX | FCF_TASKLIST;
+                     FCF_MINMAX | FCF_TASKLIST | FCF_MENU;
 
     hab = WinInitialize( 0 );
     hmq = WinCreateMsgQueue( hab, 0 );
@@ -227,7 +312,7 @@ int main( VOID )
     hwndFrame = WinCreateStdWindow( HWND_DESKTOP, 0, &flCreate,
                                     "XpmPgbClient",
                                     "EXPM progress bar sample",
-                                    0, NULLHANDLE, 0, &hwndClient );
+                                    0, NULLHANDLE, IDM_MENU, &hwndClient );
 
     WinSetWindowPos( hwndFrame, HWND_TOP, 60, 110, 590, 440,
                      SWP_MOVE | SWP_SIZE | SWP_ACTIVATE | SWP_SHOW );

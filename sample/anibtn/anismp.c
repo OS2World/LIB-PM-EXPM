@@ -17,6 +17,8 @@
  */
 
 #define INCL_WIN
+#define INCL_WINMENUS
+#define INCL_GPI
 #include <os2.h>
 #include "anismp.h"
 #include "expm.h"
@@ -26,6 +28,33 @@ MRESULT EXPENTRY ToolBarDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 static VOID CreateButtons(HWND hwndDlg);
 static VOID DeleteButtons(HWND hwndDlg);
 static VOID CenterDialog(HWND hwndDlg);
+static VOID ApplyAniTheme(HWND hwndDlg);
+
+static BOOL bDark = FALSE;
+static HWND hwndMenu = NULLHANDLE;
+
+static VOID SetRgb(HWND hwnd, ULONG idMode, ULONG ulColor) {
+   RGB2 rgb;
+
+   rgb.fcOptions = 0;
+   rgb.bBlue  = (BYTE)(ulColor & 0xFF);
+   rgb.bGreen = (BYTE)((ulColor >> 8) & 0xFF);
+   rgb.bRed   = (BYTE)((ulColor >> 16) & 0xFF);
+   WinSetPresParam(hwnd, idMode, sizeof(rgb), &rgb);
+}
+
+static VOID ApplyAniTheme(HWND hwndDlg) {
+   PXpmTheme pth = XpmQueryTheme();
+   HWND      hCtl;
+
+   SetRgb(hwndDlg, PP_BACKGROUNDCOLOR, pth->clrCanvas);
+
+   hCtl = WinWindowFromID(hwndDlg, TX_HELP);
+   if (hCtl) {
+      SetRgb(hCtl, PP_BACKGROUNDCOLOR, pth->clrCanvas);
+      SetRgb(hCtl, PP_FOREGROUNDCOLOR, pth->clrText);
+   }
+}
 
 /*-------------------------------------------------------------------------
  * main() - run the toolbar dialog modally.
@@ -52,12 +81,29 @@ MRESULT EXPENTRY ToolBarDlg(HWND hwndDlg, ULONG msg,
       /* Create the animated buttons, then centre the dialog. */
       case WM_INITDLG:
          CreateButtons(hwndDlg);
+         hwndMenu = WinWindowFromID(WinQueryWindow(hwndDlg, QW_PARENT),
+                                    FID_MENU);
+         ApplyAniTheme(hwndDlg);
          CenterDialog(hwndDlg);
          return (MRESULT)FALSE;
 
       /* A push button was clicked: report it, except for EXIT. */
       case WM_COMMAND:
          switch (SHORT1FROMMP(mp1)) {
+            case IDM_DARK: {
+               XpmTheme th;
+
+               bDark = !bDark;
+               if (bDark)
+                  XpmThemeDark(&th);
+               else
+                  XpmThemeDefault(&th);
+               XpmSetTheme(&th);
+               WinCheckMenuItem(hwndMenu, IDM_DARK, bDark);
+               ApplyAniTheme(hwndDlg);
+               WinInvalidateRect(hwndDlg, NULLHANDLE, TRUE);
+               return (MRESULT)FALSE;
+            }
             case TBB_EXIT:
                WinSendMsg(hwndDlg, WM_CLOSE, MPVOID, MPVOID);
                break;
@@ -78,6 +124,21 @@ MRESULT EXPENTRY ToolBarDlg(HWND hwndDlg, ULONG msg,
                              0, MB_OK | MB_INFORMATION);
                break;
          }
+         return (MRESULT)FALSE;
+
+      case WM_ERASEBACKGROUND: {
+         HPS   hps = (HPS)mp1;
+         RECTL rcl;
+
+         GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
+         WinQueryWindowRect(hwndDlg, &rcl);
+         WinFillRect(hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas);
+         return (MRESULT)TRUE;
+      }
+
+      case XpmWM_THEMECHANGED:
+         ApplyAniTheme(hwndDlg);
+         WinInvalidateRect(hwndDlg, NULLHANDLE, TRUE);
          return (MRESULT)FALSE;
 
       /* Release the buttons before the dialog goes away. */

@@ -19,6 +19,9 @@
 #define ID_FILEMENU  256
 #define ID_EDITMENU  258
 
+#define IDM_VIEW     259
+#define IDM_DARK     260
+
 #define ID_TOOLBAR   1045
 #define ID_LPANE     1046
 #define ID_RPANE     1047

@@ -1,0 +1,26 @@
+/*
+ * sample/arrowhead/arsmp.rc -- resources for the EXPM ArrowHead sample.
+ *
+ * The action bar carries a single "View" submenu with a "Dark theme"
+ * check item; IDM_DARK is handled in arsmp.c.  The menu resource id must
+ * match the idResources argument passed to WinCreateStdWindow with
+ * FCF_MENU.
+ *
+ * Copyright (C) 2026 The EXPM Project Authors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ */
+
+#include <os2.h>
+#include "arsmp.h"
+
+MENU ID_RES_MENU
+{
+    SUBMENU "~View", IDM_VIEW
+    {
+        MENUITEM "~Dark theme", IDM_DARK
+    }
+}

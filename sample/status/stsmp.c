@@ -16,6 +16,7 @@
  */
 
 #define INCL_WIN
+#define INCL_WINMENUS
 #define INCL_GPI
 #define INCL_DOS
 
@@ -23,6 +24,10 @@
 #include <string.h>
 #include <stdio.h>
 #include "expm.h"
+
+#define IDM_MENU            700
+#define IDM_VIEW            701
+#define IDM_DARK            702
 
 #define ID_STATUS_LEFT      100
 #define ID_STATUS_CENTER    101
@@ -36,6 +41,51 @@
 
 static HAB   hab;
 static BOOL  bEnabled = TRUE;
+static BOOL  bDark = FALSE;
+static HWND  hwndThemeMenu = NULLHANDLE;
+
+/* ------------------------------------------------------------------ */
+
+static VOID SetRgb( HWND hwnd, ULONG idMode, ULONG ulColor )
+{
+    RGB2 rgb;
+
+    rgb.fcOptions = 0;
+    rgb.bBlue  = (BYTE)(ulColor & 0xFF);
+    rgb.bGreen = (BYTE)((ulColor >> 8) & 0xFF);
+    rgb.bRed   = (BYTE)((ulColor >> 16) & 0xFF);
+    WinSetPresParam( hwnd, idMode, sizeof(rgb), &rgb );
+}
+
+static VOID ApplyStsTheme( HWND hwnd )
+{
+    static const ULONG aStatus[5] =
+        { ID_STATUS_LEFT, ID_STATUS_CENTER, ID_STATUS_RIGHT,
+          ID_STATUS_OWNER, ID_STATUS_AUTO };
+    static const ULONG aBtn[3] =
+        { ID_BTN_TOGGLE, ID_BTN_LONG, ID_BTN_QUERY };
+    PXpmTheme pth = XpmQueryTheme();
+    HWND      hCtl;
+    int       i;
+
+    for( i = 0; i < 5; i++ )
+    {
+        hCtl = WinWindowFromID( hwnd, aStatus[i] );
+        if( hCtl == NULLHANDLE )
+            continue;
+        SetRgb( hCtl, PP_BACKGROUNDCOLOR, pth->clrSurface );
+        SetRgb( hCtl, PP_FOREGROUNDCOLOR, pth->clrText );
+    }
+
+    for( i = 0; i < 3; i++ )
+    {
+        hCtl = WinWindowFromID( hwnd, aBtn[i] );
+        if( hCtl == NULLHANDLE )
+            continue;
+        SetRgb( hCtl, PP_BACKGROUNDCOLOR, pth->clrCanvas );
+        SetRgb( hCtl, PP_FOREGROUNDCOLOR, pth->clrText );
+    }
+}
 
 /* ------------------------------------------------------------------ */
 
@@ -130,6 +180,8 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
     switch( msg )
     {
         case WM_CREATE:
+            hwndThemeMenu = WinWindowFromID( WinQueryWindow( hwnd, QW_PARENT ),
+                                             FID_MENU);
             CreateStatus( hwnd, ID_STATUS_LEFT, "Left aligned text",
                           XpmSS_BORDER | XpmSS_LEFT, 15, 250, 580, 26 );
             CreateStatus( hwnd, ID_STATUS_CENTER, "Centered text",
@@ -149,6 +201,7 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
             CreateButton( hwnd, ID_BTN_LONG, "Long text", 195, 15, 170, 34 );
             CreateButton( hwnd, ID_BTN_QUERY, "Query sizes",
                           375, 15, 170, 34 );
+            ApplyStsTheme( hwnd );
             return (MRESULT)FALSE;
 
         case WM_COMMAND:
@@ -165,6 +218,22 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
                 case ID_BTN_QUERY:
                     QuerySizes( hwnd );
                     return (MRESULT)FALSE;
+
+                case IDM_DARK:
+                {
+                    XpmTheme th;
+
+                    bDark = !bDark;
+                    if( bDark )
+                        XpmThemeDark( &th );
+                    else
+                        XpmThemeDefault( &th );
+                    XpmSetTheme( &th );
+                    WinCheckMenuItem( hwndThemeMenu, IDM_DARK, bDark );
+                    ApplyStsTheme( hwnd );
+                    WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+                    return (MRESULT)FALSE;
+                }
             }
             break;
 
@@ -175,7 +244,8 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
 
             if( id == ID_STATUS_OWNER && pob )
             {
-                WinFillRect( pob->hps, &pob->bound, 0x00FFF8DC );
+                WinFillRect( pob->hps, &pob->bound,
+                             (LONG)XpmQueryTheme()->clrSurfaceDim );
                 return (MRESULT)TRUE;
             }
             return (MRESULT)FALSE;
@@ -184,16 +254,33 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
         case WM_CONTROL:
             return (MRESULT)FALSE;
 
+        case WM_ERASEBACKGROUND:
+        {
+            HPS   hps = (HPS)mp1;
+            RECTL rcl;
+
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
+            WinQueryWindowRect( hwnd, &rcl );
+            WinFillRect( hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas );
+            return (MRESULT)TRUE;
+        }
+
         case WM_PAINT:
         {
             HPS   hps = WinBeginPaint( hwnd, NULLHANDLE, NULL );
             RECTL rcl;
 
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
             WinQueryWindowRect( hwnd, &rcl );
-            WinFillRect( hps, &rcl, CLR_PALEGRAY );
+            WinFillRect( hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas );
             WinEndPaint( hps );
             return (MRESULT)FALSE;
         }
+
+        case XpmWM_THEMECHANGED:
+            ApplyStsTheme( hwnd );
+            WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+            return (MRESULT)FALSE;
 
         case WM_CLOSE:
             WinPostMsg( hwnd, WM_QUIT, NULL, NULL );
@@ -212,7 +299,7 @@ int main( VOID )
     HWND  hwndClient;
     QMSG  qmsg;
     ULONG flCreate = FCF_SYSMENU | FCF_TITLEBAR | FCF_SIZEBORDER |
-                     FCF_MINMAX | FCF_TASKLIST;
+                     FCF_MINMAX | FCF_TASKLIST | FCF_MENU;
 
     hab = WinInitialize( 0 );
     hmq = WinCreateMsgQueue( hab, 0 );
@@ -233,7 +320,7 @@ int main( VOID )
     hwndFrame = WinCreateStdWindow( HWND_DESKTOP, 0, &flCreate,
                                     "XpmStsClient",
                                     "EXPM status control sample",
-                                    0, NULLHANDLE, 0, &hwndClient );
+                                    0, NULLHANDLE, IDM_MENU, &hwndClient );
 
     WinSetWindowPos( hwndFrame, HWND_TOP, 60, 110, 620, 370,
                      SWP_MOVE | SWP_SIZE | SWP_ACTIVATE | SWP_SHOW );

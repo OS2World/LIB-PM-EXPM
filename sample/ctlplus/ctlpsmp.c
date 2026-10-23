@@ -20,6 +20,7 @@
  */
 
 #define INCL_WIN
+#define INCL_WINMENUS
 #define INCL_GPI
 #define INCL_DOS
 
@@ -38,6 +39,8 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 static HWND hwndCounter[3] = { NULLHANDLE, NULLHANDLE, NULLHANDLE };
 static HWND hwndStatus = NULLHANDLE;
+static BOOL bDark = FALSE;
+static HWND hwndThemeMenu = NULLHANDLE;
 
 /* ------------------------------------------------------------------ */
 
@@ -191,51 +194,56 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (msg)
     {
         case WM_CREATE:
+        {
+            HWND hwndFrame = WinQueryWindow(hwnd, QW_PARENT);
+            hwndThemeMenu = WinWindowFromID(hwndFrame, FID_MENU);
             BuildControls(hwnd);
             ReportControl(hwnd, ID_CNT0, CTN_CHGVALUE);
             return (MRESULT)FALSE;
+        }
 
         case WM_ERASEBACKGROUND:
         {
-            HPS   hps = (HPS)mp1;
-            RECTL rcl;
+            HPS         hps = (HPS)mp1;
+            RECTL       rcl;
+            PXpmTheme   pth = XpmQueryTheme();
 
             GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
             WinQueryWindowRect(hwnd, &rcl);
-            WinFillRect(hps, &rcl,
-                        (LONG)WinQuerySysColor(HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0));
+            WinFillRect(hps, &rcl, (LONG)pth->clrCanvas);
             return (MRESULT)TRUE;
         }
 
         case WM_PAINT:
         {
-            HPS   hps = WinBeginPaint(hwnd, NULLHANDLE, NULL);
-            RECTL rcl, rLab;
-            LONG  clrBack = (LONG)WinQuerySysColor(HWND_DESKTOP,
-                                                   SYSCLR_DIALOGBACKGROUND, 0);
+            HPS         hps = WinBeginPaint(hwnd, NULLHANDLE, NULL);
+            RECTL       rcl, rLab;
+            PXpmTheme   pth = XpmQueryTheme();
+            LONG        clrBack = (LONG)pth->clrCanvas;
+            LONG        clrText = (LONG)pth->clrText;
 
             WinQueryWindowRect(hwnd, &rcl);
             GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
             WinFillRect(hps, &rcl, clrBack);
 
             rLab.xLeft =  20; rLab.xRight = 170; rLab.yBottom = 414; rLab.yTop = 438;
-            WinDrawText(hps, -1, "Throw Switch", &rLab, CLR_BLACK, clrBack,
+            WinDrawText(hps, -1, "Throw Switch", &rLab, clrText, clrBack,
                         DT_CENTER | DT_VCENTER | DT_ERASERECT);
 
             rLab.xLeft =  20; rLab.xRight = 170; rLab.yBottom = 194; rLab.yTop = 218;
-            WinDrawText(hps, -1, "Button Switch", &rLab, CLR_BLACK, clrBack,
+            WinDrawText(hps, -1, "Button Switch", &rLab, clrText, clrBack,
                         DT_CENTER | DT_VCENTER | DT_ERASERECT);
 
             rLab.xLeft = 190; rLab.xRight = 320; rLab.yBottom = 414; rLab.yTop = 438;
-            WinDrawText(hps, -1, "Therm Meter", &rLab, CLR_BLACK, clrBack,
+            WinDrawText(hps, -1, "Therm Meter", &rLab, clrText, clrBack,
                         DT_CENTER | DT_VCENTER | DT_ERASERECT);
 
             rLab.xLeft = 330; rLab.xRight = 500; rLab.yBottom = 414; rLab.yTop = 438;
-            WinDrawText(hps, -1, "Sizing Rect", &rLab, CLR_BLACK, clrBack,
+            WinDrawText(hps, -1, "Sizing Rect", &rLab, clrText, clrBack,
                         DT_CENTER | DT_VCENTER | DT_ERASERECT);
 
             rLab.xLeft = 505; rLab.xRight = 645; rLab.yBottom = 358; rLab.yTop = 382;
-            WinDrawText(hps, -1, "Digit Counters", &rLab, CLR_BLACK, clrBack,
+            WinDrawText(hps, -1, "Digit Counters", &rLab, clrText, clrBack,
                         DT_CENTER | DT_VCENTER | DT_ERASERECT);
 
             WinEndPaint(hps);
@@ -263,11 +271,28 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                 case IDM_EXIT:
                     WinPostMsg(hwnd, WM_QUIT, 0, 0);
                     break;
+                case IDM_DARK:
+                {
+                    XpmTheme th;
+                    bDark = !bDark;
+                    if (bDark)
+                        XpmThemeDark(&th);
+                    else
+                        XpmThemeDefault(&th);
+                    XpmSetTheme(&th);
+                    WinCheckMenuItem(hwndThemeMenu, IDM_DARK, bDark);
+                    WinInvalidateRect(hwnd, NULLHANDLE, TRUE);
+                    return (MRESULT)FALSE;
+                }
             }
             return (MRESULT)FALSE;
 
         case WM_CONTROL:
             ReportControl(hwnd, SHORT1FROMMP(mp1), SHORT2FROMMP(mp1));
+            return (MRESULT)FALSE;
+
+        case XpmWM_THEMECHANGED:
+            WinInvalidateRect(hwnd, NULLHANDLE, TRUE);
             return (MRESULT)FALSE;
 
         case WM_CLOSE:

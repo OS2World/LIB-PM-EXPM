@@ -6,6 +6,10 @@
 #define ID_COMBO1   1
 #define ID_COMBO2   2
 
+#define IDM_MENU    10
+#define IDM_VIEW    11
+#define IDM_DARK    12
+
 #define IDS_ITEM1   1
 #define IDS_ITEM2   2
 #define IDS_ITEM3   3

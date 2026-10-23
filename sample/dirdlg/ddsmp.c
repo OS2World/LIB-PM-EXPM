@@ -17,6 +17,8 @@
  */
 
 #define INCL_WIN
+#define INCL_WINMENUS
+#define INCL_GPI
 #define INCL_DOS
 
 #include <os2.h>
@@ -30,9 +32,15 @@
 
 #define IDL_RESULT      200
 
+#define IDM_MENU        300
+#define IDM_VIEW        301
+#define IDM_DARK        302
+
 static HAB  hab;
 static HWND hwndFrame;
 static HWND hwndResult;
+static BOOL bDark;
+static HWND hwndThemeMenu;
 
 /* ------------------------------------------------------------------ */
 
@@ -68,12 +76,45 @@ static void ChooseDirectory( HWND hwnd, LONG flDialogType, BOOL fWinButton )
 
 /* ------------------------------------------------------------------ */
 
+static void ApplyDdTheme( HWND hwnd )
+{
+    PXpmTheme pth = XpmQueryTheme();
+    RGB2      rgb;
+    LONG      c;
+    HWND      aChild[4];
+    int       i;
+
+    aChild[0] = WinWindowFromID( hwnd, IDB_PLAIN );
+    aChild[1] = WinWindowFromID( hwnd, IDB_WINBUTTON );
+    aChild[2] = WinWindowFromID( hwnd, IDB_OKONLY );
+    aChild[3] = WinWindowFromID( hwnd, IDL_RESULT );
+
+    c = (LONG)pth->clrCanvas;
+    rgb.fcOptions = 0;
+    rgb.bBlue  = (BYTE)(c & 0xFF);
+    rgb.bGreen = (BYTE)((c >> 8) & 0xFF);
+    rgb.bRed   = (BYTE)((c >> 16) & 0xFF);
+    for( i = 0; i < 4; i++ )
+        if( aChild[i] )
+            WinSetPresParam( aChild[i], PP_BACKGROUNDCOLOR, sizeof(rgb), &rgb );
+
+    c = (LONG)pth->clrText;
+    rgb.bBlue  = (BYTE)(c & 0xFF);
+    rgb.bGreen = (BYTE)((c >> 8) & 0xFF);
+    rgb.bRed   = (BYTE)((c >> 16) & 0xFF);
+    for( i = 0; i < 4; i++ )
+        if( aChild[i] )
+            WinSetPresParam( aChild[i], PP_FOREGROUNDCOLOR, sizeof(rgb), &rgb );
+}
+
 static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
                                     MPARAM mp2 )
 {
     switch( msg )
     {
         case WM_CREATE:
+            hwndThemeMenu = WinWindowFromID( WinQueryWindow( hwnd, QW_PARENT ),
+                                             FID_MENU);
             WinCreateWindow( hwnd, WC_BUTTON, "Choose directory...",
                              WS_VISIBLE | BS_PUSHBUTTON,
                              15, 250, 200, 34,
@@ -93,8 +134,9 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
                                           "Ready.",
                                           WS_VISIBLE | SS_TEXT,
                                           15, 195, 650, 44,
-                                          hwnd, HWND_TOP, IDL_RESULT,
-                                          NULL, NULL );
+                                           hwnd, HWND_TOP, IDL_RESULT,
+                                           NULL, NULL );
+            ApplyDdTheme( hwnd );
             return (MRESULT)FALSE;
 
         case WM_COMMAND:
@@ -109,19 +151,51 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
                 case IDB_OKONLY:
                     ChooseDirectory( hwnd, XpmDIRDLG_OK, FALSE );
                     break;
+                case IDM_DARK:
+                {
+                    XpmTheme th;
+
+                    bDark = !bDark;
+                    if( bDark )
+                        XpmThemeDark( &th );
+                    else
+                        XpmThemeDefault( &th );
+                    XpmSetTheme( &th );
+                    WinCheckMenuItem( hwndThemeMenu, IDM_DARK, bDark );
+                    ApplyDdTheme( hwnd );
+                    WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+                    break;
+                }
             }
             return (MRESULT)FALSE;
+
+        case WM_ERASEBACKGROUND:
+        {
+            HPS   hps = (HPS)mp1;
+            RECTL rcl;
+
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
+            WinQueryWindowRect( hwnd, &rcl );
+            WinFillRect( hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas );
+            return (MRESULT)TRUE;
+        }
 
         case WM_PAINT:
         {
             HPS   hps = WinBeginPaint( hwnd, NULLHANDLE, NULL );
             RECTL rcl;
 
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
             WinQueryWindowRect( hwnd, &rcl );
-            WinFillRect( hps, &rcl, CLR_PALEGRAY );
+            WinFillRect( hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas );
             WinEndPaint( hps );
             return (MRESULT)FALSE;
         }
+
+        case XpmWM_THEMECHANGED:
+            ApplyDdTheme( hwnd );
+            WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+            return (MRESULT)FALSE;
 
         case WM_CLOSE:
             WinPostMsg( hwnd, WM_QUIT, NULL, NULL );
@@ -139,7 +213,7 @@ int main( VOID )
     HWND  hwndClient;
     QMSG  qmsg;
     ULONG flCreate = FCF_SYSMENU | FCF_TITLEBAR | FCF_SIZEBORDER |
-                     FCF_MINMAX | FCF_TASKLIST;
+                     FCF_MINMAX | FCF_TASKLIST | FCF_MENU;
 
     hab = WinInitialize( 0 );
     hmq = WinCreateMsgQueue( hab, 0 );
@@ -159,7 +233,7 @@ int main( VOID )
     hwndFrame = WinCreateStdWindow( HWND_DESKTOP, 0, &flCreate,
                                     "XpmDdClient",
                                     "EXPM directory dialog sample",
-                                    0, NULLHANDLE, 0, &hwndClient );
+                                    0, NULLHANDLE, IDM_MENU, &hwndClient );
 
     WinSetWindowPos( hwndFrame, HWND_TOP, 60, 110, 700, 360,
                      SWP_MOVE | SWP_SIZE | SWP_ACTIVATE | SWP_SHOW );

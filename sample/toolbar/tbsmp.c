@@ -20,6 +20,7 @@
  */
 
 #define INCL_WIN
+#define INCL_WINMENUS
 #define INCL_GPI
 #define INCL_GPILOGCOLORTABLE
 #define INCL_DOS
@@ -28,6 +29,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "expm.h"
+
+#define IDM_MENU        800
+#define IDM_VIEW        801
+#define IDM_DARK        802
 
 #define ID_TOOLBAR      1000
 #define ID_STATUS       1100
@@ -44,6 +49,52 @@
 
 static HAB  hab;
 static HWND hwndStatus;
+static BOOL bDark = FALSE;
+static HWND hwndThemeMenu = NULLHANDLE;
+
+static void SetRgb( HWND hwnd, ULONG idMode, ULONG ulColor )
+{
+    RGB2 rgb;
+
+    rgb.fcOptions = 0;
+    rgb.bBlue  = (BYTE)(ulColor & 0xFF);
+    rgb.bGreen = (BYTE)((ulColor >> 8) & 0xFF);
+    rgb.bRed   = (BYTE)((ulColor >> 16) & 0xFF);
+    WinSetPresParam( hwnd, idMode, sizeof(rgb), &rgb );
+}
+
+static void ApplyTbTheme( HWND hwnd )
+{
+    static const ULONG aObj[7] =
+        { IDB_NEW, IDB_OPEN, IDB_SAVE, IDB_STD, IDL_LABEL,
+          IDB_ROTATE, IDB_EXIT };
+    PXpmTheme pth = XpmQueryTheme();
+    HWND      hwndTb;
+    HWND      hCtl;
+    int       i;
+
+    if( hwndStatus )
+    {
+        SetRgb( hwndStatus, PP_BACKGROUNDCOLOR, pth->clrCanvas );
+        SetRgb( hwndStatus, PP_FOREGROUNDCOLOR, pth->clrText );
+    }
+
+    hwndTb = WinWindowFromID( hwnd, ID_TOOLBAR );
+    if( hwndTb == NULLHANDLE )
+        return;
+
+    SetRgb( hwndTb, PP_BACKGROUNDCOLOR, pth->clrCanvas );
+    SetRgb( hwndTb, PP_FOREGROUNDCOLOR, pth->clrText );
+
+    for( i = 0; i < 7; i++ )
+    {
+        hCtl = WinWindowFromID( hwndTb, aObj[i] );
+        if( hCtl == NULLHANDLE )
+            continue;
+        SetRgb( hCtl, PP_BACKGROUNDCOLOR, pth->clrCanvas );
+        SetRgb( hCtl, PP_FOREGROUNDCOLOR, pth->clrText );
+    }
+}
 
 static void ShowStatus( PSZ pszText, ULONG id )
 {
@@ -101,6 +152,9 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
             XpmTOOLINFO ti;
             HWND        hwndTb;
 
+            hwndThemeMenu = WinWindowFromID( WinQueryWindow( hwnd, QW_PARENT ),
+                                             FID_MENU);
+
             hwndStatus = WinCreateWindow( hwnd, WC_STATIC, "Ready.",
                                           WS_VISIBLE | SS_TEXT,
                                           15, 8, 640, 26,
@@ -156,22 +210,11 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
             SetTip( hwndTb, IDB_ROTATE, "Rotate the toolbar" );
             SetTip( hwndTb, IDB_EXIT,   "Close the sample" );
 
-            /* Blend the label into the toolbar background.  A WC_STATIC
-             * with SS_TEXT draws in the system foreground/background, so
-             * set presentation colours (RGB, not colour indices). */
-            {
-                HWND hwndLabel = WinWindowFromID( hwndTb, IDL_LABEL );
-                LONG rgbFg     = 0x00000000;    /* black        */
-                LONG rgbBg     = 0x00C0C0C0;    /* button grey  */
-
-                if( hwndLabel )
-                {
-                    WinSetPresParam( hwndLabel, PP_FOREGROUNDCOLOR,
-                                     sizeof( rgbFg ), &rgbFg );
-                    WinSetPresParam( hwndLabel, PP_BACKGROUNDCOLOR,
-                                     sizeof( rgbBg ), &rgbBg );
-                }
-            }
+            /* Blend the label and the objects into the toolbar
+             * background using the current theme.  A WC_STATIC with
+             * SS_TEXT draws in the system foreground/background, so set
+             * presentation colours (RGB, not colour indices). */
+            ApplyTbTheme( hwnd );
 
             WinSendMsg( hwndTb, XpmTM_AUTOSIZE, MPFROMLONG( 0 ), NULL );
             return (MRESULT)FALSE;
@@ -182,7 +225,21 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
             ULONG id   = SHORT1FROMMP( mp1 );
             ULONG code = SHORT2FROMMP( mp1 );
 
-            if( id == IDB_EXIT )
+            if( id == IDM_DARK )
+            {
+                XpmTheme th;
+
+                bDark = !bDark;
+                if( bDark )
+                    XpmThemeDark( &th );
+                else
+                    XpmThemeDefault( &th );
+                XpmSetTheme( &th );
+                WinCheckMenuItem( hwndThemeMenu, IDM_DARK, bDark );
+                ApplyTbTheme( hwnd );
+                WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+            }
+            else if( id == IDB_EXIT )
             {
                 WinPostMsg( hwnd, WM_CLOSE, NULL, NULL );
             }
@@ -242,16 +299,33 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
                         XpmTM_AUTOSIZE, MPFROMLONG( 0 ), NULL );
             return (MRESULT)FALSE;
 
+        case WM_ERASEBACKGROUND:
+        {
+            HPS   hps = (HPS)mp1;
+            RECTL rcl;
+
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
+            WinQueryWindowRect( hwnd, &rcl );
+            WinFillRect( hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas );
+            return (MRESULT)TRUE;
+        }
+
         case WM_PAINT:
         {
             HPS   hps = WinBeginPaint( hwnd, NULLHANDLE, NULL );
             RECTL rcl;
 
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
             WinQueryWindowRect( hwnd, &rcl );
-            WinFillRect( hps, &rcl, CLR_PALEGRAY );
+            WinFillRect( hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas );
             WinEndPaint( hps );
             return (MRESULT)FALSE;
         }
+
+        case XpmWM_THEMECHANGED:
+            ApplyTbTheme( hwnd );
+            WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+            return (MRESULT)FALSE;
 
         case WM_CLOSE:
             WinPostMsg( hwnd, WM_QUIT, NULL, NULL );
@@ -270,7 +344,7 @@ int main( VOID )
     HWND  hwndClient;
     QMSG  qmsg;
     ULONG flCreate = FCF_SYSMENU | FCF_TITLEBAR | FCF_SIZEBORDER |
-                     FCF_MINMAX | FCF_TASKLIST;
+                     FCF_MINMAX | FCF_TASKLIST | FCF_MENU;
 
     hab = WinInitialize( 0 );
     hmq = WinCreateMsgQueue( hab, 0 );
@@ -291,7 +365,7 @@ int main( VOID )
     hwndFrame = WinCreateStdWindow( HWND_DESKTOP, 0, &flCreate,
                                     "XpmTbClient",
                                     "EXPM toolbar sample",
-                                    0, NULLHANDLE, 0, &hwndClient );
+                                    0, NULLHANDLE, IDM_MENU, &hwndClient );
 
     /* Keep the client's own paint from covering its child controls. */
     WinSetWindowBits( hwndClient, QWL_STYLE, WS_CLIPCHILDREN,

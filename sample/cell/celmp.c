@@ -36,6 +36,47 @@ MRESULT EXPENTRY MainClientProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 /* Static variables */
 
+static BOOL bDark;
+static HWND hwndThemeMenu;
+static HWND hwndCellList;
+static HWND hwndCellMle;
+
+/*-------------------------------------------------------------------------
+ * ApplyCellTheme - tint the list box and MLE with the current theme.
+ *-------------------------------------------------------------------------*/
+static void ApplyCellTheme(void)
+{
+    PXpmTheme pth = XpmQueryTheme();
+    RGB2      rgb;
+    LONG      cBack;
+    LONG      cFore;
+
+    cBack = (LONG)pth->clrCanvas;
+    cFore = (LONG)pth->clrText;
+
+    if(hwndCellList)
+    {
+        rgb.fcOptions = 0;
+        rgb.bBlue  = (BYTE)(cBack & 0xFF);
+        rgb.bGreen = (BYTE)((cBack >> 8) & 0xFF);
+        rgb.bRed   = (BYTE)((cBack >> 16) & 0xFF);
+        WinSetPresParam(hwndCellList, PP_BACKGROUNDCOLOR, sizeof(rgb), &rgb);
+
+        rgb.bBlue  = (BYTE)(cFore & 0xFF);
+        rgb.bGreen = (BYTE)((cFore >> 8) & 0xFF);
+        rgb.bRed   = (BYTE)((cFore >> 16) & 0xFF);
+        WinSetPresParam(hwndCellList, PP_FOREGROUNDCOLOR, sizeof(rgb), &rgb);
+    }
+
+    if(hwndCellMle)
+    {
+        WinSendMsg(hwndCellMle, MLM_SETBACKCOLOR,
+                   MPFROMLONG(cBack), MPFROMLONG(MLE_RGB));
+        WinSendMsg(hwndCellMle, MLM_SETTEXTCOLOR,
+                   MPFROMLONG(cFore), MPFROMLONG(MLE_RGB));
+    }
+}
+
 CellDef cdLeftPane =
 {
     CELL_WINDOW,
@@ -113,7 +154,26 @@ MRESULT EXPENTRY MainClientProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                 case IDB_EXIT:
                     WinPostMsg(hwnd, WM_QUIT, 0L, 0L);
                     return ((MRESULT) NULL);
+
+                case IDM_DARK:
+                {
+                    XpmTheme th;
+
+                    bDark = !bDark;
+                    if(bDark)
+                        XpmThemeDark(&th);
+                    else
+                        XpmThemeDefault(&th);
+                    XpmSetTheme(&th);
+                    WinCheckMenuItem(hwndThemeMenu, IDM_DARK, bDark);
+                    ApplyCellTheme();
+                    return ((MRESULT) NULL);
+                }
             }
+            break;
+
+        case XpmWM_THEMECHANGED:
+            ApplyCellTheme();
             break;
 
         case WM_CLOSE:
@@ -133,8 +193,6 @@ INT main(VOID)
     HMQ hmq;
     QMSG qmsg;
     HWND hwndFrame;
-    HWND hwndTmp;
-    LONG lColor = CLR_PALEGRAY;
     SWP swp;
 
     hab = WinInitialize(0);
@@ -193,23 +251,13 @@ INT main(VOID)
 
         XpmCreateToolbar(hwndFrame, &mainTb);
 
-        /* Set MLE color */
+        /* Apply the current EXPM theme to the list box and MLE. */
 
-        hwndTmp = XpmCellWindowFromID(hwndFrame, ID_MLE);
+        hwndThemeMenu = WinWindowFromID(hwndFrame, FID_MENU);
+        hwndCellList  = XpmCellWindowFromID(hwndFrame, ID_LIST);
+        hwndCellMle   = XpmCellWindowFromID(hwndFrame, ID_MLE);
 
-        WinSendMsg(hwndTmp,
-                   MLM_SETBACKCOLOR,
-                   MPFROMLONG(CLR_PALEGRAY),
-                   MPFROMLONG(MLE_INDEX));
-
-        /* Set list color */
-
-        hwndTmp = XpmCellWindowFromID(hwndFrame, ID_LIST);
-
-        WinSetPresParam(hwndTmp,
-                        PP_BACKGROUNDCOLORINDEX,
-                        sizeof(lColor),
-                        &lColor);
+        ApplyCellTheme();
 
         while (WinGetMsg(hab, &qmsg, 0, 0, 0))
             WinDispatchMsg(hab, &qmsg);

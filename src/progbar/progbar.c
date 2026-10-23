@@ -108,6 +108,18 @@ static LONG BackColor( HWND hwnd, XPMPROGDATA *p )
     return WinQuerySysColor( HWND_DESKTOP, SYSCLR_ENTRYFIELD, 0 );
 }
 
+static LONG TextColor( HWND hwnd )
+{
+    ULONG ulColor;
+
+    ulColor = 0;
+    if( WinQueryPresParam( hwnd, PP_FOREGROUNDCOLOR, 0, NULL,
+                           sizeof( ULONG ), (PVOID)&ulColor, 0 ) )
+        return (LONG)ulColor;
+
+    return (LONG)PROG_TEXT_COLOR;
+}
+
 /* ------------------------------------------------------------------ */
 /* Drawing                                                            */
 /* ------------------------------------------------------------------ */
@@ -260,7 +272,8 @@ static void DrawIndicator( HPS hps, PRECTL prcl, ULONG flStyle,
     }
 }
 
-static void DrawPercent( HPS hps, PRECTL prcl, XPMPROGDATA *p, LONG bg )
+static void DrawPercent( HPS hps, PRECTL prcl, XPMPROGDATA *p, LONG bg,
+                         LONG fg )
 {
     POINTL aptl[TXTBOX_COUNT];
     POINTL pos;
@@ -302,7 +315,7 @@ static void DrawPercent( HPS hps, PRECTL prcl, XPMPROGDATA *p, LONG bg )
     box.xRight -= 3;
     box.yTop   -= 3;
 
-    GpiSetColor( hps, (LONG)PROG_TEXT_COLOR );
+    GpiSetColor( hps, fg );
     GpiSetBackColor( hps, bg );
     GpiSetBackMix( hps, BM_OVERPAINT );
     GpiCharStringPosAt( hps, &pos, &box, CHS_CLIP | CHS_OPAQUE,
@@ -334,7 +347,7 @@ static void DrawBar( HWND hwnd, HPS hps )
     DrawIndicator( hps, &rcl, flStyle, p, bar );
 
     if( flStyle & XpmPBS_TEXT )
-        DrawPercent( hps, &rcl, p, bg );
+        DrawPercent( hps, &rcl, p, bg, TextColor( hwnd ) );
 
     DrawFrame( hps, &rcl, flStyle );
 }

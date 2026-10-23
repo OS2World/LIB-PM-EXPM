@@ -15,10 +15,12 @@
 
 #define IDM_MENU        100
 #define IDM_FILE        101
-#define IDM_HELP        102
+#define IDM_VIEW        102
+#define IDM_HELP        103
 
 #define IDM_EXIT        110
 #define IDM_ABOUT       111
+#define IDM_DARK        112
 
 /* Control Plus controls */
 #define ID_METER        200

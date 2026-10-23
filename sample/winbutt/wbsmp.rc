@@ -1,0 +1,24 @@
+/*
+ * sample/winbutt/wbsmp.rc -- resources for the EXPM window button sample.
+ *
+ * The action bar carries a single "View" submenu with a "Dark theme"
+ * check item.  The numeric ids match the IDM_* defines in wbsmp.c and the
+ * menu resource id must match idResources passed to WinCreateStdWindow.
+ *
+ * Copyright (C) 2026 The EXPM Project Authors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ */
+
+#include <os2.h>
+
+MENU 900
+{
+    SUBMENU "~View", 901
+    {
+        MENUITEM "~Dark theme", 902
+    }
+}

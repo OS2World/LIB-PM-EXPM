@@ -35,6 +35,10 @@
 /* Status-text field */
 #define TX_HELP         120
 
+/* Menu items */
+#define IDM_VIEW        130
+#define IDM_DARK        131
+
 /* Bitmap resources (up / down pairs) */
 #define BMP_ABT_UP      201
 #define BMP_ABT_DN      202

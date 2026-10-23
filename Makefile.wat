@@ -299,10 +299,13 @@ sample\shadebtn\shbsmp.exe: $(OBJ)\shbsmp.obj $(OBJ)\shbsmp.res $(DLL)\expm.dll
 # Sample: ARROWHEAD
 # -----------------------------------------------------------------------
 
-$(OBJ)\arsmp.obj: sample\arrowhead\arsmp.c h\expm.h
-    $(CC) $(CFLAGS_EXE) -fo=$@ sample\arrowhead\arsmp.c
+$(OBJ)\arsmp.obj: sample\arrowhead\arsmp.c sample\arrowhead\arsmp.h h\expm.h
+    $(CC) $(CFLAGS_EXE) -i=sample\arrowhead -fo=$@ sample\arrowhead\arsmp.c
 
-sample\arrowhead\arsmp.exe: $(OBJ)\arsmp.obj $(DLL)\expm.dll
+$(OBJ)\arsmp.res: sample\arrowhead\arsmp.rc sample\arrowhead\arsmp.h
+    wrc -q -r -bt=os2 -i=sample\arrowhead sample\arrowhead\arsmp.rc -fo=$@
+
+sample\arrowhead\arsmp.exe: $(OBJ)\arsmp.obj $(OBJ)\arsmp.res $(DLL)\expm.dll
     wlink &
         system os2v2_pm &
         name sample\arrowhead\arsmp.exe &
@@ -311,6 +314,7 @@ sample\arrowhead\arsmp.exe: $(OBJ)\arsmp.obj $(DLL)\expm.dll
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\arrowhead\arsmp.map
+    wrc -q -bt=os2 $(OBJ)\arsmp.res sample\arrowhead\arsmp.exe
 
 # -----------------------------------------------------------------------
 # Sample: OWNDRAW
@@ -319,7 +323,10 @@ sample\arrowhead\arsmp.exe: $(OBJ)\arsmp.obj $(DLL)\expm.dll
 $(OBJ)\ownsmpl.obj: sample\owndraw\ownsmpl.c h\expm.h
     $(CC) $(CFLAGS_EXE) -fo=$@ sample\owndraw\ownsmpl.c
 
-sample\owndraw\ownsmpl.exe: $(OBJ)\ownsmpl.obj $(DLL)\expm.dll
+$(OBJ)\ownsmpl.res: sample\owndraw\ownsmpl.rc
+    wrc -q -r -bt=os2 sample\owndraw\ownsmpl.rc -fo=$@
+
+sample\owndraw\ownsmpl.exe: $(OBJ)\ownsmpl.obj $(OBJ)\ownsmpl.res $(DLL)\expm.dll
     wlink &
         system os2v2_pm &
         name sample\owndraw\ownsmpl.exe &
@@ -328,6 +335,7 @@ sample\owndraw\ownsmpl.exe: $(OBJ)\ownsmpl.obj $(DLL)\expm.dll
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\owndraw\ownsmpl.map
+    wrc -q -bt=os2 $(OBJ)\ownsmpl.res sample\owndraw\ownsmpl.exe
 
 # -----------------------------------------------------------------------
 # Sample: STATUS (AsuaCtl status control)
@@ -336,7 +344,10 @@ sample\owndraw\ownsmpl.exe: $(OBJ)\ownsmpl.obj $(DLL)\expm.dll
 $(OBJ)\stsmp.obj: sample\status\stsmp.c h\expm.h
     $(CC) $(CFLAGS_EXE) -fo=$@ sample\status\stsmp.c
 
-sample\status\stsmp.exe: $(OBJ)\stsmp.obj $(DLL)\expm.dll
+$(OBJ)\stsmp.res: sample\status\stsmp.rc
+    wrc -q -r -bt=os2 sample\status\stsmp.rc -fo=$@
+
+sample\status\stsmp.exe: $(OBJ)\stsmp.obj $(OBJ)\stsmp.res $(DLL)\expm.dll
     wlink &
         system os2v2_pm &
         name sample\status\stsmp.exe &
@@ -345,6 +356,7 @@ sample\status\stsmp.exe: $(OBJ)\stsmp.obj $(DLL)\expm.dll
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\status\stsmp.map
+    wrc -q -bt=os2 $(OBJ)\stsmp.res sample\status\stsmp.exe
 
 # -----------------------------------------------------------------------
 # Sample: PROGBAR (AsuaCtl progress bar)
@@ -353,7 +365,10 @@ sample\status\stsmp.exe: $(OBJ)\stsmp.obj $(DLL)\expm.dll
 $(OBJ)\pgbsmp.obj: sample\progbar\pgbsmp.c h\expm.h
     $(CC) $(CFLAGS_EXE) -fo=$@ sample\progbar\pgbsmp.c
 
-sample\progbar\pgbsmp.exe: $(OBJ)\pgbsmp.obj $(DLL)\expm.dll
+$(OBJ)\pgbsmp.res: sample\progbar\pgbsmp.rc
+    wrc -q -r -bt=os2 sample\progbar\pgbsmp.rc -fo=$@
+
+sample\progbar\pgbsmp.exe: $(OBJ)\pgbsmp.obj $(OBJ)\pgbsmp.res $(DLL)\expm.dll
     wlink &
         system os2v2_pm &
         name sample\progbar\pgbsmp.exe &
@@ -362,6 +377,7 @@ sample\progbar\pgbsmp.exe: $(OBJ)\pgbsmp.obj $(DLL)\expm.dll
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\progbar\pgbsmp.map
+    wrc -q -bt=os2 $(OBJ)\pgbsmp.res sample\progbar\pgbsmp.exe
 
 # -----------------------------------------------------------------------
 # Sample: WINBUTT (AsuaCtl window button)
@@ -370,7 +386,10 @@ sample\progbar\pgbsmp.exe: $(OBJ)\pgbsmp.obj $(DLL)\expm.dll
 $(OBJ)\wbsmp.obj: sample\winbutt\wbsmp.c h\expm.h
     $(CC) $(CFLAGS_EXE) -fo=$@ sample\winbutt\wbsmp.c
 
-sample\winbutt\wbsmp.exe: $(OBJ)\wbsmp.obj $(DLL)\expm.dll
+$(OBJ)\wbsmp.res: sample\winbutt\wbsmp.rc
+    wrc -q -r -bt=os2 sample\winbutt\wbsmp.rc -fo=$@
+
+sample\winbutt\wbsmp.exe: $(OBJ)\wbsmp.obj $(OBJ)\wbsmp.res $(DLL)\expm.dll
     wlink &
         system os2v2_pm &
         name sample\winbutt\wbsmp.exe &
@@ -379,6 +398,7 @@ sample\winbutt\wbsmp.exe: $(OBJ)\wbsmp.obj $(DLL)\expm.dll
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\winbutt\wbsmp.map
+    wrc -q -bt=os2 $(OBJ)\wbsmp.res sample\winbutt\wbsmp.exe
 
 # -----------------------------------------------------------------------
 # Sample: TOOLBAR (AsuaCtl toolbar)
@@ -387,7 +407,10 @@ sample\winbutt\wbsmp.exe: $(OBJ)\wbsmp.obj $(DLL)\expm.dll
 $(OBJ)\tbsmp.obj: sample\toolbar\tbsmp.c h\expm.h
     $(CC) $(CFLAGS_EXE) -fo=$@ sample\toolbar\tbsmp.c
 
-sample\toolbar\tbsmp.exe: $(OBJ)\tbsmp.obj $(DLL)\expm.dll
+$(OBJ)\tbsmp.res: sample\toolbar\tbsmp.rc
+    wrc -q -r -bt=os2 sample\toolbar\tbsmp.rc -fo=$@
+
+sample\toolbar\tbsmp.exe: $(OBJ)\tbsmp.obj $(OBJ)\tbsmp.res $(DLL)\expm.dll
     wlink &
         system os2v2_pm &
         name sample\toolbar\tbsmp.exe &
@@ -396,6 +419,7 @@ sample\toolbar\tbsmp.exe: $(OBJ)\tbsmp.obj $(DLL)\expm.dll
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\toolbar\tbsmp.map
+    wrc -q -bt=os2 $(OBJ)\tbsmp.res sample\toolbar\tbsmp.exe
 
 # -----------------------------------------------------------------------
 # Sample: DIRDLG (AsuaCtl directory dialog)
@@ -404,7 +428,10 @@ sample\toolbar\tbsmp.exe: $(OBJ)\tbsmp.obj $(DLL)\expm.dll
 $(OBJ)\ddsmp.obj: sample\dirdlg\ddsmp.c h\expm.h
     $(CC) $(CFLAGS_EXE) -fo=$@ sample\dirdlg\ddsmp.c
 
-sample\dirdlg\ddsmp.exe: $(OBJ)\ddsmp.obj $(DLL)\expm.dll
+$(OBJ)\ddsmp.res: sample\dirdlg\ddsmp.rc
+    wrc -q -r -bt=os2 sample\dirdlg\ddsmp.rc -fo=$@
+
+sample\dirdlg\ddsmp.exe: $(OBJ)\ddsmp.obj $(OBJ)\ddsmp.res $(DLL)\expm.dll
     wlink &
         system os2v2_pm &
         name sample\dirdlg\ddsmp.exe &
@@ -413,6 +440,7 @@ sample\dirdlg\ddsmp.exe: $(OBJ)\ddsmp.obj $(DLL)\expm.dll
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\dirdlg\ddsmp.map
+    wrc -q -bt=os2 $(OBJ)\ddsmp.res sample\dirdlg\ddsmp.exe
 
 # -----------------------------------------------------------------------
 # Sample: FONTS (AsuaCtl raster font helper)
@@ -421,7 +449,10 @@ sample\dirdlg\ddsmp.exe: $(OBJ)\ddsmp.obj $(DLL)\expm.dll
 $(OBJ)\fntsmp.obj: sample\fonts\fntsmp.c h\expm.h
     $(CC) $(CFLAGS_EXE) -fo=$@ sample\fonts\fntsmp.c
 
-sample\fonts\fntsmp.exe: $(OBJ)\fntsmp.obj $(DLL)\expm.dll
+$(OBJ)\fntsmp.res: sample\fonts\fntsmp.rc
+    wrc -q -r -bt=os2 sample\fonts\fntsmp.rc -fo=$@
+
+sample\fonts\fntsmp.exe: $(OBJ)\fntsmp.obj $(OBJ)\fntsmp.res $(DLL)\expm.dll
     wlink &
         system os2v2_pm &
         name sample\fonts\fntsmp.exe &
@@ -430,6 +461,7 @@ sample\fonts\fntsmp.exe: $(OBJ)\fntsmp.obj $(DLL)\expm.dll
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\fonts\fntsmp.map
+    wrc -q -bt=os2 $(OBJ)\fntsmp.res sample\fonts\fntsmp.exe
 
 # -----------------------------------------------------------------------
 # Sample: MODERN (modern controls)

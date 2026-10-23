@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/19 14:13:40
+Created on:       26/10/19 15:39:11
 Executable Image: sample\combo\combosmp.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -24,7 +24,7 @@ Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
 BEGTEXT                CODE           AUTO           0001:00000000   00000007
-_TEXT                  CODE           AUTO           0001:00000010   00000837
+_TEXT                  CODE           AUTO           0001:00000010   000009e7
 _NULL                  BEGDATA        DGROUP         0002:00000000   00000004
 _AFTERNULL             BEGDATA        DGROUP         0002:00000004   00000000
 CONST                  DATA           DGROUP         0002:00000004   0000003c
@@ -40,7 +40,7 @@ TIB                    DATA           DGROUP         0002:00000116   00000000
 TI                     DATA           DGROUP         0002:00000116   00000000
 TIE                    DATA           DGROUP         0002:00000116   00000000
 DATA                   DATA           DGROUP         0002:00000116   00000000
-_BSS                   BSS            DGROUP         0002:00000118   00000120
+_BSS                   BSS            DGROUP         0002:00000118   00000128
 STACK                  STACK          DGROUP         0002:00000240   00002000
 
 
@@ -55,18 +55,18 @@ Address        Symbol
 =======        ======
 
 Module: obj\combosmp.obj(D:\Projects\LIBs\LIB-PM-EXPM\sample\combo\combosmp.c)
-0001:00000010  main_
-0001:00000115+ ComboSampWindowProc
+0001:000000e9  main_
+0001:00000201+ ComboSampWindowProc
 Module: C:\WATCOM/lib386/os2\clib3r.lib(stk)
-0001:000002f1* __STK
-0001:000002e1  __CHK
-0001:00000320* __GRO
-0001:00000310* __STKOVERFLOW_
+0001:000004a1* __STK
+0001:00000491  __CHK
+0001:000004d0* __GRO
+0001:000004c0* __STKOVERFLOW_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(cstart)
-0001:00000340  _cstart_
+0001:000004f0  _cstart_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(xmsgo32.c)
-0001:000003a0+ __exit_with_msg_
-0001:000003f0  __fatal_runtime_error_
+0001:00000550+ __exit_with_msg_
+0001:000005a0  __fatal_runtime_error_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(maino32.c)
 0002:00000074+ ___FirstThreadData
 0002:00000078  ___GetThreadPtr
@@ -78,23 +78,23 @@ Module: C:\WATCOM/lib386/os2\clib3r.lib(maino32.c)
 0002:00000090* __AccessFHeap
 0002:00000094* __ReleaseNHeap
 0002:00000098* __ReleaseFHeap
-0001:00000416  __threadstack_
-0001:0000041d* __threadid_
-0001:00000424  __OS2MainInit_
-0001:00000493+ __OS2Init_
-0001:000004d1* __OS2Fini_
-0001:000004d9* __shutdown_stack_checking_
-0001:000004ee  __exit_
+0001:000005c6  __threadstack_
+0001:000005cd* __threadid_
+0001:000005d4  __OS2MainInit_
+0001:00000643+ __OS2Init_
+0001:00000681* __OS2Fini_
+0001:00000689* __shutdown_stack_checking_
+0001:0000069e  __exit_
 0002:0000009c* __AccessTDList
 0002:000000a0* __ReleaseTDList
 0002:000000a4+ ___sig_init_rtn
 0002:000000a8* ___sig_fini_rtn
 0002:000000ac* __threadstksize
 0002:000000b0  ___process_fini
-0002:00000124  ___Is_DLL
-0002:00000128+ ___saved_CS
+0002:0000012c  ___Is_DLL
+0002:00000130+ ___saved_CS
 Module: C:\WATCOM/lib386/os2\clib3r.lib(main2o32.c)
-0001:00000540  __OS2Main
+0001:000006f0  __OS2Main
 Module: C:\WATCOM/lib386/os2\clib3r.lib(segdefns)
 0001:00000003  ___begtext
 0002:00000000* __nullarea
@@ -103,7 +103,7 @@ Module: C:\WATCOM/lib386/os2\clib3r.lib(segdefns)
 0002:00000116  __Start_YI
 0002:00000116  __End_YI
 Module: C:\WATCOM/lib386/os2\clib3r.lib(enterdb.c)
-0001:000005b0  __EnterWVIDEO_
+0001:00000760  __EnterWVIDEO_
 0002:000000b4+ ___WD_Present
 Module: C:\WATCOM/lib386/os2\clib3r.lib(crwdata)
 0002:000000fa  __osmajor
@@ -127,32 +127,32 @@ Module: C:\WATCOM/lib386/os2\clib3r.lib(crwdata)
 0002:000000f4* __no87
 0002:000000fc* ___FPE_handler
 Module: C:\WATCOM/lib386/os2\clib3r.lib(cinit.c)
-0001:000005e0  __CommonInit_
-0002:0000022c  ___hmodule
+0001:00000790  __CommonInit_
+0002:00000234  ___hmodule
 Module: C:\WATCOM/lib386/os2\clib3r.lib(initrtns.c)
-0001:00000600  __InitRtns
-0001:00000650  __FiniRtns
+0001:000007b0  __InitRtns
+0001:00000800  __FiniRtns
 Module: C:\WATCOM/lib386/os2\clib3r.lib(mthrdini.c)
-0001:000006b0  __InitThreadData_
+0001:00000860  __InitThreadData_
 0002:00000100  ___ThreadDataSize
 Module: C:\WATCOM/lib386/os2\clib3r.lib(memset.c)
-0001:000006d0  memset_
+0001:00000880  memset_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(cmain386.c)
-0001:000006f0  __CMain
+0001:000008a0  __CMain
 Module: C:\WATCOM/lib386/os2\clib3r.lib(dosseg)
 0000:00001234  __DOSseg__
 Module: C:\WATCOM/lib386/os2\clib3r.lib(amblksiz.c)
 0002:00000104  __amblksiz
 Module: C:\WATCOM/lib386/os2\clib3r.lib(__stos)
-0001:00000730  __STOSB
-0001:00000767* __STOSD
+0001:000008e0  __STOSB
+0001:00000917* __STOSD
 Module: C:\WATCOM/lib386/os2\clib3r.lib(___argc.c)
-0002:00000230  ____Argc
-0002:00000234  ____Argv
+0002:00000238  ____Argc
+0002:0000023c  ____Argv
 Module: C:\WATCOM/lib386/os2\clib3r.lib(exit.c)
-0001:000007e0+ __null_int23_exit_
-0001:000007e1  exit_
-0001:00000831* _exit_
+0001:00000990+ __null_int23_exit_
+0001:00000991  exit_
+0001:000009e1* _exit_
 0002:00000108+ ___int23_exit
 0002:0000010c+ ___FPE_handler_exit
 
@@ -164,10 +164,13 @@ Module: C:\WATCOM/lib386/os2\clib3r.lib(exit.c)
 Symbol                              Module
 ======                              ======
 
+XpmQueryTheme                       expm.dll
+WinSetPresParam                     PMWIN
 WinInitialize                       PMWIN
 WinCreateMsgQueue                   PMWIN
 WinRegisterClass                    PMWIN
 WinCreateStdWindow                  PMWIN
+WinWindowFromID                     PMWIN
 WinQuerySysValue                    PMWIN
 WinSetWindowPos                     PMWIN
 WinGetMsg                           PMWIN
@@ -179,10 +182,14 @@ XpmInitComboBoxFromRes              expm.dll
 XpmInitComboBox                     expm.dll
 GpiCreateLogColorTable              PMGPI
 WinQueryWindowRect                  PMWIN
-WinQuerySysColor                    PMWIN
 WinFillRect                         PMWIN
 WinBeginPaint                       PMWIN
 WinEndPaint                         PMWIN
+XpmThemeDark                        expm.dll
+XpmThemeDefault                     expm.dll
+XpmSetTheme                         expm.dll
+WinSendMsg                          PMWIN
+WinInvalidateRect                   PMWIN
 WinDefWindowProc                    PMWIN
 DosWrite                            DOSCALLS
 DosQuerySysInfo                     DOSCALLS
@@ -203,6 +210,6 @@ C:\WATCOM/lib386/os2\os2386.lib
                         +-----------------------+
 
 Stack size:  2000 (8192.)
-Memory size:  2a87 (10887.)
-Entry point address: 0001:00000340
+Memory size:  2c37 (11319.)
+Entry point address: 0001:000004f0
 Link time: 00:00.07

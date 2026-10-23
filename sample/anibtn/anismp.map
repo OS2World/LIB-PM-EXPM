@@ -1,8 +1,9 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/19 14:13:41
+Created on:       26/10/22 22:11:41
 Executable Image: sample\anibtn\anismp.exe
 creating an OS/2 32-bit Presentation Manager executable
+Error! E2028: WinSetMenu_ is an undefined reference
 
 
                         +------------+
@@ -24,23 +25,23 @@ Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
 BEGTEXT                CODE           AUTO           0001:00000000   00000007
-_TEXT                  CODE           AUTO           0001:00000010   000008f7
+_TEXT                  CODE           AUTO           0001:00000010   00000b07
 _NULL                  BEGDATA        DGROUP         0002:00000000   00000004
 _AFTERNULL             BEGDATA        DGROUP         0002:00000004   00000000
 CONST                  DATA           DGROUP         0002:00000004   000000d8
 CONST2                 DATA           DGROUP         0002:000000dc   00000000
-_DATA                  DATA           DGROUP         0002:000000dc   000000ac
-XIB                    DATA           DGROUP         0002:00000188   00000000
-XI                     DATA           DGROUP         0002:00000188   00000006
-XIE                    DATA           DGROUP         0002:0000018e   00000000
-YIB                    DATA           DGROUP         0002:0000018e   00000000
-YI                     DATA           DGROUP         0002:0000018e   00000000
-YIE                    DATA           DGROUP         0002:0000018e   00000000
-TIB                    DATA           DGROUP         0002:0000018e   00000000
-TI                     DATA           DGROUP         0002:0000018e   00000000
-TIE                    DATA           DGROUP         0002:0000018e   00000000
-DATA                   DATA           DGROUP         0002:0000018e   00000000
-_BSS                   BSS            DGROUP         0002:00000190   00000114
+_DATA                  DATA           DGROUP         0002:000000dc   000000b4
+XIB                    DATA           DGROUP         0002:00000190   00000000
+XI                     DATA           DGROUP         0002:00000190   00000006
+XIE                    DATA           DGROUP         0002:00000196   00000000
+YIB                    DATA           DGROUP         0002:00000196   00000000
+YI                     DATA           DGROUP         0002:00000196   00000000
+YIE                    DATA           DGROUP         0002:00000196   00000000
+TIB                    DATA           DGROUP         0002:00000196   00000000
+TI                     DATA           DGROUP         0002:00000196   00000000
+TIE                    DATA           DGROUP         0002:00000196   00000000
+DATA                   DATA           DGROUP         0002:00000196   00000000
+_BSS                   BSS            DGROUP         0002:00000198   00000114
 STACK                  STACK          DGROUP         0002:000002b0   00002000
 
 
@@ -55,131 +56,116 @@ Address        Symbol
 =======        ======
 
 Module: obj\anismp.obj(D:\Projects\LIBs\LIB-PM-EXPM\sample\anibtn\anismp.c)
-0001:00000010  main_
-0001:00000067+ ToolBarDlg
+0001:000000b8  main_
+0001:0000010f+ ToolBarDlg
 Module: C:\WATCOM/lib386/os2\clib3r.lib(stk)
-0001:000003ad* __STK
-0001:0000039d  __CHK
-0001:000003dc* __GRO
-0001:000003cc* __STKOVERFLOW_
+0001:000005c1* __STK
+0001:000005b1  __CHK
+0001:000005f0* __GRO
+0001:000005e0* __STKOVERFLOW_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(cstart)
-0001:000003fc  _cstart_
+0001:00000610  _cstart_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(xmsgo32.c)
-0001:00000460+ __exit_with_msg_
-0001:000004b0  __fatal_runtime_error_
+0001:00000670+ __exit_with_msg_
+0001:000006c0  __fatal_runtime_error_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(maino32.c)
-0002:000000ec+ ___FirstThreadData
-0002:000000f0  ___GetThreadPtr
-0002:000000f4* __AccessFileH
-0002:000000f8* __ReleaseFileH
-0002:000000fc* __AccessIOB
-0002:00000100* __ReleaseIOB
-0002:00000104* __AccessNHeap
-0002:00000108* __AccessFHeap
-0002:0000010c* __ReleaseNHeap
-0002:00000110* __ReleaseFHeap
-0001:000004d6  __threadstack_
-0001:000004dd* __threadid_
-0001:000004e4  __OS2MainInit_
-0001:00000553+ __OS2Init_
-0001:00000591* __OS2Fini_
-0001:00000599* __shutdown_stack_checking_
-0001:000005ae  __exit_
-0002:00000114* __AccessTDList
-0002:00000118* __ReleaseTDList
-0002:0000011c+ ___sig_init_rtn
-0002:00000120* ___sig_fini_rtn
-0002:00000124* __threadstksize
-0002:00000128  ___process_fini
-0002:00000190  ___Is_DLL
-0002:00000194+ ___saved_CS
+0002:000000f4+ ___FirstThreadData
+0002:000000f8  ___GetThreadPtr
+0002:000000fc* __AccessFileH
+0002:00000100* __ReleaseFileH
+0002:00000104* __AccessIOB
+0002:00000108* __ReleaseIOB
+0002:0000010c* __AccessNHeap
+0002:00000110* __AccessFHeap
+0002:00000114* __ReleaseNHeap
+0002:00000118* __ReleaseFHeap
+0001:000006e6  __threadstack_
+0001:000006ed* __threadid_
+0001:000006f4  __OS2MainInit_
+0001:00000763+ __OS2Init_
+0001:000007a1* __OS2Fini_
+0001:000007a9* __shutdown_stack_checking_
+0001:000007be  __exit_
+0002:0000011c* __AccessTDList
+0002:00000120* __ReleaseTDList
+0002:00000124+ ___sig_init_rtn
+0002:00000128* ___sig_fini_rtn
+0002:0000012c* __threadstksize
+0002:00000130  ___process_fini
+0002:00000198  ___Is_DLL
+0002:0000019c+ ___saved_CS
 Module: C:\WATCOM/lib386/os2\clib3r.lib(main2o32.c)
-0001:00000600  __OS2Main
+0001:00000810  __OS2Main
 Module: C:\WATCOM/lib386/os2\clib3r.lib(segdefns)
 0001:00000003  ___begtext
 0002:00000000* __nullarea
-0002:00000188  __Start_XI
-0002:0000018e  __End_XI
-0002:0000018e  __Start_YI
-0002:0000018e  __End_YI
+0002:00000190  __Start_XI
+0002:00000196  __End_XI
+0002:00000196  __Start_YI
+0002:00000196  __End_YI
 Module: C:\WATCOM/lib386/os2\clib3r.lib(enterdb.c)
-0001:00000670  __EnterWVIDEO_
-0002:0000012c+ ___WD_Present
+0001:00000880  __EnterWVIDEO_
+0002:00000134+ ___WD_Present
 Module: C:\WATCOM/lib386/os2\clib3r.lib(crwdata)
-0002:00000172  __osmajor
-0002:00000173  __osminor
-0002:00000140* __LpDllName
-0002:00000144* __LpwCmdLine
-0002:00000148* __LpwPgmName
-0002:0000014c* __LpwDllName
-0002:00000138  __LpCmdLine
-0002:0000013c  __LpPgmName
-0002:00000130* __dynend
-0002:00000134* __curbrk
-0002:00000150* __STACKLOW
-0002:00000154* __STACKTOP
-0002:00000158  __ASTACKSIZ
-0002:0000015c  __ASTACKPTR
-0002:00000160* __cbyte
-0002:00000164* __cbyte2
-0002:00000168* __child
-0002:0000016e  __Envptr
-0002:0000016c* __no87
-0002:00000174* ___FPE_handler
+0002:0000017a  __osmajor
+0002:0000017b  __osminor
+0002:00000148* __LpDllName
+0002:0000014c* __LpwCmdLine
+0002:00000150* __LpwPgmName
+0002:00000154* __LpwDllName
+0002:00000140  __LpCmdLine
+0002:00000144  __LpPgmName
+0002:00000138* __dynend
+0002:0000013c* __curbrk
+0002:00000158* __STACKLOW
+0002:0000015c* __STACKTOP
+0002:00000160  __ASTACKSIZ
+0002:00000164  __ASTACKPTR
+0002:00000168* __cbyte
+0002:0000016c* __cbyte2
+0002:00000170* __child
+0002:00000176  __Envptr
+0002:00000174* __no87
+0002:0000017c* ___FPE_handler
 Module: C:\WATCOM/lib386/os2\clib3r.lib(cinit.c)
-0001:000006a0  __CommonInit_
-0002:00000298  ___hmodule
+0001:000008b0  __CommonInit_
+0002:000002a0  ___hmodule
 Module: C:\WATCOM/lib386/os2\clib3r.lib(initrtns.c)
-0001:000006c0  __InitRtns
-0001:00000710  __FiniRtns
+0001:000008d0  __InitRtns
+0001:00000920  __FiniRtns
 Module: C:\WATCOM/lib386/os2\clib3r.lib(mthrdini.c)
-0001:00000770  __InitThreadData_
-0002:00000178  ___ThreadDataSize
+0001:00000980  __InitThreadData_
+0002:00000180  ___ThreadDataSize
 Module: C:\WATCOM/lib386/os2\clib3r.lib(memset.c)
-0001:00000790  memset_
+0001:000009a0  memset_
 Module: C:\WATCOM/lib386/os2\clib3r.lib(cmain386.c)
-0001:000007b0  __CMain
+0001:000009c0  __CMain
 Module: C:\WATCOM/lib386/os2\clib3r.lib(dosseg)
 0000:00001234  __DOSseg__
 Module: C:\WATCOM/lib386/os2\clib3r.lib(amblksiz.c)
-0002:0000017c  __amblksiz
+0002:00000184  __amblksiz
 Module: C:\WATCOM/lib386/os2\clib3r.lib(__stos)
-0001:000007f0  __STOSB
-0001:00000827* __STOSD
+0001:00000a00  __STOSB
+0001:00000a37* __STOSD
 Module: C:\WATCOM/lib386/os2\clib3r.lib(___argc.c)
-0002:0000029c  ____Argc
-0002:000002a0  ____Argv
+0002:000002a4  ____Argc
+0002:000002a8  ____Argv
 Module: C:\WATCOM/lib386/os2\clib3r.lib(exit.c)
-0001:000008a0+ __null_int23_exit_
-0001:000008a1  exit_
-0001:000008f1* _exit_
-0002:00000180+ ___int23_exit
-0002:00000184+ ___FPE_handler_exit
+0001:00000ab0+ __null_int23_exit_
+0001:00000ab1  exit_
+0001:00000b01* _exit_
+0002:00000188+ ___int23_exit
+0002:0000018c+ ___FPE_handler_exit
 
 
-                        +----------------------+
-                        |   Imported Symbols   |
-                        +----------------------+
+                        +---------------------------+
+                        |   Unresolved References   |
+                        +---------------------------+
 
-Symbol                              Module
-======                              ======
+Undefined Symbol                Referenced by
+================                =============
 
-WinInitialize                       PMWIN
-WinCreateMsgQueue                   PMWIN
-WinDlgBox                           PMWIN
-WinDestroyMsgQueue                  PMWIN
-WinTerminate                        PMWIN
-WinSendMsg                          PMWIN
-WinMessageBox                       PMWIN
-WinDismissDlg                       PMWIN
-WinDefDlgProc                       PMWIN
-XpmCreateAniButton                  expm.dll
-XpmDeleteAniButton                  expm.dll
-WinQueryWindowRect                  PMWIN
-WinSetWindowPos                     PMWIN
-DosWrite                            DOSCALLS
-DosQuerySysInfo                     DOSCALLS
-DosExit                             DOSCALLS
+WinSetMenu_                     obj\anismp.obj(D:\Projects\LIBs\LIB-PM-EXPM\sample\anibtn\anismp.c)
 
 
                         +--------------------+
@@ -189,13 +175,3 @@ DosExit                             DOSCALLS
 lib\expm.lib
 C:\WATCOM/lib386/os2\clib3r.lib
 C:\WATCOM/lib386/os2\os2386.lib
-
-
-                        +-----------------------+
-                        |   Linker Statistics   |
-                        +-----------------------+
-
-Stack size:  2000 (8192.)
-Memory size:  2bb7 (11191.)
-Entry point address: 0001:000003fc
-Link time: 00:00.49

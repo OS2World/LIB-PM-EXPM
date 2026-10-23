@@ -1,0 +1,33 @@
+Project Name: EXPM
+License: LGPLv3
+Language: C
+
+I want to create a GUI library for Presentation manager to extend some GUI elements. 
+
+I want that the names of the functions to be natural and to have the same style of Presentaton Manager. 
+https://www.edm2.com/index.php/Presentation_Manager_Functions
+
+A DLL should be generated called EXPM.DLL
+A library file should be generated called EXPM.LIB
+SAMPLES should be created too. 
+
+Combine, Reuse and clone the following (Inside \References)
+1) AniButtn - Close Source - Cloned 
+2) Cell_Toolkit - BSD 2 Clauses - Integrated
+3) ColorWheel - Open source - Integrated
+4) Control Plus- Close Source - Cloned
+5) ComboBoxSupport - Public Domain - Integrated
+6) ShadowButtons - Open Source - Integrated
+7) ArrowHead - Shareware - Cloned
+8) Owner Drawn Listbox - BSD 3 Clauses - Integrated
+9) AsuaCtl - GPLv2 - Cloned (clean-room, LGPLv3)
+
+
+Others
+https://github.com/OS2World/LIB-PM-PmCtlsPP
+https://github.com/OS2World/LIB-PM-PM-Plus-Plus - Copyleft
+https://github.com/OS2World/LIB-PM-FileDLG - User-supported shareware 
+https://github.com/OS2World/LIB-PM-PMLib - C++ Glassman
+https://github.com/OS2World/DEV-LIB-STLib
+https://github.com/OS2World/LIB-PM-Kronis_Classes - C++
+

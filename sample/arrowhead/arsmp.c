@@ -16,7 +16,9 @@
  */
 
 #define INCL_WINSYS
+#define INCL_WINMENUS
 #include "expm.h"
+#include "arsmp.h"
 #include <string.h>
 
 #define CLSNAME  "exparrow"
@@ -24,6 +26,8 @@
 
 MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
+static BOOL bDark;
+static HWND hwndThemeMenu;
 
 /*-------------------------------------------------------------------------
  * DrawArrow - draw a shaft from (x1,y1) to (x2,y2) and put an arrowhead
@@ -68,7 +72,8 @@ int main(void)
     * executable, and WinCreateStdWindow fails if FCF_ICON is set without
     * one. */
    flCreate = FCF_SYSMENU | FCF_TITLEBAR | FCF_SIZEBORDER |
-              FCF_MINMAX  | FCF_SHELLPOSITION | FCF_TASKLIST;
+              FCF_MINMAX  | FCF_SHELLPOSITION | FCF_TASKLIST |
+              FCF_MENU;
 
    hab = WinInitialize(0);
    hmq = WinCreateMsgQueue(hab, 0);
@@ -76,10 +81,12 @@ int main(void)
    WinRegisterClass(hab, CLSNAME, ClientWndProc, CS_SIZEREDRAW, 0);
 
    hFrame = WinCreateStdWindow(HWND_DESKTOP, 0L, &flCreate, CLSNAME,
-                               TITLE, 0L, NULLHANDLE, 0, &hClient);
+                               TITLE, 0L, NULLHANDLE, ID_RES_MENU, &hClient);
 
    if (hFrame != NULLHANDLE)
    {
+      hwndThemeMenu = WinWindowFromID(hFrame, FID_MENU);
+
       WinSetWindowPos(hFrame, HWND_TOP, 100, 100, 560, 400,
                       SWP_MOVE | SWP_SIZE | SWP_ACTIVATE | SWP_SHOW);
 
@@ -100,29 +107,30 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
    {
       case WM_ERASEBACKGROUND:
       {
-         HPS   hps = (HPS)mp1;
-         RECTL rcl;
+         HPS       hps = (HPS)mp1;
+         PXpmTheme pth = XpmQueryTheme();
+         RECTL     rcl;
 
          GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
          WinQueryWindowRect(hwnd, &rcl);
-         WinFillRect(hps, &rcl,
-                     (LONG)WinQuerySysColor(HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0));
+         WinFillRect(hps, &rcl, (LONG)pth->clrCanvas);
          return (MRESULT)TRUE;
       }
 
       case WM_PAINT:
       {
-         HPS   hps;
-         RECTL rcl;
-         LONG  cx, cy;
-         LONG  head, arm, i, y;
+         HPS       hps;
+         PXpmTheme pth;
+         RECTL     rcl;
+         LONG      cx, cy;
+         LONG      head, arm, i, y;
 
          hps = WinBeginPaint(hwnd, NULLHANDLE, &rcl);
+         pth = XpmQueryTheme();
          WinQueryWindowRect(hwnd, &rcl);
          GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
-         WinFillRect(hps, &rcl,
-                     (LONG)WinQuerySysColor(HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0));
-         GpiSetColor(hps, CLR_BLACK);
+         WinFillRect(hps, &rcl, (LONG)pth->clrCanvas);
+         GpiSetColor(hps, (LONG)pth->clrText);
 
          cx   = rcl.xRight;
          cy   = rcl.yTop;
@@ -159,6 +167,27 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
          WinEndPaint(hps);
          break;
       }
+
+      case WM_COMMAND:
+         if (SHORT1FROMMP(mp1) == IDM_DARK)
+         {
+            XpmTheme th;
+
+            bDark = !bDark;
+            if (bDark)
+               XpmThemeDark(&th);
+            else
+               XpmThemeDefault(&th);
+            XpmSetTheme(&th);
+            WinCheckMenuItem(hwndThemeMenu, IDM_DARK, bDark);
+            WinInvalidateRect(hwnd, NULLHANDLE, TRUE);
+            return (MRESULT)FALSE;
+         }
+         break;
+
+      case XpmWM_THEMECHANGED:
+         WinInvalidateRect(hwnd, NULLHANDLE, TRUE);
+         break;
 
       case WM_CLOSE:
          WinPostMsg(hwnd, WM_QUIT, 0L, 0L);

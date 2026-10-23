@@ -1,5 +1,13 @@
 #include "combosmp.h"
 
+MENU IDM_MENU
+{
+    SUBMENU "~View", IDM_VIEW
+    {
+        MENUITEM "~Dark theme", IDM_DARK
+    }
+}
+
 STRINGTABLE
 {
     IDS_ITEM1,  "String 1"

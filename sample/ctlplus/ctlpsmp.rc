@@ -15,6 +15,11 @@ MENU IDM_MENU
         MENUITEM "E~xit", IDM_EXIT
     }
 
+    SUBMENU "~View", IDM_VIEW
+    {
+        MENUITEM "~Dark theme", IDM_DARK
+    }
+
     SUBMENU "~Help", IDM_HELP
     {
         MENUITEM "~About...", IDM_ABOUT

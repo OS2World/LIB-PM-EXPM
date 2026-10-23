@@ -14,34 +14,44 @@
 #define SZ_TESTTITLE    "\"Edit color\" test"
 #define TID_TITLE       100            /* timer ID for title reset */
 
+#define IDM_MENU        400
+#define IDM_VIEW        401
+#define IDM_DARK        402
+
 #define INCL_WIN
 #define INCL_GPI
+#define INCL_WINMENUS
 #include <os2.h>
 #include <stdio.h>
 #include "expm.h"
 
 MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
+static BOOL bDark;
+static HWND hwndThemeMenu;
+
 /*-------------------------------------------------------------------------
  * main() - Initialize PM, register the client class, create the standard
  * window, and run the message loop.
  *-------------------------------------------------------------------------*/
 int main(void) {
-   /* Standard window flags minus accelerator table and menu bar. */
-   ULONG flFrame = FCF_STANDARD & ~(FCF_ACCELTABLE | FCF_MENU);
+   /* Standard window flags minus the accelerator table. */
+   ULONG flFrame = FCF_STANDARD & ~FCF_ACCELTABLE;
    HWND  hFrame, hClient;
    QMSG  qmsg;
    HAB   hab = WinInitialize(0);
    HMQ   hmq = WinCreateMsgQueue(hab, 0);
 
    WinRegisterClass(hab, SZ_CLIENTCLASS, ClientWndProc,
-                    CS_SIZEREDRAW, 0);
+                     CS_SIZEREDRAW, 0);
 
    if (NULLHANDLE != (hFrame = WinCreateStdWindow(
-                                  HWND_DESKTOP, WS_VISIBLE,
-                                  &flFrame, SZ_CLIENTCLASS,
-                                  SZ_TESTTITLE, 0L, NULLHANDLE,
-                                  1, &hClient))) {
+                                   HWND_DESKTOP, WS_VISIBLE,
+                                   &flFrame, SZ_CLIENTCLASS,
+                                   SZ_TESTTITLE, 0L, NULLHANDLE,
+                                   IDM_MENU, &hClient))) {
+      hwndThemeMenu = WinWindowFromID(hFrame, FID_MENU);
+
       while (WinGetMsg(hab, &qmsg, NULLHANDLE, 0, 0))
          WinDispatchMsg(hab, &qmsg);
    }
@@ -63,11 +73,9 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 
    switch (msg) {
 
-      /* Set the initial background color to a medium grey (204, 204, 204). */
+      /* Set the initial background color to the current theme canvas. */
       case WM_CREATE:
-         clr.rgb.red = 204;
-         clr.rgb.grn = 204;
-         clr.rgb.blu = 204;
+         clr.lClr = (LONG)XpmQueryTheme()->clrCanvas;
          break;
 
       /* Live notification from the "Edit Color" dialog: the user moved the
@@ -117,6 +125,31 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
          GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL);
          WinFillRect(hps, &rcl, clr.lClr);
          WinEndPaint(hps);
+         break;
+
+      /* "View -> Dark theme": flip the EXPM theme and reset the
+       * background to the new theme's canvas color. */
+      case WM_COMMAND:
+         if (SHORT1FROMMP(mp1) == IDM_DARK) {
+            XpmTheme th;
+
+            bDark = !bDark;
+            if (bDark)
+               XpmThemeDark(&th);
+            else
+               XpmThemeDefault(&th);
+            XpmSetTheme(&th);
+            WinCheckMenuItem(hwndThemeMenu, IDM_DARK, bDark);
+            clr.lClr = (LONG)th.clrCanvas;
+            WinInvalidateRect(hwnd, NULL, TRUE);
+            return (MRESULT)FALSE;
+         }
+         break;
+
+      /* Broadcast by XpmSetTheme: adopt the new canvas color. */
+      case XpmWM_THEMECHANGED:
+         clr.lClr = (LONG)XpmQueryTheme()->clrCanvas;
+         WinInvalidateRect(hwnd, NULL, TRUE);
          break;
 
       default:

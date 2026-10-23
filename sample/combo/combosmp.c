@@ -31,6 +31,7 @@
 #define  INCL_WINLISTBOXES
 #define  INCL_WINSYS
 #define  INCL_WINWINDOWMGR
+#define  INCL_WINMENUS
 #define  INCL_GPI
 #include <os2.h>
 
@@ -44,7 +45,39 @@
 MRESULT EXPENTRY ComboSampWindowProc( HWND hwnd, ULONG msg,
     MPARAM mp1, MPARAM mp2 );
 
-static HAB hab;
+static HAB  hab;
+static BOOL bDark;
+static HWND hwndThemeMenu;
+static HWND hwndCombo1;
+static HWND hwndCombo2;
+
+static void ApplyComboTheme( void )
+{
+    PXpmTheme pth = XpmQueryTheme();
+    RGB2      rgb;
+    LONG      c;
+
+    c = (LONG)pth->clrCanvas;
+    rgb.fcOptions = 0;
+    rgb.bBlue  = (BYTE)(c & 0xFF);
+    rgb.bGreen = (BYTE)((c >> 8) & 0xFF);
+    rgb.bRed   = (BYTE)((c >> 16) & 0xFF);
+
+    if( hwndCombo1 )
+        WinSetPresParam( hwndCombo1, PP_BACKGROUNDCOLOR, sizeof(rgb), &rgb );
+    if( hwndCombo2 )
+        WinSetPresParam( hwndCombo2, PP_BACKGROUNDCOLOR, sizeof(rgb), &rgb );
+
+    c = (LONG)pth->clrText;
+    rgb.bBlue  = (BYTE)(c & 0xFF);
+    rgb.bGreen = (BYTE)((c >> 8) & 0xFF);
+    rgb.bRed   = (BYTE)((c >> 16) & 0xFF);
+
+    if( hwndCombo1 )
+        WinSetPresParam( hwndCombo1, PP_FOREGROUNDCOLOR, sizeof(rgb), &rgb );
+    if( hwndCombo2 )
+        WinSetPresParam( hwndCombo2, PP_FOREGROUNDCOLOR, sizeof(rgb), &rgb );
+}
 
 
 int main( VOID )
@@ -62,12 +95,14 @@ int main( VOID )
     WinRegisterClass( hab, "EXPMComboSmp", ComboSampWindowProc, 0L, 0 );
 
     flCreate = FCF_STANDARD
-             & ~FCF_ICON & ~FCF_MENU & ~FCF_ACCELTABLE
+             & ~FCF_ICON & ~FCF_ACCELTABLE
              | FCF_NOBYTEALIGN;
 
     hwndFrame = WinCreateStdWindow( HWND_DESKTOP, 0L,
         &flCreate, "EXPMComboSmp", "EXPM Combo Sample", 0L,
-        0, 1, &hwndClient );
+        0, IDM_MENU, &hwndClient );
+
+    hwndThemeMenu = WinWindowFromID( hwndFrame, FID_MENU );
 
     cyFrame = (LONG)WinQuerySysValue( HWND_DESKTOP, SV_CYTITLEBAR )
             + (LONG)WinQuerySysValue( HWND_DESKTOP, SV_CYSIZEBORDER );
@@ -90,9 +125,6 @@ int main( VOID )
 MRESULT EXPENTRY ComboSampWindowProc( HWND hwnd, ULONG msg,
     MPARAM mp1, MPARAM mp2 )
 {
-    static  HWND    hwndCombo1;
-    static  HWND    hwndCombo2;
-
     switch( msg )
     {
         case WM_CREATE:
@@ -116,6 +148,8 @@ MRESULT EXPENTRY ComboSampWindowProc( HWND hwnd, ULONG msg,
                 40, LIT_NONE );
 
             XpmInitComboBox( hwnd, ID_COMBO2, apszCombo2Init, 1 );
+
+            ApplyComboTheme();
             break;
         }
 
@@ -135,28 +169,51 @@ MRESULT EXPENTRY ComboSampWindowProc( HWND hwnd, ULONG msg,
 
         case WM_ERASEBACKGROUND:
         {
-            HPS     hps = (HPS)mp1;
-            RECTL   rcl;
+            HPS         hps = (HPS)mp1;
+            PXpmTheme   pth = XpmQueryTheme();
+            RECTL       rcl;
 
             GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
             WinQueryWindowRect( hwnd, &rcl );
-            WinFillRect( hps, &rcl,
-                (LONG)WinQuerySysColor( HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0 ) );
+            WinFillRect( hps, &rcl, (LONG)pth->clrCanvas );
             return (MRESULT)TRUE;
         }
 
         case WM_PAINT:
         {
-            HPS     hps = WinBeginPaint( hwnd, 0, 0 );
-            RECTL   rcl;
+            HPS         hps = WinBeginPaint( hwnd, 0, 0 );
+            PXpmTheme   pth = XpmQueryTheme();
+            RECTL       rcl;
 
             GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
             WinQueryWindowRect( hwnd, &rcl );
-            WinFillRect( hps, &rcl,
-                (LONG)WinQuerySysColor( HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0 ) );
+            WinFillRect( hps, &rcl, (LONG)pth->clrCanvas );
             WinEndPaint( hps );
             break;
         }
+
+        case WM_COMMAND:
+            if( SHORT1FROMMP( mp1 ) == IDM_DARK )
+            {
+                XpmTheme th;
+
+                bDark = !bDark;
+                if( bDark )
+                    XpmThemeDark( &th );
+                else
+                    XpmThemeDefault( &th );
+                XpmSetTheme( &th );
+                WinCheckMenuItem( hwndThemeMenu, IDM_DARK, bDark );
+                ApplyComboTheme();
+                WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+                return (MRESULT)FALSE;
+            }
+            break;
+
+        case XpmWM_THEMECHANGED:
+            ApplyComboTheme();
+            WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+            break;
 
         default:
             return WinDefWindowProc( hwnd, msg, mp1, mp2 );

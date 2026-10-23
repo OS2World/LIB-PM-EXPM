@@ -17,6 +17,7 @@
  */
 
 #define INCL_WIN
+#define INCL_WINMENUS
 #define INCL_GPI
 #define INCL_GPILOGCOLORTABLE
 #define INCL_DOS
@@ -25,6 +26,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "expm.h"
+
+#define IDM_MENU        900
+#define IDM_VIEW        901
+#define IDM_DARK        902
 
 #define IDB_OK          100
 #define IDB_CANCEL      101
@@ -45,6 +50,54 @@
 
 static HAB  hab;
 static HWND hwndStatus;
+static BOOL bDark = FALSE;
+static HWND hwndThemeMenu = NULLHANDLE;
+
+/* ------------------------------------------------------------------ */
+
+static void SetRgb( HWND hwnd, ULONG idMode, ULONG ulColor )
+{
+    RGB2 rgb;
+
+    rgb.fcOptions = 0;
+    rgb.bBlue  = (BYTE)(ulColor & 0xFF);
+    rgb.bGreen = (BYTE)((ulColor >> 8) & 0xFF);
+    rgb.bRed   = (BYTE)((ulColor >> 16) & 0xFF);
+    WinSetPresParam( hwnd, idMode, sizeof(rgb), &rgb );
+}
+
+static void ApplyWbtTheme( HWND hwnd )
+{
+    static const ULONG aBtn[13] =
+        { IDB_OK, IDB_CANCEL, IDB_DEFAULT, IDB_THIN, IDB_DISABLED,
+          IDB_LEFT, IDB_RIGHT, IDB_TOP, IDB_BOTTOM,
+          IDB_FLAT, IDB_FLAT2, IDB_AUTOTEXT, IDB_AUTOSIZE };
+    PXpmTheme pth = XpmQueryTheme();
+    HWND      hCtl;
+    int       i;
+
+    for( i = 0; i < 13; i++ )
+    {
+        hCtl = WinWindowFromID( hwnd, aBtn[i] );
+        if( hCtl == NULLHANDLE )
+            continue;
+        SetRgb( hCtl, PP_BACKGROUNDCOLOR, pth->clrCanvas );
+        SetRgb( hCtl, PP_FOREGROUNDCOLOR, pth->clrText );
+    }
+
+    hCtl = WinWindowFromID( hwnd, IDB_OWNDRAW );
+    if( hCtl )
+    {
+        SetRgb( hCtl, PP_BACKGROUNDCOLOR, pth->clrSurfaceDim );
+        SetRgb( hCtl, PP_FOREGROUNDCOLOR, pth->clrText );
+    }
+
+    if( hwndStatus )
+    {
+        SetRgb( hwndStatus, PP_BACKGROUNDCOLOR, pth->clrCanvas );
+        SetRgb( hwndStatus, PP_FOREGROUNDCOLOR, pth->clrText );
+    }
+}
 
 /* ------------------------------------------------------------------ */
 
@@ -72,7 +125,8 @@ static void ShowStatus( PSZ pszPrefix, ULONG id, ULONG code )
 static BOOL PaintOwnerItem( PXpmOwnerBack pob )
 {
     GpiCreateLogColorTable( pob->hps, LCOL_RESET, LCOLF_RGB, 0, 0, NULL );
-    WinFillRect( pob->hps, &pob->bound, 0x00FFFFE0UL );   /* cream */
+    WinFillRect( pob->hps, &pob->bound,
+                 (LONG)XpmQueryTheme()->clrSurfaceDim );
     return TRUE;
 }
 
@@ -84,6 +138,8 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
     switch( msg )
     {
         case WM_CREATE:
+            hwndThemeMenu = WinWindowFromID( WinQueryWindow( hwnd, QW_PARENT ),
+                                             FID_MENU);
             CreateButton( hwnd, IDB_OK, "OK", 0,
                           15, 330, 110, 32 );
             CreateButton( hwnd, IDB_CANCEL, "Cancel", 0,
@@ -125,6 +181,7 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
                                           15, 45, 580, 28,
                                           hwnd, HWND_TOP, ID_STATUS,
                                           NULL, NULL );
+            ApplyWbtTheme( hwnd );
             return (MRESULT)FALSE;
 
         case WM_DRAWITEM:
@@ -141,7 +198,21 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
             ULONG id   = SHORT1FROMMP( mp1 );
             ULONG code = SHORT2FROMMP( mp1 );
 
-            if( code == XpmBN_CLICKED )
+            if( id == IDM_DARK )
+            {
+                XpmTheme th;
+
+                bDark = !bDark;
+                if( bDark )
+                    XpmThemeDark( &th );
+                else
+                    XpmThemeDefault( &th );
+                XpmSetTheme( &th );
+                WinCheckMenuItem( hwndThemeMenu, IDM_DARK, bDark );
+                ApplyWbtTheme( hwnd );
+                WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+            }
+            else if( code == XpmBN_CLICKED )
                 ShowStatus( "Click", id, code );
             else if( code == XpmBN_BUTTON2CLICKED )
                 ShowStatus( "Right click", id, code );
@@ -164,16 +235,33 @@ static MRESULT EXPENTRY ClientProc( HWND hwnd, ULONG msg, MPARAM mp1,
             return (MRESULT)FALSE;
         }
 
+        case WM_ERASEBACKGROUND:
+        {
+            HPS   hps = (HPS)mp1;
+            RECTL rcl;
+
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
+            WinQueryWindowRect( hwnd, &rcl );
+            WinFillRect( hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas );
+            return (MRESULT)TRUE;
+        }
+
         case WM_PAINT:
         {
             HPS   hps = WinBeginPaint( hwnd, NULLHANDLE, NULL );
             RECTL rcl;
 
+            GpiCreateLogColorTable( hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL );
             WinQueryWindowRect( hwnd, &rcl );
-            WinFillRect( hps, &rcl, CLR_PALEGRAY );
+            WinFillRect( hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas );
             WinEndPaint( hps );
             return (MRESULT)FALSE;
         }
+
+        case XpmWM_THEMECHANGED:
+            ApplyWbtTheme( hwnd );
+            WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
+            return (MRESULT)FALSE;
 
         case WM_CLOSE:
             WinPostMsg( hwnd, WM_QUIT, NULL, NULL );
@@ -192,7 +280,7 @@ int main( VOID )
     HWND  hwndClient;
     QMSG  qmsg;
     ULONG flCreate = FCF_SYSMENU | FCF_TITLEBAR | FCF_SIZEBORDER |
-                     FCF_MINMAX | FCF_TASKLIST;
+                     FCF_MINMAX | FCF_TASKLIST | FCF_MENU;
 
     hab = WinInitialize( 0 );
     hmq = WinCreateMsgQueue( hab, 0 );
@@ -213,7 +301,7 @@ int main( VOID )
     hwndFrame = WinCreateStdWindow( HWND_DESKTOP, 0, &flCreate,
                                     "XpmWbtClient",
                                     "EXPM window button sample",
-                                    0, NULLHANDLE, 0, &hwndClient );
+                                    0, NULLHANDLE, IDM_MENU, &hwndClient );
 
     WinSetWindowPos( hwndFrame, HWND_TOP, 60, 100, 620, 420,
                      SWP_MOVE | SWP_SIZE | SWP_ACTIVATE | SWP_SHOW );

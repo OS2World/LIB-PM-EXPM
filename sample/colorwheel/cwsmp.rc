@@ -4,3 +4,11 @@
  */
 
 ICON 1 CWSMP.ICO
+
+MENU 400
+{
+    SUBMENU "~View", 401
+    {
+        MENUITEM "~Dark theme", 402
+    }
+}

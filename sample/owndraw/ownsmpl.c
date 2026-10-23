@@ -27,6 +27,7 @@
  */
 
 #define INCL_WIN
+#define INCL_WINMENUS
 #define INCL_GPI
 
 #include <os2.h>
@@ -38,6 +39,10 @@
 
 #define ID_LISTBOX  100
 
+#define IDM_MENU    500
+#define IDM_VIEW    501
+#define IDM_DARK    502
+
 /* Longest item string, in characters. */
 #define ITEM_CHARS  30
 
@@ -48,6 +53,8 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 
 static HWND  hwndList   = NULLHANDLE;
 static LONG  lCharWidth = 0;
+static BOOL  bDark      = FALSE;
+static HWND  hwndThemeMenu = NULLHANDLE;
 
 /* Column boundaries as 1-based character positions, zero-terminated.
  * Column 1 is the leftmost; each further entry starts a new column.
@@ -83,6 +90,35 @@ static void FillListBox(HWND hwndLb)
 }
 
 
+/*-------------------------------------------------------------------------
+ * ApplyOwndrawTheme - tint the client and the owner-draw listbox.
+ *-------------------------------------------------------------------------*/
+static void ApplyOwndrawTheme(HWND hwnd)
+{
+   PXpmTheme pth = XpmQueryTheme();
+   RGB2      rgb;
+   LONG      c;
+
+   if (hwndList != NULLHANDLE)
+   {
+      c = (LONG)pth->clrCanvas;
+      rgb.fcOptions = 0;
+      rgb.bBlue  = (BYTE)(c & 0xFF);
+      rgb.bGreen = (BYTE)((c >> 8) & 0xFF);
+      rgb.bRed   = (BYTE)((c >> 16) & 0xFF);
+      WinSetPresParam(hwndList, PP_BACKGROUNDCOLOR, sizeof(rgb), &rgb);
+
+      c = (LONG)pth->clrText;
+      rgb.bBlue  = (BYTE)(c & 0xFF);
+      rgb.bGreen = (BYTE)((c >> 8) & 0xFF);
+      rgb.bRed   = (BYTE)((c >> 16) & 0xFF);
+      WinSetPresParam(hwndList, PP_FOREGROUNDCOLOR, sizeof(rgb), &rgb);
+   }
+
+   (void)hwnd;
+}
+
+
 int main(void)
 {
    HAB   hab;
@@ -94,7 +130,7 @@ int main(void)
    /* FCF_ICON is omitted: the sample binds no icon resource and
     * WinCreateStdWindow fails if FCF_ICON is set without one. */
    flCreate = FCF_SYSMENU | FCF_TITLEBAR | FCF_SIZEBORDER |
-              FCF_MINMAX  | FCF_SHELLPOSITION | FCF_TASKLIST;
+              FCF_MINMAX  | FCF_SHELLPOSITION | FCF_TASKLIST | FCF_MENU;
 
    hab = WinInitialize(0);
    hmq = WinCreateMsgQueue(hab, 0);
@@ -102,7 +138,8 @@ int main(void)
    WinRegisterClass(hab, CLSNAME, ClientWndProc, CS_SIZEREDRAW, 0);
 
    hwndFrame = WinCreateStdWindow(HWND_DESKTOP, 0L, &flCreate, CLSNAME,
-                                  TITLE, 0L, NULLHANDLE, 0, &hwndClient);
+                                   TITLE, 0L, NULLHANDLE, IDM_MENU,
+                                   &hwndClient);
 
    if (hwndFrame != NULLHANDLE)
    {
@@ -125,11 +162,14 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
    switch (msg)
    {
       case WM_CREATE:
+         hwndThemeMenu = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+                                         FID_MENU);
          hwndList = WinCreateWindow(hwnd, WC_LISTBOX, "",
                         WS_VISIBLE | LS_OWNERDRAW,
                         0, 0, 0, 0,
                         hwnd, HWND_TOP, ID_LISTBOX, NULL, NULL);
          FillListBox(hwndList);
+         ApplyOwndrawTheme(hwnd);
          return (MRESULT)FALSE;
 
       case WM_SIZE:
@@ -155,7 +195,15 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       /* The listbox asks its owner to paint each item. */
       case WM_DRAWITEM:
-         return XpmDrawLBItems((POWNERITEM)mp2, lCharWidth, asTabStops);
+      {
+         POWNERITEM poi = (POWNERITEM)mp2;
+         PXpmTheme  pth = XpmQueryTheme();
+
+         GpiCreateLogColorTable(poi->hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
+         GpiSetColor(poi->hps, (LONG)pth->clrText);
+         GpiSetBackColor(poi->hps, (LONG)pth->clrCanvas);
+         return XpmDrawLBItems(poi, lCharWidth, asTabStops);
+      }
 
       case WM_ERASEBACKGROUND:
       {
@@ -164,8 +212,7 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
          GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
          WinQueryWindowRect(hwnd, &rcl);
-         WinFillRect(hps, &rcl,
-                     (LONG)WinQuerySysColor(HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0));
+         WinFillRect(hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas);
          return (MRESULT)TRUE;
       }
 
@@ -176,11 +223,33 @@ MRESULT EXPENTRY ClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
          GpiCreateLogColorTable(hps, LCOL_RESET, LCOLF_RGB, 0L, 0L, NULL);
          WinQueryWindowRect(hwnd, &rcl);
-         WinFillRect(hps, &rcl,
-                     (LONG)WinQuerySysColor(HWND_DESKTOP, SYSCLR_DIALOGBACKGROUND, 0));
+         WinFillRect(hps, &rcl, (LONG)XpmQueryTheme()->clrCanvas);
          WinEndPaint(hps);
          return (MRESULT)FALSE;
       }
+
+      case WM_COMMAND:
+         if (SHORT1FROMMP(mp1) == IDM_DARK)
+         {
+            XpmTheme th;
+
+            bDark = !bDark;
+            if (bDark)
+               XpmThemeDark(&th);
+            else
+               XpmThemeDefault(&th);
+            XpmSetTheme(&th);
+            WinCheckMenuItem(hwndThemeMenu, IDM_DARK, bDark);
+            ApplyOwndrawTheme(hwnd);
+            WinInvalidateRect(hwnd, NULLHANDLE, TRUE);
+            return (MRESULT)FALSE;
+         }
+         break;
+
+      case XpmWM_THEMECHANGED:
+         ApplyOwndrawTheme(hwnd);
+         WinInvalidateRect(hwnd, NULLHANDLE, TRUE);
+         return (MRESULT)FALSE;
 
       case WM_CLOSE:
          WinPostMsg(hwnd, WM_QUIT, 0, 0);
