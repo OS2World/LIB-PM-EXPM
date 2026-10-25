@@ -184,7 +184,7 @@ sample\combo\combosmp.exe: $(OBJ)\combosmp.obj $(OBJ)\combosmp.res $(DLL)\expm.d
         system os2v2_pm &
         name sample\combo\combosmp.exe &
         file $(OBJ)\combosmp.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\combo\combosmp.map
@@ -205,7 +205,7 @@ sample\cell\celmp.exe: $(OBJ)\celmp.obj $(OBJ)\celmp.res $(DLL)\expm.dll
         system os2v2_pm &
         name sample\cell\celmp.exe &
         file $(OBJ)\celmp.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\cell\celmp.map
@@ -226,7 +226,7 @@ sample\ctlplus\ctlpsmp.exe: $(OBJ)\ctlpsmp.obj $(OBJ)\ctlpsmp.res $(DLL)\expm.dl
         system os2v2_pm &
         name sample\ctlplus\ctlpsmp.exe &
         file $(OBJ)\ctlpsmp.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\ctlplus\ctlpsmp.map
@@ -247,7 +247,7 @@ sample\colorwheel\cwsmp.exe: $(OBJ)\cwsmp.obj $(OBJ)\cwsmp.res $(DLL)\expm.dll
         system os2v2_pm &
         name sample\colorwheel\cwsmp.exe &
         file $(OBJ)\cwsmp.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\colorwheel\cwsmp.map
@@ -268,7 +268,7 @@ sample\anibtn\anismp.exe: $(OBJ)\anismp.obj $(OBJ)\anismp.res $(DLL)\expm.dll
         system os2v2_pm &
         name sample\anibtn\anismp.exe &
         file $(OBJ)\anismp.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\anibtn\anismp.map
@@ -289,7 +289,7 @@ sample\shadebtn\shbsmp.exe: $(OBJ)\shbsmp.obj $(OBJ)\shbsmp.res $(DLL)\expm.dll
         system os2v2_pm &
         name sample\shadebtn\shbsmp.exe &
         file $(OBJ)\shbsmp.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\shadebtn\shbsmp.map
@@ -310,7 +310,7 @@ sample\arrowhead\arsmp.exe: $(OBJ)\arsmp.obj $(OBJ)\arsmp.res $(DLL)\expm.dll
         system os2v2_pm &
         name sample\arrowhead\arsmp.exe &
         file $(OBJ)\arsmp.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\arrowhead\arsmp.map
@@ -331,7 +331,7 @@ sample\owndraw\ownsmpl.exe: $(OBJ)\ownsmpl.obj $(OBJ)\ownsmpl.res $(DLL)\expm.dl
         system os2v2_pm &
         name sample\owndraw\ownsmpl.exe &
         file $(OBJ)\ownsmpl.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\owndraw\ownsmpl.map
@@ -352,7 +352,7 @@ sample\status\stsmp.exe: $(OBJ)\stsmp.obj $(OBJ)\stsmp.res $(DLL)\expm.dll
         system os2v2_pm &
         name sample\status\stsmp.exe &
         file $(OBJ)\stsmp.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\status\stsmp.map
@@ -373,7 +373,7 @@ sample\progbar\pgbsmp.exe: $(OBJ)\pgbsmp.obj $(OBJ)\pgbsmp.res $(DLL)\expm.dll
         system os2v2_pm &
         name sample\progbar\pgbsmp.exe &
         file $(OBJ)\pgbsmp.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\progbar\pgbsmp.map
@@ -394,7 +394,7 @@ sample\winbutt\wbsmp.exe: $(OBJ)\wbsmp.obj $(OBJ)\wbsmp.res $(DLL)\expm.dll
         system os2v2_pm &
         name sample\winbutt\wbsmp.exe &
         file $(OBJ)\wbsmp.obj &
-        option stack=8192 &
+        option stack=32768 &
         option heap=8192 &
         library lib\expm.lib &
         option map=sample\winbutt\wbsmp.map

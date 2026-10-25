@@ -34,7 +34,6 @@
 #define  INCL_WINMENUS
 #define  INCL_GPI
 #include <os2.h>
-#include <stdio.h>
 
 #include "combosmp.h"
 #include "expm.h"
@@ -129,7 +128,7 @@ MRESULT EXPENTRY ComboSampWindowProc( HWND hwnd, ULONG msg,
 {
     switch( msg )
     {
-case WM_CREATE:
+        case WM_CREATE:
         {
             static  LONG    aCombo1Init[] =
                 { IDS_ITEM1, IDS_ITEM2, IDS_ITEM3, IDS_ITEM4 };
@@ -144,20 +143,12 @@ case WM_CREATE:
                 CBS_DROPDOWNLIST, 0, 0, 0, 0,
                 hwnd, HWND_TOP, ID_COMBO2, 0, 0 );
 
-            // Debug output to verify combo box creation
-            printf("Combo1 created: %p\n", hwndCombo1);
-            printf("Combo2 created: %p\n", hwndCombo2);
-
             XpmInitComboBoxFromRes( hab, 0, hwnd, ID_COMBO1,
                 aCombo1Init,
                 sizeof aCombo1Init / sizeof aCombo1Init[0],
                 40, LIT_NONE );
 
             XpmInitComboBox( hwnd, ID_COMBO2, apszCombo2Init, 1 );
-
-            // Debug output to verify combo box initialization
-            printf("Combo1 initialized with %d items\n", sizeof aCombo1Init / sizeof aCombo1Init[0]);
-            printf("Combo2 initialized with %d items\n", sizeof apszCombo2Init / sizeof apszCombo2Init[0] - 1);
 
             ApplyComboTheme();
             break;
@@ -229,36 +220,13 @@ case WM_CREATE:
         {
             USHORT id   = SHORT1FROMMP( mp1 );
             USHORT code = SHORT2FROMMP( mp1 );
-            LONG   selectedItem;
-
-            // Debug output to verify which messages are being received
-            printf("WM_CONTROL received: id=%d, code=%d\n", id, code);
 
             if( id == ID_COMBO1 || id == ID_COMBO2 )
             {
-                if( code == CBN_EFCHANGE )
+                if( code == CBN_SELCHANGE )
                 {
-                    // Entry field changed
-                    printf("Entry field changed for combo %d\n", id);
-                }
-                else if( code == CBN_SELCHANGE )
-                {
-                    // Selection changed
-                    printf("Selection changed for combo %d\n", id);
-
-                    // Get the selected item
-                    selectedItem = (LONG)WinSendMsg( WinWindowFromID( hwnd, id ),
-                        LM_QUERYSELECTION, MPFROMLONG( LIT_FIRST ), MPVOID );
-
-                    if( selectedItem != LIT_NONE )
-                    {
-                        printf("Selected item %d in combo %d\n", selectedItem, id);
-                    }
-                }
-                else if( code == CBN_CLOSEUP )
-                {
-                    // Combo box closed
-                    printf("Combo box %d closed\n", id);
+                    /* Combo box selection changed: repaint the client area. */
+                    WinInvalidateRect( hwnd, NULLHANDLE, TRUE );
                 }
             }
             break;
@@ -270,10 +238,6 @@ case WM_CREATE:
             break;
 
         default:
-            // Debug: log all unhandled messages (filter out common noisy messages)
-            if (msg != 0x0200 && msg != 0x0210 && msg != 0x0211) {
-                printf("Unhandled message: 0x%04X (%d)\n", msg, msg);
-            }
             return WinDefWindowProc( hwnd, msg, mp1, mp2 );
     }
 
