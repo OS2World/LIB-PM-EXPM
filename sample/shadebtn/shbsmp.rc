@@ -89,11 +89,16 @@ BEGIN
         CONTROL  "Ready.", ST_BAR, 8, 36, 284, 14, WC_shBUTTON,
                  WS_VISIBLE | shBS_NOPUSH | shBS_LEFTROUND | shBS_RIGHTROUND
 
-        /* ---- Dialog buttons ------------------------------------ */
-        CONTROL  "OK",     PB_OK,     200, 14, 44, 16, WC_shBUTTON,
-                 WS_VISIBLE | WS_TABSTOP | WS_GROUP |
-                 shBS_LEFTROUND | shBS_RIGHTROUND
-        CONTROL  "Cancel", PB_CANCEL, 248, 14, 44, 16, WC_shBUTTON,
-                 WS_VISIBLE | WS_TABSTOP | shBS_LEFTROUND | shBS_RIGHTROUND
+         /* ---- Status bar (non-pushable, rounded) ---------------- */
+         CONTROL  "Ready.", ST_BAR, 8, 36, 284, 14, WC_shBUTTON,
+                  WS_VISIBLE | shBS_NOPUSH | shBS_LEFTROUND | shBS_RIGHTROUND
+
+         /* ---- Dialog buttons ------------------------------------ */
+         CONTROL  "OK",     PB_OK,     200, 14, 44, 16, WC_shBUTTON,
+                  WS_VISIBLE | WS_TABSTOP | WS_GROUP |
+                  shBS_LEFTROUND | shBS_RIGHTROUND
+         CONTROL  "Cancel", PB_CANCEL, 248, 14, 44, 16, WC_shBUTTON,
+                  WS_VISIBLE | WS_TABSTOP | shBS_LEFTROUND | shBS_RIGHTROUND
+         AUTOCHECKBOX "Dark theme", ID_THEME_CHECK, 8, 148, 120, 10
     END
 END

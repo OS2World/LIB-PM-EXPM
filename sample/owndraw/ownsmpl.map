@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/22 21:08:02
+Created on:       26/10/24 19:50:35
 Executable Image: sample\owndraw\ownsmpl.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -216,4 +216,4 @@ C:\WATCOM/lib386/os2\os2386.lib
 Stack size:  2000 (8192.)
 Memory size:  2d47 (11591.)
 Entry point address: 0001:0000052c
-Link time: 00:00.38
+Link time: 00:00.51

@@ -35,6 +35,9 @@
 /* Status-text field */
 #define TX_HELP         120
 
+/* Theme checkbox */
+#define ID_THEME_CHECK  130
+
 /* Menu items */
 #define IDM_VIEW        130
 #define IDM_DARK        131

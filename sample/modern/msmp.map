@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/19 14:13:43
+Created on:       26/10/24 19:50:36
 Executable Image: sample\modern\msmp.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -253,4 +253,4 @@ C:\WATCOM/lib386/os2\os2386.lib
 Stack size:  4000 (16384.)
 Memory size:  6392 (25490.)
 Entry point address: 0001:00000884
-Link time: 00:00.93
+Link time: 00:00.51

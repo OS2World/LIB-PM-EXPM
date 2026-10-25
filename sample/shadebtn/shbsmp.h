@@ -45,6 +45,9 @@
 /* Status bar */
 #define ST_BAR          150
 
+/* Theme checkbox */
+#define ID_THEME_CHECK  170
+
 /* Dialog buttons */
 #define PB_OK           1
 #define PB_CANCEL       2

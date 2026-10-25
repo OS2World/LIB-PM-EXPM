@@ -56,6 +56,7 @@ BEGIN
         CONTROL  "", TBB_NA5,  320, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
         CONTROL  "", TBB_NA6,  355, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
         CONTROL  "", TBB_NA7,  390, 19, 34, 14, WC_BUTTON, BS_USERBUTTON | WS_VISIBLE
-        LTEXT    "Move the pointer over a button.", TX_HELP, 6, 3, 428, 16, DT_WORDBREAK
+        LTEXT    "Move the pointer over a button.", TX_HELP, 6, 3, 300, 16, DT_WORDBREAK
+        AUTOCHECKBOX "Dark theme", ID_THEME_CHECK, 310, 5, 120, 10
     END
 END

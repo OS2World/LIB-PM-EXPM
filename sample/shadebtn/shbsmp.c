@@ -17,6 +17,8 @@
  */
 
 #define INCL_WIN
+#define INCL_WINMENUS
+#define INCL_GPI
 #include <os2.h>
 #include <stdio.h>
 #include "shbsmp.h"
@@ -27,6 +29,28 @@ MRESULT EXPENTRY MainDlg(HWND, ULONG, MPARAM, MPARAM);
 static VOID SetStatus(HWND hwndDlg, PSZ pszText);
 static VOID CenterDialog(HWND hwndDlg);
 static VOID SelectRadio(HWND hwndDlg, USHORT idChecked);
+static VOID ApplyShadebtnTheme(HWND hwndDlg);
+
+static BOOL bDark = FALSE;
+
+static VOID SetRgb(HWND hwnd, ULONG idMode, ULONG ulColor) {
+   RGB2 rgb;
+
+   rgb.fcOptions = 0;
+   rgb.bBlue  = (BYTE)(ulColor & 0xFF);
+   rgb.bGreen = (BYTE)((ulColor >> 8) & 0xFF);
+   rgb.bRed   = (BYTE)((ulColor >> 16) & 0xFF);
+   WinSetPresParam(hwnd, idMode, sizeof(rgb), &rgb);
+}
+
+static VOID ApplyShadebtnTheme(HWND hwndDlg) {
+   PXpmTheme pth = XpmQueryTheme();
+   HWND      hwndCtl;
+
+   hwndCtl = WinWindowFromID(hwndDlg, ST_BAR);
+   if (hwndCtl)
+      SetRgb(hwndCtl, PP_BACKGROUNDCOLOR, pth->clrCanvas);
+}
 
 /*-------------------------------------------------------------------------
  * main() - register the class and run the sample window non-modally.
@@ -84,21 +108,38 @@ MRESULT EXPENTRY MainDlg(HWND hwndDlg, ULONG msg,
                     shBM_SETCOLOR, MPFROMLONG(0x00FFEEAA),
                     MPFROMLONG(shBSC_BUTTONFACE));
 
-         /* Start with the first radio button selected. */
-         SelectRadio(hwndDlg, RAD_1);
+          /* Start with the first radio button selected. */
+          SelectRadio(hwndDlg, RAD_1);
 
-         CenterDialog(hwndDlg);
-         return (MRESULT)FALSE;
+          ApplyShadebtnTheme(hwndDlg);
+          CenterDialog(hwndDlg);
+          return (MRESULT)FALSE;
       }
 
       /* Push buttons send WM_COMMAND. */
-      case WM_COMMAND:
-         switch (SHORT1FROMMP(mp1)) {
-            case PB_OK:
-            case PB_CANCEL:
-               WinPostMsg(hwndDlg, WM_QUIT, MPVOID, MPVOID);
-               return (MRESULT)FALSE;
-            default: {
+       case WM_COMMAND:
+          switch (SHORT1FROMMP(mp1)) {
+             case PB_OK:
+             case PB_CANCEL:
+                WinPostMsg(hwndDlg, WM_QUIT, MPVOID, MPVOID);
+                return (MRESULT)FALSE;
+
+             case ID_THEME_CHECK: {
+                XpmTheme th;
+
+                bDark = !bDark;
+                if (bDark)
+                   XpmThemeDark(&th);
+                else
+                   XpmThemeDefault(&th);
+                XpmSetTheme(&th);
+                WinCheckButton(hwndDlg, ID_THEME_CHECK, bDark);
+                ApplyShadebtnTheme(hwndDlg);
+                WinInvalidateRect(hwndDlg, NULLHANDLE, TRUE);
+                return (MRESULT)FALSE;
+             }
+
+             default: {
                CHAR szText[64], szMsg[96];
                HWND hwndBtn = WinWindowFromID(hwndDlg, SHORT1FROMMP(mp1));
 

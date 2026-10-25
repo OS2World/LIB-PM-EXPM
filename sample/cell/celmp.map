@@ -1,6 +1,6 @@
 ** EXPERIMENTAL (HLL) ** Open Watcom Linker Version 2.0.1
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       26/10/19 15:24:06
+Created on:       26/10/24 19:50:34
 Executable Image: sample\cell\celmp.exe
 creating an OS/2 32-bit Presentation Manager executable
 
@@ -216,4 +216,4 @@ C:\WATCOM/lib386/os2\os2386.lib
 Stack size:  2000 (8192.)
 Memory size:  2c77 (11383.)
 Entry point address: 0001:000004a4
-Link time: 00:00.62
+Link time: 00:00.41

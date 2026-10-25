@@ -54,6 +54,12 @@ static VOID ApplyAniTheme(HWND hwndDlg) {
       SetRgb(hCtl, PP_BACKGROUNDCOLOR, pth->clrCanvas);
       SetRgb(hCtl, PP_FOREGROUNDCOLOR, pth->clrText);
    }
+
+   hCtl = WinWindowFromID(hwndDlg, ID_THEME_CHECK);
+   if (hCtl) {
+      SetRgb(hCtl, PP_BACKGROUNDCOLOR, pth->clrCanvas);
+      SetRgb(hCtl, PP_FOREGROUNDCOLOR, pth->clrText);
+   }
 }
 
 /*-------------------------------------------------------------------------
@@ -81,30 +87,29 @@ MRESULT EXPENTRY ToolBarDlg(HWND hwndDlg, ULONG msg,
       /* Create the animated buttons, then centre the dialog. */
       case WM_INITDLG:
          CreateButtons(hwndDlg);
-         hwndMenu = WinWindowFromID(WinQueryWindow(hwndDlg, QW_PARENT),
-                                    FID_MENU);
          ApplyAniTheme(hwndDlg);
          CenterDialog(hwndDlg);
          return (MRESULT)FALSE;
 
-      /* A push button was clicked: report it, except for EXIT. */
-      case WM_COMMAND:
-         switch (SHORT1FROMMP(mp1)) {
-            case IDM_DARK: {
-               XpmTheme th;
+       /* A push button was clicked: report it, except for EXIT. */
+       case WM_COMMAND:
+          switch (SHORT1FROMMP(mp1)) {
+             case ID_THEME_CHECK:
+                {
+                   XpmTheme th;
 
-               bDark = !bDark;
-               if (bDark)
-                  XpmThemeDark(&th);
-               else
-                  XpmThemeDefault(&th);
-               XpmSetTheme(&th);
-               WinCheckMenuItem(hwndMenu, IDM_DARK, bDark);
-               ApplyAniTheme(hwndDlg);
-               WinInvalidateRect(hwndDlg, NULLHANDLE, TRUE);
-               return (MRESULT)FALSE;
-            }
-            case TBB_EXIT:
+                   bDark = !bDark;
+                   if (bDark)
+                      XpmThemeDark(&th);
+                   else
+                      XpmThemeDefault(&th);
+                   XpmSetTheme(&th);
+                   WinCheckButton(hwndDlg, ID_THEME_CHECK, bDark);
+                   ApplyAniTheme(hwndDlg);
+                   WinInvalidateRect(hwndDlg, NULLHANDLE, TRUE);
+                   return (MRESULT)FALSE;
+                }
+             case TBB_EXIT:
                WinSendMsg(hwndDlg, WM_CLOSE, MPVOID, MPVOID);
                break;
             case TBB_FILE:
