@@ -147,16 +147,7 @@ MRESULT EXPENTRY MainWndProc( HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2 )
             return (MRESULT)FALSE;
 
         case WM_COMMAND:
-            if( SHORT1FROMMP( mp1 ) == BTN_NEXT )
-            {
-                lColorIndex = (lColorIndex + 1) % N_COLORS;
-                BuildShape( hwnd, lColorIndex );
-            }
-            else if( SHORT1FROMMP( mp1 ) == BTN_CLOSE )
-            {
-                DestroyShape();
-            }
-            else if( SHORT1FROMMP( mp1 ) == BTN_EXIT )
+            if( SHORT1FROMMP( mp1 ) == IDM_EXIT )
             {
                 WinPostMsg( hwnd, WM_CLOSE, 0, 0 );
             }
@@ -208,7 +199,7 @@ int main( VOID )
     flCreate = FCF_STANDARD & ~FCF_ICON & ~FCF_ACCELTABLE & ~FCF_MENU | FCF_NOBYTEALIGN;
 
     hwndFrame = WinCreateStdWindow( HWND_DESKTOP, 0L, &flCreate,
-        "XpmShapeSmp", "EXPM Shaped Window Sample", 0L, 0, 0, &hwndClient );
+        "XpmShapeSmp", "EXPM Shaped Window Sample", 0L, 0, IDM_MENU, &hwndClient );
 
     cyFrame = (LONG)WinQuerySysValue( HWND_DESKTOP, SV_CYTITLEBAR )
             + (LONG)WinQuerySysValue( HWND_DESKTOP, SV_CYSIZEBORDER );
@@ -216,17 +207,6 @@ int main( VOID )
     WinSetWindowPos( hwndFrame, HWND_TOP, 100, 100,
         260, 140 + cyFrame, SWP_SHOW | SWP_SIZE | SWP_MOVE | SWP_ZORDER );
 
-
-    /* create buttons */
-    WinCreateWindow( hwndClient, WC_BUTTON, "Next colour",
-        BS_PUSHBUTTON | WS_VISIBLE, 10, 90, 100, 24,
-        hwndClient, HWND_TOP, BTN_NEXT, NULL, NULL );
-    WinCreateWindow( hwndClient, WC_BUTTON, "Close shape",
-        BS_PUSHBUTTON | WS_VISIBLE, 120, 90, 100, 24,
-        hwndClient, HWND_TOP, BTN_CLOSE, NULL, NULL );
-    WinCreateWindow( hwndClient, WC_BUTTON, "Exit",
-        BS_PUSHBUTTON | WS_VISIBLE, 10, 50, 100, 24,
-        hwndClient, HWND_TOP, BTN_EXIT, NULL, NULL );
 
 
     while( WinGetMsg( hab, &qmsg, 0, 0, 0 ) )

@@ -344,6 +344,17 @@ static int ShpOpenRegion( SHPCTLPTR pCtrl )
                 pRgn,
                 NULL );
     }
+
+    /* Invalidate the desktop area so the background repaints behind us. */
+    {
+        RECTL rcl;
+        HWND  hwndDesk = WinQueryDesktopWindow( WinQueryAnchorBlock( pCtrl->hwndSelf ), NULLHANDLE );
+        rcl.xLeft   = pCtrl->x;
+        rcl.yBottom = pCtrl->y;
+        rcl.xRight  = pCtrl->x + pCtrl->cx;
+        rcl.yTop    = pCtrl->y + pCtrl->cy;
+        WinInvalidateRect( hwndDesk, &rcl, FALSE );
+    }
     return 0;
 }
 
@@ -353,11 +364,20 @@ static int ShpAdjustRegion( SHPCTLPTR pCtrl, PSWP pSwp )
     SHPRGNPTR   pRgn;
     ULONG       fl;
     PSWP        pswpArray;
+    RECTL       rclOld;
 
     if( pCtrl == NULL || pCtrl->nRegion == 0 || pCtrl->aRegion == NULL )
         return -1;
 
     fl = pSwp->fl;
+
+    /* Remember the old bounding rectangle so the vacated desktop area
+     * can be invalidated (PM does not repaint it automatically for an
+     * invisible parent window). */
+    rclOld.xLeft   = pCtrl->x;
+    rclOld.yBottom = pCtrl->y;
+    rclOld.xRight  = pCtrl->x + pCtrl->cx;
+    rclOld.yTop    = pCtrl->y + pCtrl->cy;
 
     if( fl & SWP_MOVE )
     {
@@ -385,6 +405,22 @@ static int ShpAdjustRegion( SHPCTLPTR pCtrl, PSWP pSwp )
     pSwp->cx = (SHORT)pCtrl->cx;
     pSwp->cy = (SHORT)pCtrl->cy;
     pSwp->fl &= ~SWP_SHOW;
+
+    /* Invalidate the vacated (old) area on the desktop so it repaints,
+     * and also the new area in case something was there before. */
+    if( fl & SWP_MOVE )
+    {
+        HWND hwndDesktop = WinQueryDesktopWindow( WinQueryAnchorBlock( pCtrl->hwndSelf ), NULLHANDLE );
+        WinInvalidateRect( hwndDesktop, &rclOld, FALSE );
+        {
+            RECTL rclNew;
+            rclNew.xLeft   = pCtrl->x;
+            rclNew.yBottom = pCtrl->y;
+            rclNew.xRight  = pCtrl->x + pCtrl->cx;
+            rclNew.yTop    = pCtrl->y + pCtrl->cy;
+            WinInvalidateRect( hwndDesktop, &rclNew, FALSE );
+        }
+    }
     return 0;
 }
 
@@ -559,6 +595,12 @@ static BOOL g_registered = FALSE;
 BOOL EXPENTRY XpmShapeInit( VOID )
 {
     if( g_registered ) return TRUE;
+
+    if( !WinRegisterClass( (HAB)0, WC_XpmSHAPEWIN, XpmShapeWinProc,
+                           CS_SYNCPAINT, sizeof(PVOID) ) )
+        return FALSE;
+
+    /* region helper class is registered lazily in ShpOpenRegion */
     g_registered = TRUE;
     return TRUE;
 }
