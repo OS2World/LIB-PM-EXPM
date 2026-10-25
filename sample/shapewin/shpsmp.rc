@@ -1,0 +1,6 @@
+#include "shpsmp.h"
+
+MENU IDM_MENU
+{
+    MENUITEM "E~xit", IDM_EXIT
+}

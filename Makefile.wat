@@ -40,7 +40,7 @@ DLL = dll
     -mkdir $(OBJ) 2>NUL
     -mkdir $(DLL) 2>NUL
 
-all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe sample\owndraw\ownsmpl.exe sample\status\stsmp.exe sample\progbar\pgbsmp.exe sample\winbutt\wbsmp.exe sample\toolbar\tbsmp.exe sample\dirdlg\ddsmp.exe sample\fonts\fntsmp.exe sample\modern\msmp.exe .SYMBOLIC
+all: $(DLL)\expm.dll sample\combo\combosmp.exe sample\cell\celmp.exe sample\ctlplus\ctlpsmp.exe sample\colorwheel\cwsmp.exe sample\anibtn\anismp.exe sample\shadebtn\shbsmp.exe sample\arrowhead\arsmp.exe sample\owndraw\ownsmpl.exe sample\status\stsmp.exe sample\progbar\pgbsmp.exe sample\winbutt\wbsmp.exe sample\toolbar\tbsmp.exe sample\dirdlg\ddsmp.exe sample\fonts\fntsmp.exe sample\modern\msmp.exe sample\shapewin\shpsmp.exe .SYMBOLIC
 
 # -----------------------------------------------------------------------
 # Library DLL: dll\expm.dll (also produces lib\expm.lib via OPTION IMPLIB)
@@ -68,6 +68,9 @@ $(OBJ)\anibtn.obj: src\anibtn\anibtn.c h\expm.h
 
 $(OBJ)\shadebtn.obj: src\shadebtn\shadebtn.c h\expm.h h\shadebtn.h src\shadebtn\shaderes.h
     $(CC) $(CFLAGS_DLL) -i=src\shadebtn -fo=$@ src\shadebtn\shadebtn.c
+
+$(OBJ)\shapewin.obj: src\shapewin\shapewin.c h\expm.h h\shapewin.h
+    $(CC) $(CFLAGS_DLL) -fo=$@ src\shapewin\shapewin.c
 
 $(OBJ)\arrowhead.obj: src\arrowhead\arrowhead.c h\expm.h h\arrowhead.h
     $(CC) $(CFLAGS_DLL) -fo=$@ src\arrowhead\arrowhead.c
@@ -99,7 +102,7 @@ $(OBJ)\fonts.obj: src\fonts\fonts.c h\expm.h
 $(OBJ)\modern.obj: src\modern\modern.c h\expm.h
     $(CC) $(CFLAGS_DLL) -fo=$@ src\modern\modern.c
 
-$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\arrowhead.obj $(OBJ)\owndraw.obj $(OBJ)\ctlcommon.obj $(OBJ)\status.obj $(OBJ)\progbar.obj $(OBJ)\winbutt.obj $(OBJ)\toolbar.obj $(OBJ)\dirdlg.obj $(OBJ)\fonts.obj $(OBJ)\modern.obj $(OBJ)\expm.res
+$(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\colorwheel.obj $(OBJ)\anibtn.obj $(OBJ)\shadebtn.obj $(OBJ)\shapewin.obj $(OBJ)\arrowhead.obj $(OBJ)\owndraw.obj $(OBJ)\ctlcommon.obj $(OBJ)\status.obj $(OBJ)\progbar.obj $(OBJ)\winbutt.obj $(OBJ)\toolbar.obj $(OBJ)\dirdlg.obj $(OBJ)\fonts.obj $(OBJ)\modern.obj $(OBJ)\expm.res
     wlink &
         system os2v2 dll initinstance terminstance &
         name $(DLL)\expm.dll &
@@ -109,6 +112,7 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         file $(OBJ)\colorwheel.obj &
         file $(OBJ)\anibtn.obj &
         file $(OBJ)\shadebtn.obj &
+        file $(OBJ)\shapewin.obj &
         file $(OBJ)\arrowhead.obj &
         file $(OBJ)\owndraw.obj &
         file $(OBJ)\ctlcommon.obj &
@@ -140,6 +144,7 @@ $(DLL)\expm.dll: $(OBJ)\combosup.obj $(OBJ)\cell.obj $(OBJ)\ctlplus.obj $(OBJ)\c
         export XpmDeleteAniButton &
         export XpmShadeBtnInit &
         export XpmShadeBtnQueryVersion &
+        export XpmShapeInit &
         export XpmDrawArrowHead &
         export XpmInitLBWidthHeight &
         export XpmDrawLBItems &
@@ -481,6 +486,28 @@ sample\modern\msmp.exe: $(OBJ)\msmp.obj $(DLL)\expm.dll
         option map=sample\modern\msmp.map
 
 # -----------------------------------------------------------------------
+# Sample: SHAPEWIN (shaped / transparent windows)
+# -----------------------------------------------------------------------
+
+$(OBJ)\shpsmp.obj: sample\shapewin\shpsmp.c sample\shapewin\shpsmp.h h\expm.h
+    $(CC) $(CFLAGS_EXE) -i=sample\shapewin -fo=$@ sample\shapewin\shpsmp.c
+
+$(OBJ)\shpsmp.res: sample\shapewin\shpsmp.rc sample\shapewin\shpsmp.h
+    wrc -q -r -bt=os2 -i=sample\shapewin sample\shapewin\shpsmp.rc -fo=$@
+
+sample\shapewin\shpsmp.exe: $(OBJ)\shpsmp.obj $(OBJ)\shpsmp.res $(DLL)\expm.dll
+    wlink &
+        system os2v2_pm &
+        name sample\shapewin\shpsmp.exe &
+        file $(OBJ)\shpsmp.obj &
+        option stack=32768 &
+        option heap=8192 &
+        library lib\expm.lib &
+        option map=sample\shapewin\shpsmp.map
+    wrc -q -bt=os2 $(OBJ)\shpsmp.res sample\shapewin\shpsmp.exe
+
+
+# -----------------------------------------------------------------------
 # Clean
 # -----------------------------------------------------------------------
 
@@ -503,3 +530,4 @@ clean: .SYMBOLIC
     -rm -f sample\dirdlg\ddsmp.exe sample\dirdlg\ddsmp.map sample\dirdlg\ddsmp.sym
     -rm -f sample\fonts\fntsmp.exe sample\fonts\fntsmp.map sample\fonts\fntsmp.sym
     -rm -f sample\modern\msmp.exe sample\modern\msmp.map sample\modern\msmp.sym
+-rm -f sample\shapewin\shpsmp.exe sample\shapewin\shpsmp.map sample\shapewin\shpsmp.sym

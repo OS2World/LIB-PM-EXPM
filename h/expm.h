@@ -530,6 +530,8 @@ VOID EXPENTRY XpmDeleteAniButton( HWND hwndDlg, USHORT id );
 
 #include "arrowhead.h"
 
+#include "shapewin.h"
+
 
 /* ------------------------------------------------------------------ */
 /* Owner-Draw Listbox (column alignment for LS_OWNERDRAW listboxes)    */
