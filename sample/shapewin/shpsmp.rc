@@ -2,5 +2,6 @@
 
 MENU IDM_MENU
 {
+    MENUITEM "~Move shape", IDM_MOVE
     MENUITEM "E~xit", IDM_EXIT
 }

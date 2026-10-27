@@ -1,0 +1,117 @@
+EXPM - Shaped Windows module
+============================
+
+PM has no window-region API and no per-pixel alpha, so an EXPM
+"transparent" window is really a shaped window.  A mask bitmap is
+parsed into horizontal spans, and one small child window is created per
+span.  Each child paints its slice of the image; the pixels that the
+mask leaves out are never painted, so the desktop (or any window
+behind) shows through them.
+
+The module is an original, clean-room implementation written from the PM
+programming reference.  The osmulti2 "shapewin" sample was the
+inspiration only: it is GPL-2.0, which cannot be combined with EXPM's
+LGPLv3, so no code from it was read or copied.
+
+Public API
+----------
+
+    #define WC_XpmSHAPEWIN      "XpmShapeWin"
+
+    typedef struct _XpmShapeData
+    {
+        ULONG   cbSize;     /* sizeof(XpmShapeData)                  */
+        HPS     hpsDraw;    /* presentation space holding the image  */
+        HPS     hpsMask;    /* presentation space holding the mask   */
+        SHORT   cx;         /* image width, in pels                  */
+        SHORT   cy;         /* image height, in pels                 */
+        HWND    hwndOwner;  /* receives the forwarded input messages */
+    } XpmShapeData;
+
+    BOOL EXPENTRY XpmShapeInit( VOID );
+
+        Registers the WC_XpmSHAPEWIN class.  Call it once, before
+        creating the first shape window; later calls do nothing.
+
+        Returns TRUE on success, FALSE if the class could not be
+        registered.
+
+Creating a shaped window
+------------------------
+
+    XpmShapeData data;
+
+    memset( &data, 0, sizeof( data ) );
+    data.cbSize    = sizeof( data );
+    data.hpsDraw   = hpsImage;   /* 24-bit bitmap selected into the PS */
+    data.hpsMask   = hpsImage;   /* may be the same PS                 */
+    data.cx        = 96;
+    data.cy        = 96;
+    data.hwndOwner = hwndClient;
+
+    hwndShape = WinCreateWindow( HWND_DESKTOP, WC_XpmSHAPEWIN, NULL,
+                    0, x, y, data.cx, data.cy,
+                    hwndClient, HWND_TOP, 1, &data, NULL );
+
+The shape window itself is an invisible frame that only tracks the
+position and size; the visible pixels live in "XpmShapeRegion" child
+windows, which are created as siblings of the shape window (children of
+its parent).  Those children are created with WS_VISIBLE and forward
+mouse and keyboard messages to hwndOwner, so the owner code can be
+written as if it were handling an ordinary window.
+
+The mask
+--------
+
+hpsMask must have a 24-bit bitmap selected.  Its pixel at (0,0) is the
+transparent key colour: every pixel equal to that colour is left
+unpainted, every other pixel is opaque.  Rows are scanned from the
+bottom; runs of opaque pixels that start and end at the same x
+coordinates in consecutive rows are merged into a single taller
+rectangle, which keeps the number of child windows down.
+
+The sample draws the circle with the display colour and fills the rest
+of the bitmap with magenta, so magenta becomes the key colour.
+
+Moving and resizing
+-------------------
+
+WinSetWindowPos( hwndShape, ..., SWP_MOVE ) is handled in
+WM_ADJUSTWINDOWPOS: the module repositions every span window and
+reports the new position through the SWP structure.  Because the
+visible pixels are separate child windows, PM does not repaint the area
+that the shape vacates on its own; the module invalidates that
+rectangle on the desktop after a move.  If the owner paints something
+under the shape (an image, a window), it should invalidate its own
+vacated area as well.
+
+Destroying
+----------
+
+WinDestroyWindow( hwndShape ) destroys all the span windows.  The
+presentation spaces and the bitmaps belong to the caller and are not
+freed by the class.
+
+Sample
+------
+
+    sample\shapewin\shpsmp.exe (source in sample\shapewin\shpsmp.c).
+
+A PM frame window plus a circular shaped window drawn at (200,200) on
+the desktop.  Left-drag moves the circle, right-click cycles its colour,
+the menu item "~Move shape" moves it by a fixed offset, and "E~xit"
+closes the sample.
+
+Runtime requirements
+--------------------
+
+    - expm.dll must be reachable on LIBPATH (or next to the executable).
+    - INCL_GPI and INCL_WIN must be in effect for the GPI and PM calls
+      the caller uses (h/expm.h defines them).
+
+Licence
+-------
+
+This module contains no third-party source.  It is an independent
+implementation of the classic PM shaped-window technique and is covered
+by the EXPM LGPLv3 licence (see LICENSE).

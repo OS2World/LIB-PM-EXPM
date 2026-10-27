@@ -6,6 +6,61 @@ recorded here.  The version refers to the EXPM library as a whole (see
 independent of the version of the third-party library each module
 tracks.
 
+## [0.9] - 2026-10-26
+
+### Fixed
+
+- **Shaped Windows** (`src/shapewin`) - the span child windows
+  (`"XpmShapeRegion"`) were created without `WS_VISIBLE`, so a shaped
+  window painted nothing at all; what looked like transparency was the
+  unpainted client window of the application behind it.  The spans are
+  now created visible (and with `WS_SAVEBITS`).
+- **Shaped Windows repaint** - moving a shape now invalidates the
+  rectangle it vacated on the desktop and forces that repaint, so the
+  old position is cleaned up instead of leaving the shape smeared
+  across the screen.
+
+### Added
+
+- Module documentation in `doc/shapewin.txt`; the README module table,
+  sample list, directory layout and roadmap now mention the module.
+
+### Changed
+
+- **Shaped window sample** - left-drag moves the circle and
+  right-click cycles its colour; the temporary push buttons were
+  replaced by "~Move shape" and "E~xit" menu entries.
+
+## [0.8] - 2026-10-25
+
+### Fixed
+
+- **Shaped Windows repaint** - the owner window is invisible, so PM
+  never repainted the desktop area that a moved shape vacated; the
+  module now invalidates that area itself.
+
+## [0.7] - 2026-10-25
+
+### Added
+
+- **Shaped Windows** (`src/shapewin`) - original, clean-room
+  implementation of non-rectangular ("transparent") PM windows: the
+  mask is parsed into horizontal spans and one child window per span
+  paints its slice, so the desktop shows through the rest.  New class
+  `WC_XpmSHAPEWIN`, create data `XpmShapeData`, entry point
+  `XpmShapeInit`; exported through `src/expm.def`.
+- **Shaped window sample** (`sample/shapewin/shpsmp.c`) - a circle
+  drawn on the desktop.
+
+## [0.6] - 2026-10-24
+
+### Fixed
+
+- **Combo sample** - opening the drop-down and then moving focus to the
+  other combo box terminated the process: the sample was linked with an
+  8 KB stack and deeply nested message handling overflowed it.  All
+  samples now use a 32 KB stack.
+
 ## [0.3] - 2026-10-19
 
 ### Added

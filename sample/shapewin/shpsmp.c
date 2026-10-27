@@ -4,9 +4,9 @@
  * sample/shapewin/shpsmp.c -- Shaped ("transparent") windows sample.
  *
  * Creates a shaped window whose outline follows a circular mask, so the
- * desktop shows through the transparent parts.  Left-clicking the shape
- * cycles its colour; right-clicking (or closing the main window) removes
- * it.  Demonstrates the XpmShapeWin window class.
+ * desktop shows through the transparent parts.  Left-dragging the circle
+ * moves it; right-clicking cycles its colour.  Demonstrates the
+ * XpmShapeWin window class.
  *
  * Copyright (C) 2026 The EXPM Project Authors
  *
@@ -23,6 +23,7 @@
 #define  INCL_WINMENUS
 #define  INCL_WINMESSAGEMGR
 #define  INCL_WININPUT
+#define  INCL_WINPOINTERS
 #define  INCL_WINBUTTONS
 #define  INCL_GPI
 #include <os2.h>
@@ -45,6 +46,10 @@ static LONG lColorIndex = 0;
 static const LONG aColors[] = { 0x000000FFL, 0x0000FF00L, 0x00FF0000L,
                                 0x0000FFFFL, 0x00FF00FFL, 0x00FFFF00L };
 #define N_COLORS (sizeof(aColors)/sizeof(aColors[0]))
+
+static BOOL  bDragging = FALSE;
+static POINTL ptDragStart;
+static SHORT  sShapeX = 200, sShapeY = 200;
 
 static VOID BuildShape( HWND hwndOwner, LONG idx )
 {
@@ -123,7 +128,7 @@ static VOID BuildShape( HWND hwndOwner, LONG idx )
         data.cy         = SHAPE_SIZE;
         data.hwndOwner  = hwndOwner;
         hwndShape = WinCreateWindow( HWND_DESKTOP, WC_XpmSHAPEWIN, NULL,
-                     0, 200, 200, SHAPE_SIZE, SHAPE_SIZE,
+                     0, sShapeX, sShapeY, SHAPE_SIZE, SHAPE_SIZE,
                      hwndOwner, HWND_TOP, 1, &data, NULL );
     }
 }
@@ -146,17 +151,73 @@ MRESULT EXPENTRY MainWndProc( HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2 )
             BuildShape( hwnd, 0 );
             return (MRESULT)FALSE;
 
+        case WM_PAINT:
+        {
+            HPS   hps = WinBeginPaint( hwnd, NULLHANDLE, NULL );
+            RECTL rcl;
+            if( hps != NULLHANDLE )
+            {
+                WinQueryWindowRect( hwnd, &rcl );
+                WinFillRect( hps, &rcl, SYSCLR_DIALOGBACKGROUND );
+                WinEndPaint( hps );
+            }
+            return (MRESULT)0;
+        }
+
         case WM_COMMAND:
-            if( SHORT1FROMMP( mp1 ) == IDM_EXIT )
+            if( SHORT1FROMMP( mp1 ) == IDM_MOVE )
+            {
+                sShapeX = (SHORT)( sShapeX + 80 );
+                sShapeY = (SHORT)( sShapeY + 60 );
+                if( sShapeX > 900 ) sShapeX = 200;
+                if( sShapeY > 600 ) sShapeY = 200;
+                if( hwndShape != NULLHANDLE )
+                    WinSetWindowPos( hwndShape, HWND_TOP, sShapeX, sShapeY,
+                                     0, 0, SWP_MOVE );
+                /* repaint the client where the circle was */
+                WinInvalidateRect( hwnd, NULL, TRUE );
+            }
+            else if( SHORT1FROMMP( mp1 ) == IDM_EXIT )
             {
                 WinPostMsg( hwnd, WM_CLOSE, 0, 0 );
             }
             break;
 
         case WM_BUTTON1DOWN:
-            /* forwarded from the shape: cycle colour */
+            /* start dragging the shape */
+            bDragging = TRUE;
+            WinQueryPointerPos( HWND_DESKTOP, &ptDragStart );
+            WinSetCapture( HWND_DESKTOP, hwnd );
+            break;
+
+        case WM_MOUSEMOVE:
+            if( bDragging )
+            {
+                POINTL pt;
+                WinQueryPointerPos( HWND_DESKTOP, &pt );
+                sShapeX = (SHORT)(sShapeX + pt.x - ptDragStart.x);
+                sShapeY = (SHORT)(sShapeY + pt.y - ptDragStart.y);
+                ptDragStart = pt;
+                if( hwndShape != NULLHANDLE )
+                    WinSetWindowPos( hwndShape, HWND_TOP, sShapeX, sShapeY,
+                                     0, 0, SWP_MOVE );
+            }
+            break;
+
+        case WM_BUTTON2DOWN:
+            /* right-click: cycle colour */
             lColorIndex = (lColorIndex + 1) % N_COLORS;
             BuildShape( hwnd, lColorIndex );
+            break;
+
+        case WM_BUTTON1UP:
+            if( bDragging )
+            {
+                bDragging = FALSE;
+                WinSetCapture( HWND_DESKTOP, NULLHANDLE );
+                /* repaint the client where the circle was */
+                WinInvalidateRect( hwnd, NULL, TRUE );
+            }
             break;
 
         case WM_CLOSE:

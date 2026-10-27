@@ -325,7 +325,7 @@ static int ShpOpenRegion( SHPCTLPTR pCtrl )
         registered = TRUE;
     }
 
-    flStyle = 0;
+    flStyle = WS_VISIBLE | WS_SAVEBITS;
 
     for( i = 0, pRgn = pCtrl->aRegion; i < (int)pCtrl->nRegion; i++, pRgn++ )
     {
@@ -388,6 +388,16 @@ static int ShpAdjustRegion( SHPCTLPTR pCtrl, PSWP pSwp )
     pswpArray = (PSWP)malloc( sizeof(SWP) * pCtrl->nRegion );
     if( pswpArray == NULL ) return -1;
 
+    /* Hide the spans before moving them: PM then repaints the windows
+     * underneath the old position (frame decorations, other windows),
+     * which it does not do when a window merely moves. */
+    if( fl & SWP_MOVE )
+    {
+        for( i = 0, pRgn = pCtrl->aRegion; i < (int)pCtrl->nRegion; i++, pRgn++ )
+            if( pRgn->hwnd != NULLHANDLE )
+                WinShowWindow( pRgn->hwnd, FALSE );
+    }
+
     for( i = 0, pRgn = pCtrl->aRegion; i < (int)pCtrl->nRegion; i++, pRgn++ )
     {
         pswpArray[i].fl = fl;
@@ -401,7 +411,6 @@ static int ShpAdjustRegion( SHPCTLPTR pCtrl, PSWP pSwp )
     WinSetMultWindowPos( WinQueryAnchorBlock( pCtrl->hwndSelf ),
                          &pswpArray[0], pCtrl->nRegion );
     free( pswpArray );
-
     pSwp->cx = (SHORT)pCtrl->cx;
     pSwp->cy = (SHORT)pCtrl->cy;
     pSwp->fl &= ~SWP_SHOW;
@@ -411,6 +420,11 @@ static int ShpAdjustRegion( SHPCTLPTR pCtrl, PSWP pSwp )
     if( fl & SWP_MOVE )
     {
         HWND hwndDesktop = WinQueryDesktopWindow( WinQueryAnchorBlock( pCtrl->hwndSelf ), NULLHANDLE );
+
+        for( i = 0, pRgn = pCtrl->aRegion; i < (int)pCtrl->nRegion; i++, pRgn++ )
+            if( pRgn->hwnd != NULLHANDLE )
+                WinShowWindow( pRgn->hwnd, TRUE );
+
         WinInvalidateRect( hwndDesktop, &rclOld, FALSE );
         {
             RECTL rclNew;
@@ -420,6 +434,7 @@ static int ShpAdjustRegion( SHPCTLPTR pCtrl, PSWP pSwp )
             rclNew.yTop    = pCtrl->y + pCtrl->cy;
             WinInvalidateRect( hwndDesktop, &rclNew, FALSE );
         }
+        WinUpdateWindow( hwndDesktop );
     }
     return 0;
 }

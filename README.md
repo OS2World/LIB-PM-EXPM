@@ -24,6 +24,7 @@ https://www.edm2.com/index.php/Presentation_Manager_Functions.
 | AniButtn   | src/anibtn/anibtn.c        | Two-state graphical push buttons         |
 | ShadedBtn  | src/shadebtn/shadebtn.c    | Gradient-shaded button window class      |
 | ArrowHead  | src/arrowhead/arrowhead.c  | GPI arrowhead drawing helper             |
+| ShapeWin   | src/shapewin/shapewin.c    | Shaped ("transparent") windows on PM     |
 | OwnerDraw  | src/owndraw/owndraw.c      | Column alignment for owner-draw listboxes |
 | CtlCommon  | src/ctlcommon/ctlcommon.c  | AsuaCtl shared helpers + version API     |
 | Status     | src/status/status.c        | Status text control (clone of AsuaCtl)   |
@@ -176,6 +177,45 @@ The function is declared with `EXPENTRY` (`_System`) so that the
 `POINTL`-by-value and `double` parameters pass correctly across the DLL
 boundary.
 
+### Shaped Windows (clean-room, original)
+
+PM has no window-region API and no per-pixel alpha, so an EXPM
+"transparent" window is really a *shaped* window. A mask bitmap is
+parsed into horizontal spans and one small child window is created per
+span; each child paints its slice of the image, while the uncovered
+pixels are never painted, so the desktop (or any window behind) shows
+through.
+
+The implementation is original. The osmulti2 `shapewin.c` sample was
+the inspiration only: it is GPL-2.0, which cannot be combined with
+EXPM's LGPLv3, so no code from it was read or copied.
+
+| Item           | Value                                   |
+|----------------|-----------------------------------------|
+| Class          | `WC_XpmSHAPEWIN` (`"XpmShapeWin"`)      |
+| Initialisation | `XpmShapeInit()`                        |
+| Create data    | `XpmShapeData`                          |
+| Source         | `src/shapewin/shapewin.c`, `h/shapewin.h` |
+
+`XpmShapeData` holds:
+
+| Field       | Meaning                                                  |
+|-------------|----------------------------------------------------------|
+| `cbSize`    | `sizeof(XpmShapeData)`                                    |
+| `hpsDraw`   | presentation space holding the 24-bit image to display    |
+| `hpsMask`   | PS holding the mask; its pixel at (0,0) is the key colour |
+| `cx`, `cy`  | size of the image in pels                                 |
+| `hwndOwner` | window that receives the forwarded input messages         |
+
+Every pixel whose colour differs from the key colour is opaque. The
+shape window itself is only a frame: the visible pixels live in
+`"XpmShapeRegion"` child windows, which forward mouse and keyboard
+messages to `hwndOwner`, so the owner code reads like ordinary window
+code. Moving the shape with `WinSetWindowPos` moves all spans with it.
+PM does not repaint the area a moving window vacates when the visible
+pixels are separate child windows, so the owner has to invalidate the
+old rectangle itself; `sample/shapewin/shpsmp.c` shows the pattern.
+
 ### OwnerDraw (merged from DEV-SAMPLES-C-LIB-PM-Owner_Drawn_Listbox)
 
 The DEV-SAMPLES-C-LIB-PM-Owner_Drawn_Listbox library (BSD 3-Clause;
@@ -276,7 +316,7 @@ CHANGES.md          Release notes / changelog
 LICENSE             License terms (LGPLv3)
 dll\                Rebuilt library DLL (EXPM.DLL)
 lib\                Import library file (EXPM.LIB)
-h\                  Public headers (expm.h, colorwheel.h, shadebtn.h, arrowhead.h)
+h\                  Public headers (expm.h, colorwheel.h, shadebtn.h, arrowhead.h, shapewin.h)
 src\                Source code of the library (one subdir per module)
 sample\             Application samples for using the library
 doc\                Documentation and information about the library
@@ -304,6 +344,7 @@ Outputs:
 | `sample\anibtn\anismp.exe`    | AniButtn animated-button sample |
 | `sample\shadebtn\shbsmp.exe`  | Shaded Buttons sample         |
 | `sample\arrowhead\arsmp.exe`  | ArrowHead drawing sample      |
+| `sample\shapewin\shpsmp.exe`  | Shaped Windows sample         |
 | `sample\owndraw\ownsmpl.exe`  | Owner-Draw Listbox sample     |
 | `sample\status\stsmp.exe`     | Status control sample         |
 | `sample\progbar\pgbsmp.exe`   | Progress bar sample           |
@@ -318,8 +359,8 @@ API reference (one file per module, under `doc\`): `expm.txt` (ComboSup),
 `arrowhead.txt` (ArrowHead), `owndraw.txt` (Owner-Draw Listbox),
 `ctlcommon.txt` (AsuaCtl shared helpers), `status.txt` (Status control),
 `progbar.txt` (Progress bar), `winbutt.txt` (Window button),
-`toolbar.txt` (Toolbar), `dirdlg.txt` (Directory dialog) and `fonts.txt`
-(Raster font helper).
+`toolbar.txt` (Toolbar), `dirdlg.txt` (Directory dialog), `fonts.txt`
+(Raster font helper) and `shapewin.txt` (Shaped Windows).
 
 ## Runtime
 
@@ -337,6 +378,7 @@ All components listed in `Idea.txt` have been merged or cloned:
 - AniButtn (animated buttons)
 - Shaded Buttons (gradient-shaded button window class)
 - ArrowHead (GPI arrowhead drawing helper)
+- Shaped Windows (non-rectangular / "transparent" windows, original)
 - Owner-Draw Listbox (column alignment for LS_OWNERDRAW listboxes)
 - AsuaCtl (shared helpers, version API, status control, progress bar, window button, toolbar, directory dialog and raster font helper; more controls planned)
 
